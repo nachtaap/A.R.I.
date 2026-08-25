@@ -1,6 +1,6 @@
-/* A.R.I. service worker — app shell, cache-first, scoped to /A.R.I./ */
-const CACHE = 'ari-v80';
-const BASE = '/A.R.I./';
+/* A.R.I. service worker — app shell, cache-first, relative to its scope */
+const CACHE = 'ari-v83';
+const BASE = new URL('./', self.location.href).pathname;
 const SHELL = [
   BASE,
   BASE + 'index.html',
@@ -29,7 +29,8 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  if (!e.request.url.includes(BASE)) return;
+  const url = new URL(e.request.url);
+  if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE)) return;
   e.respondWith(
     caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
       const copy = res.clone();

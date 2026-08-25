@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#04050a" />
-    <link rel="manifest" href="/A.R.I./manifest.webmanifest" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
@@ -605,9 +605,165 @@
         opacity: 0.9;
       }
       .wxCond {
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        text-decoration-thickness: 1.5px;
+        --wx-color: currentColor;
+        position: relative;
+        display: inline-block;
+        color: inherit;
+        text-decoration: none;
+        isolation: isolate;
+      }
+      .wxCond::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 1px;
+        height: 1.5px;
+        background: var(--wx-color);
+        opacity: 0.86;
+        transform-origin: center;
+        pointer-events: none;
+      }
+      .wxCond::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 42%;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--wx-color),
+          transparent
+        );
+        filter: blur(0.45px);
+        opacity: 0;
+        transform: translateX(-115%) scaleX(0.65);
+        pointer-events: none;
+      }
+      .wxCond.wx-signal {
+        will-change: color, text-shadow;
+      }
+      .wxCond.wx-signal::before {
+        animation: wxUnderlinePass 2.4s cubic-bezier(0.2, 0.7, 0.25, 1);
+      }
+      .wxCond.wx-signal::after {
+        animation: wxUnderlineWake 2.4s ease-in-out;
+      }
+      .wxCond--clear.wx-signal {
+        animation: wxClearSignal 2.4s ease-in-out;
+      }
+      .wxCond--cloud.wx-signal {
+        animation: wxCloudSignal 2.4s ease-in-out;
+      }
+      .wxCond--rain.wx-signal {
+        animation: wxRainSignal 2.4s ease-in-out;
+      }
+      .wxCond--snow.wx-signal {
+        animation: wxSnowSignal 2.4s ease-in-out;
+      }
+      .wxCond--storm.wx-signal {
+        animation: wxStormSignal 2.4s ease-in-out;
+      }
+      @keyframes wxUnderlinePass {
+        0% {
+          opacity: 0;
+          transform: translateX(-115%) scaleX(0.65);
+        }
+        34% {
+          opacity: 0.72;
+        }
+        72% {
+          opacity: 0.34;
+        }
+        100% {
+          opacity: 0;
+          transform: translateX(255%) scaleX(1);
+        }
+      }
+      @keyframes wxUnderlineWake {
+        0%,
+        100% {
+          opacity: 0.86;
+          transform: scaleX(1);
+          box-shadow: 0 0 0 transparent;
+        }
+        42% {
+          opacity: 1;
+          transform: scaleX(0.97);
+          box-shadow: 0 0 5px var(--wx-color);
+        }
+        68% {
+          transform: scaleX(1.015);
+        }
+      }
+      @keyframes wxClearSignal {
+        0%,
+        100% {
+          color: inherit;
+          text-shadow: 0 0 0 transparent;
+        }
+        48% {
+          color: var(--wx-color);
+          text-shadow: 0 0 7px var(--wx-color);
+        }
+      }
+      @keyframes wxCloudSignal {
+        0%,
+        100% {
+          color: inherit;
+          text-shadow: 0 0 0 transparent;
+        }
+        38% {
+          color: var(--wx-color);
+          text-shadow: -2px 0 6px var(--wx-color);
+        }
+        64% {
+          color: var(--wx-color);
+          text-shadow: 2px 0 7px var(--wx-color);
+        }
+      }
+      @keyframes wxRainSignal {
+        0%,
+        100% {
+          color: inherit;
+          text-shadow: 0 0 0 transparent;
+        }
+        38% {
+          color: var(--wx-color);
+          text-shadow: 0 -2px 5px var(--wx-color);
+        }
+        64% {
+          color: var(--wx-color);
+          text-shadow: 0 2px 6px var(--wx-color);
+        }
+      }
+      @keyframes wxSnowSignal {
+        0%,
+        100% {
+          color: inherit;
+          text-shadow: 0 0 0 transparent;
+        }
+        50% {
+          color: var(--wx-color);
+          text-shadow: 0 0 9px var(--wx-color);
+        }
+      }
+      @keyframes wxStormSignal {
+        0%,
+        31%,
+        42%,
+        56%,
+        100% {
+          color: inherit;
+          text-shadow: 0 0 0 transparent;
+        }
+        35%,
+        49% {
+          color: var(--wx-color);
+          text-shadow: 0 0 9px var(--wx-color);
+        }
       }
       #trackinfo {
         position: fixed;
@@ -673,14 +829,10 @@
         font-size: 13px;
         letter-spacing: 0.22em;
         pointer-events: auto;
-        cursor: pointer;
         touch-action: manipulation;
         -webkit-user-select: none;
         user-select: none;
         -webkit-touch-callout: none; /* long-press opens the engine room, not text selection */
-      }
-      #trackname:hover {
-        opacity: 0.82;
       }
       #trackmeta {
         color: var(--trackcyan);
@@ -1079,6 +1231,11 @@
           animation: none;
           opacity: 0.7;
         }
+        .wxCond.wx-signal,
+        .wxCond.wx-signal::before,
+        .wxCond.wx-signal::after {
+          animation: none !important;
+        }
         .note.go {
           animation-duration: 0.01s;
         }
@@ -1156,95 +1313,6 @@
       #devClose:focus-visible {
         outline: 2px solid #a78bff;
         outline-offset: 3px;
-      }
-      /* ---------- liner notes: the back of the sleeve ---------- */
-      .liner {
-        position: fixed;
-        inset: 0;
-        z-index: 58;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(2, 3, 7, 0.55);
-        perspective: 900px;
-        opacity: 0;
-        pointer-events: none;
-        visibility: hidden;
-        transition: opacity 0.25s ease, visibility 0s linear 0.25s;
-      }
-      .liner.show {
-        opacity: 1;
-        pointer-events: auto;
-        visibility: visible;
-        transition-delay: 0s;
-      }
-      .linerInner {
-        width: 272px;
-        height: 272px;
-        max-width: 82vw;
-        max-height: 82vw;
-        position: relative;
-        transform-style: preserve-3d;
-        transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
-        cursor: pointer;
-      }
-      .liner.flipped .linerInner {
-        transform: rotateY(180deg);
-      }
-      .linerFace {
-        position: absolute;
-        inset: 0;
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden;
-        border: 1px solid rgba(62, 232, 222, 0.35);
-        border-radius: 6px;
-        overflow: hidden;
-        background: rgba(4, 5, 10, 0.97);
-        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.65);
-      }
-      .linerFront img {
-        width: 100%;
-        height: 100%;
-        display: block;
-        image-rendering: pixelated;
-      }
-      .linerBack {
-        transform: rotateY(180deg);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 20px 26px;
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 14px;
-        line-height: 2.15;
-        color: #dfeef0;
-        letter-spacing: 0.06em;
-      }
-      .linerBack .lb-row span {
-        color: var(--magenta); /* the pink from the scene, back on the sleeve */
-        letter-spacing: 0.14em;
-        font-size: 11px;
-        margin-right: 6px;
-      }
-      body.light .linerBack .lb-row span {
-        color: var(--magenta);
-      }
-      .linerHint {
-        position: absolute;
-        bottom: -26px;
-        left: 0;
-        right: 0;
-        text-align: center;
-        color: #8fa3a8;
-        font-size: 9px;
-        letter-spacing: 0.2em;
-        font-family: "IBM Plex Mono", monospace;
-      }
-      body.light .linerFace {
-        background: rgba(248, 250, 252, 0.97);
-      }
-      body.light .linerBack {
-        color: #16323a;
       }
       /* energy sparkline in the dev panel */
       .ecurve {
@@ -1549,7 +1617,10 @@
       </h1>
       <p>AUDIOLOGICAL&nbsp;ROAMING&nbsp;INTELLIGENCE</p>
       <p class="tribute">inspired by ARIatHOME · version 99</p>
-      <div id="wxText" aria-hidden="true"></div>
+      <div id="wxText" aria-hidden="true">
+        <span id="wxClock"></span><span id="wxWeather"></span><br />
+        <span id="wxBattery"></span>
+      </div>
     </header>
 
     <footer>
@@ -1583,16 +1654,6 @@
       </div>
       <div id="visitorline"></div>
       <div id="cypherline">A cypher is forming</div>
-    </div>
-
-    <div id="linerCard" class="liner" aria-hidden="true">
-      <div class="linerInner" id="linerInner">
-        <div class="linerFace linerFront">
-          <img id="linerArt" alt="album art" />
-        </div>
-        <div class="linerFace linerBack" id="linerBack"></div>
-        <div class="linerHint">tap to flip · tap outside to close</div>
-      </div>
     </div>
 
     <div id="followBubble" aria-hidden="true">
@@ -3364,7 +3425,13 @@
           return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
         };
       }
+      const DEBUG_PARAMS = new URLSearchParams(location.search),
+        DEBUG_SEED = DEBUG_PARAMS.get("seed"),
+        DEBUG_GENRE = DEBUG_PARAMS.get("genre");
+      let debugSeedCounter = 0;
       function makeSeed() {
+        if (DEBUG_SEED)
+          return `ARI-FIXED-${hashSeed(`${DEBUG_SEED}:${debugSeedCounter++}`).toString(36)}`;
         const a = new Uint32Array(2);
         if (globalThis.crypto?.getRandomValues) crypto.getRandomValues(a);
         else {
@@ -4217,20 +4284,20 @@
       };
       const TRAP_STYLES = {
         modern: { bpm: [136, 148], swing: [0, 0.02], kickA: [0], kickB: [0, 10], snare: [8], hatP: [0.85, 0.95] },
-        drill: { bpm: [140, 146], swing: [0.02, 0.05], kickA: [0, 6], kickB: [0, 6, 11], snare: [8], hatP: [0.8, 0.92], scale: "phryg", bass: "808" },
+        "drill-influenced": { bpm: [140, 146], swing: [0.02, 0.05], kickA: [0, 6], kickB: [0, 6, 11], snare: [8], hatP: [0.8, 0.92], scale: "phryg", bass: "808" },
         triplet: { bpm: [140, 150], swing: [0, 0.02], kickA: [0, 10], kickB: [0, 7, 10], snare: [8], hatP: [0.88, 0.96] },
         "trap soul": { bpm: [132, 140], swing: [0.02, 0.04], kickA: [0, 11], kickB: [0, 7, 11], snare: [8], hatP: [0.6, 0.8], pad: "keys" },
         heavy: { bpm: [138, 150], swing: [0, 0.02], kickA: [0, 10], kickB: [0, 3, 10], snare: [8], hatP: [0.85, 0.95], scale: "phryg" },
       };
       const JERK_STYLES = {
-        bounce: { bpm: [98, 106], swing: [0.02, 0.05], kickA: [0, 7], kickB: [0, 7, 10, 11], snare: [4, 12], ghost: [14], hats: [2, 6, 10, 14], pad: "keys" },
-        hyphy: { bpm: [100, 106], swing: [0, 0.03], kickA: [0, 6, 10], kickB: [0, 6, 10, 11], snare: [4, 12], ghost: [], hats: [0, 2, 4, 6, 8, 10, 12, 14], pad: "stab" },
-        "west coast": { bpm: [92, 100], swing: [0.04, 0.07], kickA: [0, 7], kickB: [0, 7, 10], snare: [4, 12], ghost: [15], hats: [2, 6, 10, 14], pad: "keys" },
-        ratchet: { bpm: [98, 104], swing: [0.02, 0.04], kickA: [0, 10, 11], kickB: [0, 7, 10, 11], snare: [4, 12], ghost: [7], hats: [0, 2, 4, 6, 8, 10, 12, 14], pad: "stab", bass: "808" },
+        "jerkin classic": { bpm: [98, 106], swing: [0.02, 0.05], kickA: [0, 7], kickB: [0, 7, 10, 11], snare: [4, 12], ghost: [14], hats: [2, 6, 10, 14], pad: "keys" },
+        "clap synth": { bpm: [100, 106], swing: [0, 0.03], kickA: [0, 6, 10], kickB: [0, 6, 10, 11], snare: [4, 12], ghost: [], hats: [0, 2, 4, 6, 8, 10, 12, 14], pad: "stab" },
+        "minimal bounce": { bpm: [92, 100], swing: [0.04, 0.07], kickA: [0, 7], kickB: [0, 7, 10], snare: [4, 12], ghost: [15], hats: [2, 6, 10, 14], pad: "keys" },
+        "808 club": { bpm: [98, 104], swing: [0.02, 0.04], kickA: [0, 10, 11], kickB: [0, 7, 10, 11], snare: [4, 12], ghost: [7], hats: [0, 2, 4, 6, 8, 10, 12, 14], pad: "stab", bass: "808" },
       };
       const RNB_STYLES = {
-        neptunes: { bpm: [90, 100], swing: [0.06, 0.1], kickA: [0, 7], kickB: [0, 7, 10], snare: [4, 12], ghost: [], hats: [0, 4, 8, 12], pad: "keys" },
-        timbaland: { bpm: [92, 100], swing: [0.08, 0.12], kickA: [0, 3, 7], kickB: [0, 3, 7, 10], snare: [4, 12], ghost: [14, 15], hats: [2, 6, 10, 14], pad: "keys" },
+        "sparse funk": { bpm: [90, 100], swing: [0.06, 0.1], kickA: [0, 7], kickB: [0, 7, 10], snare: [4, 12], ghost: [], hats: [0, 4, 8, 12], pad: "keys" },
+        "swung percussion": { bpm: [92, 100], swing: [0.08, 0.12], kickA: [0, 3, 7], kickB: [0, 3, 7, 10], snare: [4, 12], ghost: [14, 15], hats: [2, 6, 10, 14], pad: "keys" },
         "slow jam": { bpm: [66, 76], swing: [0.06, 0.1], kickA: [0, 10], kickB: [0, 10, 14], snare: [4, 12], ghost: [7], hats: [0, 2, 4, 6, 8, 10, 12, 14], pad: "strings", bass: "round" },
         "crunk&b": { bpm: [96, 104], swing: [0.03, 0.06], kickA: [0, 7], kickB: [0, 7, 11], snare: [4, 12], ghost: [], hats: [0, 2, 4, 6, 8, 10, 12, 14], pad: "keys", bass: "808" },
         bounce: { bpm: [92, 100], swing: [0.06, 0.1], kickA: [0, 6, 10], kickB: [0, 6, 10, 14], snare: [4, 12], ghost: [7], hats: [0, 2, 4, 6, 8, 10, 12, 14], pad: "keys" },
@@ -4319,27 +4386,51 @@
         leadRunA = { dir: 0, len: 0 };
       /* double-time echo: last bar's lead series replayed at 2x speed, clipped short — cheap depth */
       const leadEchoA = { bar: -1, notes: [] },
-        leadEchoV = { bar: -1, notes: [] };
-      function recLeadEcho(buf, off, midi, dur) {
+        leadEchoV = { bar: -1, notes: [] },
+        leadEchoV2 = { bar: -1, notes: [] };
+      function recLeadEcho(buf, off, midi, dur, articulation = null) {
         if (buf.bar !== bar) {
           buf.bar = bar;
           buf.notes = [];
         }
-        buf.notes.push({ off, midi, dur });
+        buf.notes.push({ off, midi, dur, articulation: articulation ? { ...articulation } : null });
       }
       function fireLeadEcho(buf, t0, instr, vmul) {
+        const micRap =
+            instr === "on the mic" &&
+            buf.notes.filter((n) => n.articulation?.mode === "rap").length >=
+              Math.ceil(buf.notes.length / 2),
+          micHasSpace =
+            instr !== "on the mic" ||
+            buf.notes.some((n) =>
+              /hook|response|turnaround|open-space|final-response/.test(
+                n.articulation?.phraseRole || "",
+              ),
+            ),
+          echoChance = instr === "on the mic" ? (micRap ? 0.16 : 0.3) : 0.55,
+          replayNotes =
+            instr === "on the mic"
+              ? buf.notes
+                  .filter((n, i) => n.articulation?.accent || i % 2 === 0)
+                  .slice(0, 5)
+              : buf.notes;
         if (
           buf.bar === bar - 1 &&
           buf.notes.length >= 3 &&
-          Math.random() < 0.55
+          micHasSpace &&
+          seededUnit(track?.seed || "echo", `lead-echo:${bar}:${instr}`) <
+            echoChance
         )
-          buf.notes.forEach((n) =>
+          replayNotes.forEach((n) =>
             playLead(
               t0 + n.off * 0.5,
               n.midi,
               Math.max(0.05, n.dur * 0.45),
               instr,
               vmul,
+              n.articulation
+                ? { ...n.articulation, echo: true }
+                : { echo: true },
             ),
           );
         if (buf.bar !== bar) {
@@ -4767,7 +4858,7 @@
           confidence = (d.confidence || 50) / 100;
         let machine = 0.58;
         if (/house|trap|jerk|dubstep/.test(t.genre)) machine += 0.18;
-        if (/afrobeats|hip.?hop|funk/.test(t.genre)) machine -= 0.12;
+        if (/afrobeats|hip.?hop|boom bap|funk/.test(t.genre)) machine -= 0.12;
         if (t.genre === "drum n bass") machine += 0.08;
         if (/riddim|4x4/.test(t.subStyle || "")) machine += 0.1;
         return {
@@ -4834,6 +4925,7 @@
         if (source) return drumCopy(source);
         const out = DRUM_EMPTY(),
           mode = t.hatMode || t.g.hat,
+          probability = drumClamp(t.hatP == null ? 0.75 : t.hatP, 0.35, 1),
           density = drumClamp(
             latent.density * (role === "break" ? 0.45 : role === "sparse" ? 0.66 : 1),
           );
@@ -4841,18 +4933,18 @@
           [2, 6, 10, 14].forEach((i) => (out[i] = 1));
           if (density > 0.55)
             [0, 4, 8, 12].forEach((i) => {
-              if (rng() < 0.3 + density * 0.28) out[i] = 1;
+              if (rng() < (0.22 + density * 0.28) * probability) out[i] = 1;
             });
         } else if (mode === "eights") {
           for (let i = 0; i < 16; i += 2)
-            if (rng() < 0.58 + density * 0.48) out[i] = 1;
+            if (rng() < (0.5 + density * 0.46) * probability) out[i] = 1;
         } else if (mode === "rolls") {
           for (let i = 0; i < 16; i++)
-            if (rng() < (i % 2 === 0 ? 0.48 : 0.18) + density * 0.34)
+            if (rng() < ((i % 2 === 0 ? 0.42 : 0.13) + density * 0.32) * probability)
               out[i] = 1;
         } else {
           for (let i = 0; i < 16; i++)
-            if (rng() < (i % 2 === 0 ? 0.42 : 0.12) + density * 0.38)
+            if (rng() < ((i % 2 === 0 ? 0.4 : 0.1) + density * 0.36) * probability)
               out[i] = 1;
         }
         return out;
@@ -4949,6 +5041,57 @@
         }
         return out;
       }
+      function drumPocketMap(t, voice, pattern, micro, barNo) {
+        const out = (micro || new Array(16).fill(0)).slice(),
+          genre = t.genre,
+          sub = t.subStyle || "";
+        for (let i = 0; i < 16; i++) {
+          if (!pattern?.[i]) continue;
+          let pocket = 0;
+          if (voice === "snare") {
+            if (genre === "boom bap") pocket = 0.06;
+            else if (genre === "lo-fi") pocket = 0.075;
+            else if (genre === "2000s rnb") pocket = 0.04;
+            else if (genre === "uk garage") pocket = 0.015;
+          } else if (voice === "hats") {
+            if (genre === "boom bap") pocket = i % 4 === 2 ? 0.025 : -0.01;
+            else if (genre === "lo-fi") pocket = i % 4 === 2 ? 0.035 : -0.015;
+            else if (genre === "2000s rnb") pocket = i % 4 === 2 ? 0.018 : -0.008;
+            else if (genre === "house") pocket = i % 4 === 2 ? -0.018 : 0;
+            else if (genre === "uk garage") pocket = i % 4 === 2 ? -0.025 : 0.012;
+          } else if (voice === "kick") {
+            if (/boom bap|lo-fi/.test(genre) && i !== 0) pocket = -0.012;
+            if (genre === "drum n bass" && t.lateSnare) pocket = -0.006;
+          }
+          out[i] = drumClamp(out[i] + pocket, -0.09, 0.11);
+        }
+        return out;
+      }
+      function plannedHatExtras(t, info, role, temperature, rng) {
+        const phraseEnd = info.pos % 4 === 3,
+          turn = role === "turn" || info.left === 1,
+          out = [];
+        if (info.name === "outro") return out;
+        if (t.genre === "trap") {
+          const sub = t.subStyle || "",
+            chance = /triplet/.test(sub) ? 0.72 : /drill|heavy/.test(sub) ? 0.48 : /trap soul/.test(sub) ? 0.18 : 0.34;
+          if ((turn || phraseEnd || rng() < 0.12) && rng() < chance) {
+            const triplet = /triplet/.test(sub) || rng() < 0.42,
+              step = turn || phraseEnd ? 14 : rng() < 0.5 ? 6 : 10;
+            out.push({
+              step,
+              offsets: triplet ? [1 / 3, 2 / 3] : [0.5],
+              velocities: triplet ? [0.43, 0.68] : [0.58],
+              kind: triplet ? "triplet" : "thirty-second",
+            });
+          }
+        } else if (t.genre === "drum n bass" && (turn || phraseEnd) && rng() < 0.52) {
+          out.push({ step: 14, offsets: [0.5], velocities: [0.5], kind: "double" });
+        } else if (t.genre === "jerk" && turn && rng() < 0.2) {
+          out.push({ step: 14, offsets: [0.5], velocities: [0.46], kind: "flick" });
+        }
+        return out;
+      }
       function drumFillForBar(family, genre, temperature, rng) {
         let sn = drumCopy(family.fillSnare),
           hh = drumCopy(family.fillHat);
@@ -4968,6 +5111,7 @@
           dna = drumBrainDNA(t),
           plan = [],
           fourFloor = isFourFloorDrums(t.genre, t.subStyle, t.kick);
+        let lastFillBar = -99;
         for (let barNo = 0; barNo < t.bars; barNo++) {
           const info = drumSectionInfoFrom(t.sections, barNo),
             phrase = info.pos % 4,
@@ -5100,13 +5244,19 @@
             sectionEnd = info.left === 1,
             fillChance =
               0.06 + family.variation * 0.2 + temperature * 0.18,
+            boundaryFillChance =
+              /downtempo/.test(t.genre) ? 0.22 :
+                /boom bap|lo-fi|2000s rnb/.test(t.genre) ? 0.52 :
+                  /house|uk garage|drum n bass|dubstep/.test(t.genre) ? 0.82 : 0.64,
+            fillCooldown = /downtempo|lo-fi/.test(t.genre) ? 8 : 4,
+            fillEligible =
+              phraseEnd && info.name !== "outro" && barNo - lastFillBar >= fillCooldown,
             useFill =
-              sectionEnd ||
-              (phraseEnd &&
-                info.name !== "intro" &&
-                info.name !== "outro" &&
-                rng() < fillChance),
+              fillEligible && rng() < (sectionEnd ? boundaryFillChance : fillChance),
             fill = drumFillForBar(family, t.genre, temperature, rng),
+            hatExtras = useFill
+              ? []
+              : plannedHatExtras(t, info, role, temperature, rng),
             novelty = prev
               ? (drumPatternDistance(kick, prev.kick) * 0.42 +
                   drumPatternDistance(ghost, prev.ghost) * 0.2 +
@@ -5117,6 +5267,21 @@
                 (drumPatternDistance(kick, recall.kick) * 0.5 +
                   drumPatternDistance(hats, recall.hats) * 0.5)
               : 0;
+
+          if (useFill) lastFillBar = barNo;
+          // An ornament always grows out of a real grid hit. It also owns the
+          // turnaround slot, so a generic fill cannot pile on top of it.
+          hatExtras.forEach((x) => (hats[x.step] = 1));
+          if (hatExtras.length) fill.hats = DRUM_EMPTY();
+          const cowbell = DRUM_EMPTY();
+          if (
+            t.g.cowbell &&
+            /main|main2/.test(info.name) &&
+            rng() < (/jerk/.test(t.genre) ? 0.2 : /house|afrobeats/.test(t.genre) ? 0.11 : 0.07)
+          ) {
+            const choices = [4, 7, 10].filter((i) => !snare[i]);
+            if (choices.length) cowbell[choices[Math.floor(rng() * choices.length)]] = 1;
+          }
 
           plan.push({
             role: source.role,
@@ -5137,21 +5302,24 @@
             useFill,
             fillSnare: fill.snare,
             fillHat: fill.hats,
+            hatExtras,
+            aux: { cowbell },
             temperature,
             latent,
             novelty,
             recallMatch,
             memorySource: recall ? (barNo >= 8 && phrase === 0 ? "8-bar motif" : "4-bar motif") : "seed groove",
             velocity: {
+              kick: drumVelocityMap(kick, 0.86, latent, rng, kickAnchors),
               snare: drumVelocityMap(snare, 0.88, latent, rng, snareAnchors),
               ghost: drumVelocityMap(ghost, 0.34, latent, rng, []),
               hats: drumVelocityMap(hats, 0.62, latent, rng, hatAnchors),
             },
             micro: {
-              kick: drumMicroMap(kick, latent, rng, kickAnchors),
-              snare: drumMicroMap(snare, latent, rng, snareAnchors),
+              kick: drumPocketMap(t, "kick", kick, drumMicroMap(kick, latent, rng, kickAnchors), barNo),
+              snare: drumPocketMap(t, "snare", snare, drumMicroMap(snare, latent, rng, snareAnchors), barNo),
               ghost: drumMicroMap(ghost, latent, rng, []),
-              hats: drumMicroMap(hats, latent, rng, hatAnchors),
+              hats: drumPocketMap(t, "hats", hats, drumMicroMap(hats, latent, rng, hatAnchors), barNo),
             },
           });
         }
@@ -5162,6 +5330,122 @@
           plan,
           memoryBars: 8,
         };
+      }
+
+      /* ---------- Bass Brain: one low-end arrangement, not a looping trigger ---------- */
+      function bassEventAt(t, barNo, stepNo) {
+        return t?.bassBrain?.plan?.[barNo]?.find((e) => e.step === stepNo) || null;
+      }
+      function bassMidiForEvent(t, barNo, event) {
+        const n = t.scale.length,
+          harmonyBar = Math.min(t.bars - 1, barNo + (event.nextChord ? 1 : 0)),
+          idx = harmonicContextAt(t, harmonyBar).deg + (event.degreeOffset || 0),
+          oct = Math.floor(idx / n),
+          cls = ((idx % n) + n) % n;
+        return t.root - 12 + t.scale[cls] + oct * 12 + (event.octave || 0) * 12;
+      }
+      function buildBassBrain(t) {
+        const plan = [],
+          motifTemplates = {};
+        for (let barNo = 0; barNo < t.bars; barNo++) {
+          const drum = t.drumBrain?.plan?.[barNo],
+            info = drumSectionInfoFrom(t.sections, barNo),
+            phrase = info.pos % 4,
+            // A/B/A'/turn decisions repeat as a four-bar motif inside a section;
+            // the kick plan still gives each bar its own physical pocket.
+            rng = drumSeededRng(t, `bass-${info.name}`, phrase),
+            kicks = drumSteps(drum?.kick || t.kick),
+            legacy = drumSteps(t.bassP),
+            genre = t.genre;
+          let steps;
+          if (genre === "house" || (genre === "afrobeats" && t.subStyle === "afro house")) {
+            steps = legacy.length ? legacy : [2, 6, 10, 14];
+          } else if (genre === "uk garage") {
+            steps = [...legacy, phrase % 2 ? 11 : 3];
+          } else if (genre === "trap") {
+            steps = kicks.filter((_, i) => i === 0 || rng() < 0.72);
+            if (phrase === 3 && !steps.includes(14)) steps.push(14);
+          } else if (genre === "jerk") {
+            steps = [...kicks, phrase % 2 ? 11 : 7];
+            if (phrase === 3) steps.push(14);
+          } else if (genre === "drum n bass") {
+            steps = [...kicks, phrase % 2 ? 14 : 6];
+          } else if (/boom bap|lo-fi|2000s rnb/.test(genre)) {
+            steps = [...kicks];
+            const answer = phrase % 2 ? 14 : 7;
+            if (rng() < 0.68) steps.push(answer);
+          } else if (genre === "afrobeats") {
+            steps = legacy.length ? legacy : [0, 6, 10, 14];
+            if (phrase % 2) steps.push(3);
+          } else if (genre === "dubstep") {
+            steps = legacy.length ? legacy : [0, 8, 14];
+          } else {
+            steps = legacy.length ? legacy : kicks.slice(0, 3);
+          }
+          steps = [...new Set(steps.filter((s) => s >= 0 && s < 16))].sort((a, b) => a - b);
+          const motifKey = `${info.name}:${phrase}`,
+            rememberedMotif = motifTemplates[motifKey];
+          if (rememberedMotif) {
+            steps = rememberedMotif.slice();
+            const kickOverride = kicks.find((step) => !steps.includes(step));
+            if (kickOverride != null && rng() < 0.42) steps.push(kickOverride);
+            steps.sort((a, b) => a - b);
+          }
+          const maxHits = /trap|jerk|drum n bass|afrobeats|uk garage/.test(genre) ? 5 : 4;
+          if (steps.length > maxHits) {
+            const answerStep = genre === "uk garage" ? (phrase % 2 ? 11 : 3) : phrase === 3 ? 14 : null;
+            steps = steps
+              .map((step) => ({
+                step,
+                priority:
+                  (step === answerStep ? 240 : 0) +
+                  (kicks.includes(step) ? 100 : 0) +
+                  (legacy.includes(step) ? 60 : 0) +
+                  (step === 0 ? 18 : 0),
+              }))
+              .sort((a, b) => b.priority - a.priority || a.step - b.step)
+              .slice(0, maxHits)
+              .map((x) => x.step)
+              .sort((a, b) => a - b);
+          }
+          if (/intro|outro/.test(info.name) && steps.length > 3) steps = steps.filter((_, i) => i % 2 === 0);
+          if (!rememberedMotif) motifTemplates[motifKey] = steps.slice();
+          const events = steps.map((step, i) => {
+            const linked = !!drum?.kick?.[step],
+              next = steps[i + 1] == null ? 16 : steps[i + 1];
+            let degreeOffset = 0,
+              octave = 0;
+            if (genre === "trap" && i === steps.length - 1 && (phrase === 1 || phrase === 3)) {
+              degreeOffset = rng() < 0.58 ? 4 : -1;
+              if (rng() < 0.32) octave = 1;
+            } else if (genre === "jerk" && i === steps.length - 1 && (phrase === 1 || phrase === 3)) {
+              degreeOffset = rng() < 0.62 ? 4 : 2;
+              if (rng() < 0.18) octave = 1;
+            } else if (/boom bap|lo-fi|2000s rnb/.test(genre) && i === steps.length - 1 && phrase === 3) {
+              degreeOffset = rng() < 0.7 ? -1 : 4;
+            } else if (genre === "drum n bass" && i === steps.length - 1 && phrase % 2) {
+              degreeOffset = rng() < 0.55 ? 4 : 0;
+            } else if (genre === "afrobeats" && i % 3 === 2) {
+              degreeOffset = rng() < 0.55 ? 4 : 2;
+            } else if (genre === "house" && phrase === 3 && i === steps.length - 1) {
+              octave = 1;
+            }
+            return {
+              step,
+              degreeOffset,
+              octave,
+              durSteps: drumClamp(next - step, 1, (genre === "trap" ? 8 : genre === "jerk" ? 3 : 5)),
+              velocity: linked ? 0.94 : 0.72 + rng() * 0.16,
+              linked,
+              micro: linked ? drum?.micro?.kick?.[step] || 0 : (rng() - 0.5) * 0.025,
+              slide: genre === "trap" && i > 0 && (degreeOffset !== 0 || octave !== 0) && rng() < 0.42,
+              nextChord: phrase === 3 && step >= 12 && i === steps.length - 1,
+              role: linked ? "kick-lock" : phrase === 3 && step >= 12 ? "next-chord approach" : "answer",
+            };
+          });
+          plan.push(events);
+        }
+        return { version: 1, model: "genre pocket + drum lock + harmonic answers", plan };
       }
 
       /* ---------- generative album art: canvas-drawn per track, no images, no samples ----------
@@ -5559,45 +5843,56 @@
         return artCanvas.toDataURL("image/png");
       }
 
-      function buildArrangement(bars) {
-        // pick one of several arrangement shapes so tracks don't all share one skeleton
-        const secs = [];
+      function allocatePhraseCounts(total, weights) {
+        const sum = weights.reduce((n, v) => n + v, 0),
+          raw = weights.map((w) => (w / sum) * total),
+          out = raw.map((v) => Math.max(1, Math.floor(v)));
+        while (out.reduce((n, v) => n + v, 0) < total) {
+          let best = 0;
+          for (let i = 1; i < out.length; i++)
+            if (raw[i] - out[i] > raw[best] - out[best]) best = i;
+          out[best]++;
+        }
+        while (out.reduce((n, v) => n + v, 0) > total) {
+          let best = -1;
+          for (let i = 0; i < out.length; i++)
+            if (out[i] > 1 && (best < 0 || out[i] - raw[i] > out[best] - raw[best]))
+              best = i;
+          if (best < 0) break;
+          out[best]--;
+        }
+        return out;
+      }
+      function buildArrangement(bars, genre, subStyle) {
+        // Every brain shares a four-bar phrase grid. Dance-floor forms group
+        // those phrases into eight-bar sections; beat and song forms can turn
+        // over in four or eight, without ever truncating a phrase.
+        const danceForm = /house|uk garage|drum n bass|dubstep/.test(genre) ||
+            (genre === "afrobeats" && subStyle === "afro house"),
+          sectionUnit = danceForm ? 8 : 4,
+          phrasesPerUnit = sectionUnit / 4;
+        bars = Math.max(32, 8 + Math.max(3, Math.round((bars - 8) / sectionUnit)) * sectionUnit);
+        const phrase = 4,
+          secs = [];
         let b = 0;
-        const add = (name, len) => {
-          len = Math.max(2, Math.round(len));
-          secs.push({ name, start: b, end: b + len });
+        const add = (name, phrases) => {
+          const len = Math.max(1, phrases) * phrase;
+          secs.push({ name, start: b, end: b + len, phraseLength: phrase });
           b += len;
         };
-        const introLen = Math.min(4, Math.max(2, Math.round(bars * 0.1)));
-        add("intro", introLen);
-        const body = bars - b - 2; // reserve 2 for the outro
-        const shape = RI(0, 3);
-        if (shape === 0) {
-          // classic: main · break · main2
-          add("main", body * 0.36);
-          add("break", body * 0.18);
-          add("main2", body * 0.46);
-        } else if (shape === 1) {
-          // two breaks, more dynamic
-          add("main", body * 0.3);
-          add("break", body * 0.14);
-          add("main2", body * 0.28);
-          add("break", body * 0.12);
-          add("main2", body * 0.16);
-        } else if (shape === 2) {
-          // long groove, late break
-          add("main", body * 0.6);
-          add("break", body * 0.16);
-          add("main2", body * 0.24);
-        } else {
-          // straight-through, no break
-          add("main", body * 0.5);
-          add("main2", body * 0.5);
-        }
-        secs[secs.length - 1].end = bars - 2;
-        b = bars - 2;
-        add("outro", 2);
-        secs[secs.length - 1].end = bars;
+        add("intro", 1);
+        const bodyUnits = Math.max(3, (bars - 8) / sectionUnit),
+          shapes = [
+            { names: ["main", "break", "main2"], weights: [0.38, 0.17, 0.45] },
+            { names: ["main", "break", "main2", "break", "main2"], weights: [0.3, 0.12, 0.28, 0.1, 0.2] },
+            { names: ["main", "break", "main2"], weights: [0.58, 0.14, 0.28] },
+            { names: ["main", "main2"], weights: [0.5, 0.5] },
+          ],
+          viable = shapes.filter((s) => s.names.length <= bodyUnits && (s.names.length < 5 || bodyUnits >= 7)),
+          shape = pick(viable),
+          counts = allocatePhraseCounts(bodyUnits, shape.weights);
+        shape.names.forEach((name, i) => add(name, counts[i] * phrasesPerUnit));
+        add("outro", 1);
         return secs;
       }
       function sectionInfoAt(barNo) {
@@ -5712,10 +6007,59 @@
         }
         return { name:"main", pos:barNo, len:999, left:999-barNo };
       }
+      function chordBarsFor(genre, subStyle) {
+        if (genre === "house" || (genre === "uk garage" && /4x4|speed garage/.test(subStyle || ""))) return 1;
+        if (genre === "downtempo" && subStyle === "ambient") return 4;
+        return 2;
+      }
+      function progressionDegreeAt(t, barNo) {
+        const span = Math.max(1, t.chordBars || 2);
+        return t.prog[Math.floor(barNo / span) % t.prog.length] || 0;
+      }
+      function harmonicContextAt(t, barNo) {
+        const n = t.scale.length,
+          finalTonic =
+            barNo >= t.bars - Math.max(1, t.chordBars || 2) &&
+            drumSectionInfoFrom(t.sections, barNo).name === "outro",
+          rawDeg = finalTonic ? 0 : progressionDegreeAt(t, barNo),
+          deg = ((rawDeg % n) + n) % n,
+          offsets = t.g.ext ? [0, 2, 4, 6] : [0, 2, 4],
+          diatonic = offsets.map((k) => {
+            const idx = deg + k;
+            return t.scale[idx % n] + Math.floor(idx / n) * 12;
+          }),
+          degreeClasses = offsets.map((k) => (deg + k) % n);
+        let tones = diatonic.slice(),
+          kind = "diatonic";
+        const borrowed = t.borrowed;
+        if (
+          borrowed &&
+          barNo >= borrowed.bar &&
+          barNo < borrowed.bar + Math.max(1, t.chordBars || 2) &&
+          deg === borrowed.deg
+        ) {
+          tones = borrowed.tones.slice();
+          kind = borrowed.kind;
+        }
+        if (
+          t.picardy &&
+          deg === 0 &&
+          barNo >= t.bars - Math.max(1, t.chordBars || 2) &&
+          drumSectionInfoFrom(t.sections, barNo).name === "outro"
+        ) {
+          tones = [0, 4, 7];
+          kind = "picardy major";
+        }
+        return {
+          deg,
+          tones,
+          degreeClasses: degreeClasses.slice(0, tones.length),
+          chromatic: tones.map((tone, i) => tone - diatonic[i]),
+          kind,
+        };
+      }
       function chordScaleIndices(t, barNo) {
-        const deg = t.prog[barNo % t.prog.length] || 0;
-        const n = t.scale.length;
-        return [deg % n, (deg + 2) % n, (deg + 4) % n];
+        return harmonicContextAt(t, barNo).degreeClasses;
       }
       function nearestIndexOfClass(target, cls, n) {
         let best = target, dist = 999;
@@ -5775,18 +6119,21 @@
           if (info.name === "main2" && phrase===2) role = "lift";
           if (info.name === "outro") role = phrase===0?"A":"sparse";
           let events = variants[role].map(x=>({...x, role}));
-          const chord = chordScaleIndices(t,b), tension = MELODY_SECTION_TENSION[info.name] || .4;
+          const harmony = harmonicContextAt(t,b), chord = harmony.degreeClasses, tension = MELODY_SECTION_TENSION[info.name] || .4;
           events = events.filter((e,i)=> i===0 || seededUnit(t.seed, personalityName+"keep"+b+":"+i) < P.density + (info.name==="main2"?.12:0));
           events.forEach((e,i)=>{
             const strong = e.step%4===0 || e.accent;
             if (strong) {
-              const targetClass = chord[Math.floor(seededUnit(t.seed, personalityName+"chord"+b+":"+i)*chord.length)];
+              const targetIndex = Math.floor(seededUnit(t.seed, personalityName+"chord"+b+":"+i)*chord.length),
+                targetClass = chord[targetIndex];
               e.degree = nearestIndexOfClass(e.degree,targetClass,n);
+              e.chromatic = harmony.chromatic[targetIndex] || 0;
               e.function = "chord tone";
             } else if (seededUnit(t.seed, personalityName+"orn"+b+":"+i) < P.ornament*tension) {
               e.degree += seededUnit(t.seed, personalityName+"side"+b+":"+i)>.5?1:-1;
+              e.chromatic = 0;
               e.function = "neighbor";
-            } else e.function = "passing";
+            } else { e.chromatic = 0; e.function = "passing"; }
             e.velocity = e.accent ? 1 : .72 + seededUnit(t.seed, personalityName+"vel"+b+":"+i)*.18;
           });
           // Cadential landing: the final event of a phrase resolves to a chord tone,
@@ -5794,10 +6141,11 @@
           if (events.length) {
             const last = events[events.length-1];
             if (phrase===3 || info.left===1) {
-              const targetClass = info.left===1 ? 0 : chord[0];
+              const targetClass = chord[0];
               last.degree = nearestIndexOfClass(last.degree,targetClass,n);
+              last.chromatic = harmony.chromatic[0] || 0;
               last.dur = Math.max(last.dur,4);
-              last.function = info.left===1 ? "tonic landing" : "cadence";
+              last.function = info.left===1 ? "section landing" : "cadence";
             }
           }
           plan[b]=events;
@@ -5816,10 +6164,10 @@
       function melodyMidi(t, ev, personality, secondVoice) {
         const P=MELODY_PERSONALITIES[personality] || MELODY_PERSONALITIES.synth;
         const n=t.scale.length;
-        let idx=ev.degree;
+        let idx=ev.degree + (secondVoice ? 2 : 0);
         let oct=Math.floor(idx/n), cls=((idx%n)+n)%n;
-        let base=t.root + 24 + (secondVoice?5:0); // vocals/robot used to sit an octave lower — straight into the bass register
-        let midi=base + oct*12 + t.scale[cls];
+        let base=t.root + 24;
+        let midi=base + oct*12 + t.scale[cls] + (ev.chromatic || 0);
         const floor=t.root+12, ceil=Math.min(LEAD_CEIL,t.root+24+P.range+2);
         while(midi<floor)midi+=12;
         while(midi>ceil)midi-=12;
@@ -5836,10 +6184,23 @@
         sparse: [[0,3,7,11],[0,4,10],[2,6,12]],
         pocket: [[0,2,5,7,10,13],[1,4,6,9,12,14],[0,3,6,8,11,15]],
         rolling: [[0,2,3,6,8,10,11,14],[1,3,5,7,9,11,13,15]],
+        triplet: [[0,3,5,8,11,13],[0,2,5,8,10,13,15]],
+        laidback: [[1,4,7,11,14],[0,3,7,10,15],[2,6,9,13]],
+        bounce: [[0,3,6,7,10,13],[1,4,7,9,12,15]],
         hook: [[0,4,8,12],[0,3,8,11],[2,6,10,14]],
       };
-      function vocalPerformerDNA(t) {
-        const d=t.guestDNA||{};
+      function vocalFlowFamily(t, role, dna) {
+        if (role === "hook") return "hook";
+        if (role === "pickup") return "sparse";
+        if (t.genre === "trap" && /triplet/.test(t.subStyle || "")) return "triplet";
+        if (/trap|drum n bass|dubstep/.test(t.genre)) return "rolling";
+        if (/boom bap|lo-fi|downtempo/.test(t.genre)) return "laidback";
+        if (t.genre === "jerk") return "bounce";
+        if (/uk garage|afrobeats/.test(t.genre)) return "pocket";
+        return dna.flow > .68 ? "rolling" : dna.silence > .55 ? "sparse" : "pocket";
+      }
+      function vocalPerformerDNA(t, source) {
+        const d=source||t.guestDNA||{};
         return {
           flow: Math.max(.15,Math.min(.95,(d.complexity||50)/100)),
           melody: Math.max(.08,Math.min(.9,(d.warmth||50)/120)),
@@ -5849,22 +6210,384 @@
           confidence: Math.max(.2,Math.min(1,(d.confidence||55)/100)),
         };
       }
+      const VOCAL_VOWELS = [
+        [730, 1090, 2440], // ah
+        [530, 1840, 2480], // eh
+        [270, 2290, 3010], // ee
+        [570, 840, 2410], // oh
+        [300, 870, 2240], // oo
+      ];
+      const VOCAL_CONSONANTS = [
+        { type: "highpass", frequency: 3600, q: 0.7, dur: 0.045 },
+        { type: "bandpass", frequency: 1800, q: 1.5, dur: 0.024 },
+        { type: "highpass", frequency: 2700, q: 0.8, dur: 0.055 },
+        { type: "bandpass", frequency: 1100, q: 1.2, dur: 0.02 },
+        { type: "highpass", frequency: 4200, q: 0.7, dur: 0.035 },
+      ];
+      const VOCAL_VOICE_BANK = {
+        ari: {
+          key: "ari",
+          lo: 54,
+          hi: 72,
+          center: 64,
+          wave: "pulse",
+          tract: 1.02,
+          body: 0.18,
+          fg: [0.44, 0.28, 0.08],
+          q: [2.2, 3.4, 4.2],
+          lp: 3800,
+          hp: 155,
+          rapColor: 1.15,
+          rapBody: 0.65,
+          rapOffset: 0,
+          attack: 0.016,
+          release: 0.1,
+          breath: 0.01,
+          consonant: 1.08,
+          vibRate: 5.2,
+          vibDepth: 5.5,
+          level: 0.82,
+          delaySend: 0.17,
+          vowelOffset: 0,
+          detune: 0,
+        },
+        chest: {
+          key: "chest",
+          lo: 45,
+          hi: 62,
+          center: 53,
+          wave: "dark",
+          tract: 0.82,
+          body: 0.34,
+          fg: [0.48, 0.27, 0.06],
+          q: [2.4, 3.5, 4.2],
+          lp: 2800,
+          hp: 110,
+          rapColor: 0.76,
+          rapBody: 1.15,
+          rapOffset: 0,
+          attack: 0.008,
+          release: 0.08,
+          breath: 0.012,
+          consonant: 1.05,
+          vibRate: 4.2,
+          vibDepth: 3,
+          level: 0.9,
+          delaySend: 0.1,
+          vowelOffset: 0,
+          detune: 0,
+        },
+        velvet: {
+          key: "velvet",
+          lo: 49,
+          hi: 67,
+          center: 58,
+          wave: "warm",
+          tract: 0.92,
+          body: 0.28,
+          fg: [0.46, 0.32, 0.08],
+          q: [2.6, 3.8, 4.6],
+          lp: 3500,
+          hp: 125,
+          rapColor: 0.68,
+          rapBody: 1.1,
+          rapOffset: 1,
+          attack: 0.016,
+          release: 0.11,
+          breath: 0.025,
+          consonant: 0.9,
+          vibRate: 4.7,
+          vibDepth: 5,
+          level: 0.86,
+          delaySend: 0.15,
+          vowelOffset: 1,
+          detune: 0,
+        },
+        grit: {
+          key: "grit",
+          lo: 50,
+          hi: 68,
+          center: 60,
+          wave: "grit",
+          tract: 0.97,
+          body: 0.23,
+          fg: [0.4, 0.38, 0.1],
+          q: [2.3, 4, 5],
+          lp: 3300,
+          hp: 145,
+          rapColor: 1.12,
+          rapBody: 0.68,
+          rapOffset: 0,
+          attack: 0.006,
+          release: 0.08,
+          breath: 0.04,
+          consonant: 1.18,
+          vibRate: 4.4,
+          vibDepth: 3.5,
+          level: 0.76,
+          delaySend: 0.11,
+          vowelOffset: 2,
+          detune: 0,
+        },
+        airy: {
+          key: "airy",
+          lo: 55,
+          hi: 72,
+          center: 65,
+          wave: "soft",
+          tract: 1.07,
+          body: 0.18,
+          fg: [0.38, 0.36, 0.1],
+          q: [2.2, 3.7, 4.5],
+          lp: 4300,
+          hp: 160,
+          rapColor: 0.9,
+          rapBody: 0.8,
+          rapOffset: 1,
+          attack: 0.025,
+          release: 0.13,
+          breath: 0.055,
+          consonant: 0.82,
+          vibRate: 5.3,
+          vibDepth: 7.5,
+          level: 0.72,
+          delaySend: 0.2,
+          vowelOffset: 3,
+          detune: 0,
+        },
+      };
+      const voiceClamp = (value, min, max) =>
+        Math.min(max, Math.max(min, value));
+      let VOICE_WAVES = Object.create(null),
+        voiceWaveContext = null;
+      function voiceWave(kind) {
+        if (voiceWaveContext !== ctx) {
+          voiceWaveContext = ctx;
+          VOICE_WAVES = Object.create(null);
+        }
+        if (VOICE_WAVES[kind]) return VOICE_WAVES[kind];
+        const count = 21,
+          re = new Float32Array(count),
+          im = new Float32Array(count);
+        for (let n = 1; n < count; n++) {
+          if (kind === "pulse") {
+            im[n] = (2 / (n * Math.PI)) * Math.sin(n * Math.PI * 0.33);
+          } else {
+            const tilt =
+                kind === "dark"
+                  ? 1.38
+                  : kind === "soft"
+                    ? 1.5
+                    : kind === "warm"
+                      ? 1.24
+                      : 1.06,
+              even = kind === "dark" && n % 2 === 0 ? 0.6 : 1;
+            im[n] = even / Math.pow(n, tilt);
+          }
+        }
+        VOICE_WAVES[kind] = ctx.createPeriodicWave(re, im);
+        return VOICE_WAVES[kind];
+      }
+      function buildPerformerVoice({
+        voiceKind,
+        age,
+        height,
+        bodyW,
+        dna,
+        forcedKey = null,
+      }) {
+        const d = dna || {},
+          kindBias = voiceKind === "masc" ? -0.06 : voiceKind === "femme" ? 0.06 : 0,
+          axis =
+            kindBias +
+            ((d.energy || 50) - 50) / 190 -
+            ((d.darkness || 50) - 50) / 145 -
+            ((height || 1) - 1) * 0.28 -
+            ((bodyW || 1) - 1) * 0.08 -
+            (age === "older" ? 0.05 : 0),
+          computedKey =
+            axis < -0.22
+              ? "chest"
+              : axis < -0.03
+                ? "velvet"
+                : axis < 0.2
+                  ? "grit"
+                  : "airy",
+          key = forcedKey || computedKey,
+          base = VOCAL_VOICE_BANK[key],
+          p = { ...base, fg: [...base.fg], q: [...base.q] },
+          warm = (d.warmth || 50) / 100,
+          dark = (d.darkness || 50) / 100,
+          chaos = (d.chaos || 30) / 100,
+          space = (d.space || 50) / 100,
+          confidence = (d.confidence || 55) / 100;
+        p.tract *=
+          (1 - ((height || 1) - 1) * 0.12) *
+          (1 - (dark - 0.5) * 0.06) *
+          (age === "older" ? 0.98 : 1);
+        p.body = voiceClamp(p.body + (warm - 0.5) * 0.1, 0.1, 0.38);
+        p.breath = voiceClamp(
+          p.breath +
+            (space - 0.5) * 0.045 +
+            (chaos - 0.5) * 0.03 -
+            (confidence - 0.5) * 0.02 +
+            (age === "older" ? 0.012 : 0),
+          0.005,
+          0.085,
+        );
+        p.consonant *= 0.86 + confidence * 0.17 + (d.energy || 50) / 520;
+        p.lp *= 1 - (dark - 0.5) * 0.16;
+        p.vibRate += age === "older" ? -0.3 : 0;
+        p.vibDepth += age === "older" ? 1.2 : 0;
+        p.vowelOffset =
+          Math.floor(((d.curiosity || 50) + (d.chaos || 30) * 0.7) / 25) %
+          VOCAL_VOWELS.length;
+        p.delaySend = voiceClamp(0.09 + space * 0.15, 0.09, 0.24);
+        p.detune = ((d.chaos || 50) - 50) * 0.022;
+        return p;
+      }
+      const contrastingVoiceKey = (key) =>
+        ({ chest: "airy", velvet: "grit", grit: "velvet", airy: "chest" })[
+          key
+        ];
+      function voiceForTrack(profile, t) {
+        const reference = t.root + 24;
+        let octaveShift = 0,
+          bestScore = Infinity;
+        for (let octave = -3; octave <= 2; octave++) {
+          const shift = octave * 12,
+            center = reference + shift,
+            outside =
+              Math.max(profile.lo - center, 0) +
+              Math.max(center - profile.hi, 0),
+            score = outside * 10 + Math.abs(center - profile.center);
+          if (score < bestScore) {
+            bestScore = score;
+            octaveShift = shift;
+          }
+        }
+        return {
+          ...profile,
+          fg: [...profile.fg],
+          q: [...profile.q],
+          octaveShift,
+        };
+      }
+      function vocalProfileAt(t, performerTag = "ari") {
+        return (
+          t?.performerVoices?.[performerTag] ||
+          t?.vocalBrains?.[performerTag]?.voiceProfile ||
+          VOCAL_VOICE_BANK.ari
+        );
+      }
+      function rawVocalMidi(t, ev) {
+        const count = t.scale.length,
+          index = ev.degree,
+          octave = Math.floor(index / count),
+          scaleIndex = ((index % count) + count) % count;
+        return (
+          t.root +
+          24 +
+          octave * 12 +
+          t.scale[scaleIndex] +
+          (ev.chromatic || 0)
+        );
+      }
+      function pitchClassNear(pitchClass, target) {
+        return pitchClass + Math.round((target - pitchClass) / 12) * 12;
+      }
+      function rememberVocalMidi(t, performerTag, midi) {
+        t.lastVocalMidi ||= {};
+        t.lastVocalMidi[performerTag] = midi;
+        return midi;
+      }
+      function vocalMidi(t, ev, performerTag = "ari") {
+        const voice = vocalProfileAt(t, performerTag);
+        if (ev.mode === "rap") {
+          const harmony = harmonicContextAt(t, ev.bar ?? bar),
+            maxChoice = Math.min(2, harmony.degreeClasses.length - 1),
+            choice = ev.pickup
+              ? maxChoice
+              : ev.accent
+                ? 0
+                : ((ev.syllable || 0) + voice.rapOffset) % 2,
+            degree = harmony.degreeClasses[Math.min(choice, maxChoice)],
+            pitchClass =
+              ((t.root +
+                t.scale[degree] +
+                (harmony.chromatic[Math.min(choice, maxChoice)] || 0)) %
+                12 +
+                12) %
+              12;
+          return rememberVocalMidi(
+            t,
+            performerTag,
+            pitchClassNear(pitchClass, voice.center),
+          );
+        }
+        const target = rawVocalMidi(t, ev) + (voice.octaveShift || 0),
+          candidates = [],
+          previous = t.lastVocalMidi?.[performerTag];
+        for (let octave = -2; octave <= 2; octave++) {
+          const midi = target + octave * 12;
+          if (midi >= voice.lo && midi <= voice.hi) candidates.push(midi);
+        }
+        if (!candidates.length)
+          return rememberVocalMidi(
+            t,
+            performerTag,
+            voiceClamp(target, voice.lo, voice.hi),
+          );
+        const midi = candidates.reduce((best, candidate) =>
+          Math.abs(candidate - target) +
+            (previous == null ? 0 : Math.abs(candidate - previous) * 0.35) <
+          Math.abs(best - target) +
+            (previous == null ? 0 : Math.abs(best - previous) * 0.35)
+            ? candidate
+            : best,
+        );
+        return rememberVocalMidi(t, performerTag, midi);
+      }
+      function vocalEnvelope(param, t, dur, mode, profile, stress) {
+        const epsilon = 0.0001,
+          peak =
+            (mode === "rap" ? 0.27 : mode === "sung hook" ? 0.22 : 0.24) *
+            profile.level *
+            voiceClamp(stress, 0.72, 1.22),
+          attack = Math.min(
+            mode === "rap" ? 0.004 : profile.attack,
+            dur * 0.25,
+          );
+        param.setValueAtTime(epsilon, t);
+        param.linearRampToValueAtTime(peak, t + attack);
+        if (mode === "rap") {
+          param.exponentialRampToValueAtTime(epsilon, t + dur);
+          return;
+        }
+        const release = Math.min(profile.release, dur * 0.35),
+          releaseStart = Math.max(t + attack, t + dur - release),
+          settle = Math.min(t + attack + 0.06, releaseStart),
+          sustain = peak * (mode === "sung hook" ? 0.72 : 0.55);
+        param.linearRampToValueAtTime(sustain, settle);
+        param.setValueAtTime(sustain, releaseStart);
+        param.exponentialRampToValueAtTime(epsilon, t + dur);
+      }
       function composerRoleFor(t,b) {
-        const info=drumSectionInfoFrom(t.sections,b), phrase=b%4;
+        const info=drumSectionInfoFrom(t.sections,b), phrase=info.pos%(info.phraseLength||4);
         if(info.name==='intro') return phrase<2?'instrumental':'invitation';
         if(info.name==='break') return phrase===3?'pickup':'open-space';
         if(info.name==='outro') return phrase<2?'final-response':'landing';
-        if(info.name==='main2') return phrase===0?'hook':phrase===3?'turnaround':'verse';
+        if(info.name==='main2') return phrase<2?'hook':phrase===3?'turnaround':'verse';
         return phrase===0?'statement':phrase===2?'response':phrase===3?'breath':'verse';
       }
       function buildComposerBrain(t) {
         const plan=[];
         for(let b=0;b<t.bars;b++){
-          const info=drumSectionInfoFrom(t.sections,b), role=composerRoleFor(t,b), phrase=b%4;
+          const info=drumSectionInfoFrom(t.sections,b), role=composerRoleFor(t,b), phrase=info.pos%(info.phraseLength||4);
           let guest=1, ari=.2, instrumental=.65, hats=1, fills=1;
           if(info.name==='intro'){guest=phrase>=2?.35:0; ari=0; instrumental=.75;}
           else if(info.name==='break'){guest=role==='pickup'?.55:.25; ari=0; instrumental=.28; hats=.35; fills=.35;}
-          else if(role==='hook'){guest=1; ari=0; instrumental=.32; hats=.78; fills=.55;}
+          else if(role==='hook'){guest=1; ari=.82; instrumental=.32; hats=.78; fills=.55;}
           else if(role==='response'){guest=.45; ari=.15; instrumental=.9;}
           else if(role==='breath'){guest=.12; ari=.15; instrumental=.88; hats=.72;}
           else if(role==='turnaround'){guest=.58; ari=0; instrumental=.55; fills=.8;}
@@ -5878,35 +6601,96 @@
         if(!events?.length)return null;
         return events.reduce((best,e)=>Math.abs(e.step-step)<Math.abs(best.step-step)?e:best,events[0]);
       }
-      function buildVocalBrain(t) {
-        const dna=vocalPerformerDNA(t), plan=[];
+      function buildVocalBrain(t, performerTag='ari', dnaSource=null, voiceProfile=VOCAL_VOICE_BANK.ari) {
+        const dna=vocalPerformerDNA(t,dnaSource), plan=[],
+          hookBank=VOCAL_FLOW_CELLS.hook,
+          hookA=Math.floor(seededUnit(t.seed,'vocal-hook-a')*hookBank.length),
+          hookB=(hookA+1+Math.floor(seededUnit(t.seed,'vocal-hook-b')*(hookBank.length-1)))%hookBank.length,
+          hookCells=[hookBank[hookA].slice(),hookBank[hookB].slice()];
         for(let b=0;b<t.bars;b++){
-          const c=composerStateAt(t,b), mel=t.melodyBrain?.plans?.vocal?.plan?.[b]||[];
-          if(c.guest<.18){plan[b]=[];continue;}
+          const c=composerStateAt(t,b), info=drumSectionInfoFrom(t.sections,b),
+            phrase=info.pos%4, mel=t.melodyBrain?.plans?.vocal?.plan?.[b]||[];
+          const cypherReserve=c.role==='breath';
+          if(c.guest<.18&&!cypherReserve){plan[b]=[];continue;}
+          const activity=cypherReserve ? .62 : c.guest;
           let mode=c.role==='hook'?'sung hook':c.role==='pickup'?'ad-lib':(dna.melody>.56&&c.role==='statement'?'half-sung':'rap');
-          let family=mode==='sung hook'?'hook':dna.flow>.68?'rolling':dna.silence>.55?'sparse':'pocket';
+          let family=vocalFlowFamily(t,cypherReserve?'response':c.role,dna);
           const bank=VOCAL_FLOW_CELLS[family];
-          const cell=bank[Math.floor(seededUnit(t.seed,'vflow'+b)*bank.length)];
+          // The hook is a shared two-bar A/B memory. Verse cells are performer-
+          // specific, giving each mic its own repeatable four-bar phrase.
+          const cell=(family==='hook'
+            ? hookCells[phrase%2]
+            : bank[Math.floor(seededUnit(t.seed,`vflow:${performerTag}:${info.name}:${phrase}`)*bank.length)]
+          ).slice();
           const events=[];
           cell.forEach((step,i)=>{
-            const keep=seededUnit(t.seed,'vkeep'+b+':'+i);
-            if(keep>c.guest*(1-dna.silence*.35)+.18)return;
+            const keepTag=family==='hook'
+                ? `vkeep:hook:${phrase%2}:${i}`
+                : `vkeep:${performerTag}:${info.name}:${phrase}:${i}`,
+              keep=seededUnit(t.seed,keepTag);
+            if(i!==0&&i!==cell.length-1&&keep>activity*(1-dna.silence*.35)+.18)return;
             const source=nearestMelodyEvent(mel,step);
-            let degree=source?source.degree:(t.prog[Math.floor(b/2)%t.prog.length]+(i%3));
-            if(mode==='rap'&&i%3===1)degree=events.length?events[events.length-1].degree:degree;
-            if(mode==='ad-lib')degree+=seededUnit(t.seed,'vad'+b)>0.5?2:0;
+            const harmony=harmonicContextAt(t,b),
+              chordClass=harmony.degreeClasses[i%harmony.degreeClasses.length];
+            let degree=source?source.degree:nearestIndexOfClass(i?events[events.length-1]?.degree||chordClass:chordClass,chordClass,t.scale.length),
+              chromatic=source?.chromatic||0;
+            if(mode==='rap'&&i%3===1&&events.length){degree=events[events.length-1].degree;chromatic=events[events.length-1].chromatic||0;}
+            if(mode==='ad-lib')degree+=seededUnit(t.seed,`vad:${performerTag}:${b}`)>0.5?2:0;
             const next=cell[i+1]??16;
-            events.push({step,degree,dur:Math.max(1,Math.min(mode==='sung hook'?5:3,next-step)),velocity:.62+dna.energy*.28,mode,accent:i===0||i===cell.length-1,syllable:i%4});
+            const accent=i===0||i===cell.length-1||step%4===0,
+              stress=(accent?1.1:.78)+seededUnit(t.seed,`vstress:${performerTag}:${phrase}:${i}`)*.12,
+              micro=family==='triplet'
+                ? [0,-.33,.33,0,-.33,.33,0][i]||0
+                : family==='laidback'
+                  ? .1
+                  : (seededUnit(t.seed,`vmicro:${performerTag}:${phrase}:${i}`)-.5)*.08;
+            events.push({
+              bar:b,step,degree,chromatic,
+              dur:Math.max(1,Math.min(mode==='sung hook'?5:mode==='rap'?2:3,next-step)),
+              velocity:(.58+dna.energy*.26)*stress,
+              stress,mode,accent,syllable:(i+phrase+(performerTag==='guest2'?2:0))%4,
+              micro,
+              performerTag,
+              phraseRole:c.role,phrasePosition:phrase,
+            });
           });
           if(events.length&&mode==='sung hook'){
-            events[events.length-1].degree=nearestIndexOfClass(events[events.length-1].degree,0,t.scale.length);
+            const harmony=harmonicContextAt(t,b), target=harmony.degreeClasses[0];
+            events[events.length-1].degree=nearestIndexOfClass(events[events.length-1].degree,target,t.scale.length);
+            events[events.length-1].chromatic=harmony.chromatic[0]||0;
             events[events.length-1].dur=Math.max(4,events[events.length-1].dur);
           }
           plan[b]=events;
         }
-        return {version:1,dna,plan,model:'flow → cadence → pitch → synthetic voice'};
+        // A short pickup belongs to the phrase it announces, but is scheduled
+        // at the end of the preceding bar. This creates real breath/launch shape.
+        for(let b=1;b<t.bars;b++){
+          const role=composerStateAt(t,b).role, target=plan[b]?.[0];
+          if(!target||!/statement|hook|final-response/.test(role))continue;
+          const prev=plan[b-1]||(plan[b-1]=[]);
+          const pickupChoices=[13,14,15],
+            start=Math.floor(seededUnit(t.seed,`vpickup:${performerTag}:${b}`)*pickupChoices.length),
+            pickupStep=pickupChoices
+              .map((_,i)=>pickupChoices[(start+i)%pickupChoices.length])
+              .find((step)=>{
+                const dur=step===13?2:1;
+                return !prev.some((e)=>step<e.step+Math.max(1,e.dur||1)&&e.step<step+dur);
+              });
+          if(pickupStep==null)continue;
+          prev.push({
+            bar:b-1,step:pickupStep,degree:target.degree-1,chromatic:0,dur:pickupStep===13?2:1,velocity:.58,
+            stress:.72,mode:'ad-lib',accent:false,syllable:(b+1+(performerTag==='guest2'?2:0))%4,
+            micro:0,performerTag,
+            pickup:true,phraseRole:'pickup',phrasePosition:3,
+          });
+          prev.sort((a,b)=>a.step-b.step);
+        }
+        return {version:4,performerTag,dna,voiceProfile,plan,hookCells,model:'stable performer voice → four-bar flow → shared two-bar hook → cadence'};
       }
-      function vocalEventAt(t,b,s){return t?.vocalBrain?.plan?.[b]?.find(e=>e.step===s)||null;}
+      function vocalEventAt(t,b,s,performer='ari'){
+        const brain=t?.vocalBrains?.[performer]||t?.vocalBrain;
+        return brain?.plan?.[b]?.find(e=>e.step===s)||null;
+      }
 
 
       /* ============================================================
@@ -6023,14 +6807,16 @@
            We flip the third of one non-tonic triad (minor<->major) — the
            classic "how did it know" chord (iv in major, IV in minor). */
         t.borrowed = null;
-        if (seededUnit(t.seed, "borrow-roll") < 0.45) {
+        if (seededUnit(t.seed, "borrow-roll") < 0.45 && lastMain2) {
           const sc = t.scale,
-            degs = [
-              ...new Set(t.prog.map((d) => ((d % 7) + 7) % 7)),
-            ].filter((d) => d !== 0);
-          if (degs.length && sc) {
-            const deg =
-              degs[Math.floor(seededUnit(t.seed, "borrow-deg") * degs.length)];
+            candidates = [];
+          for (let b = lastMain2.start; b < lastMain2.end; b += Math.max(1, t.chordBars || 2)) {
+            const deg = ((progressionDegreeAt(t, b) % 7) + 7) % 7;
+            if (deg !== 0) candidates.push({ bar: b, deg });
+          }
+          if (candidates.length && sc) {
+            const choice = candidates[Math.floor(seededUnit(t.seed, "borrow-deg") * candidates.length)],
+              deg = choice.deg;
             const tri = [0, 2, 4].map(
               (k) => sc[(deg + k) % 7] + Math.floor((deg + k) / 7) * 12,
             );
@@ -6038,6 +6824,7 @@
             if (third === 3 || third === 4) {
               tri[1] = tri[0] + (third === 3 ? 4 : 3);
               t.borrowed = {
+                bar: choice.bar,
                 deg,
                 tones: tri,
                 kind: third === 3 ? "raised third" : "borrowed minor",
@@ -6093,8 +6880,17 @@
                     : Math.random() < 0.62
                       ? "minor"
                       : pick(["dorian", "major", "phryg", "minor"]);
-          const secs = R(72, 168);
-          const bars = Math.max(28, Math.round((secs * bpm) / 240));
+          const secs = R(72, 168),
+            arrangementUnit =
+              /house|uk garage|drum n bass|dubstep/.test(genre) ||
+              (genre === "afrobeats" && subStyle === "afro house")
+                ? 8
+                : 4,
+            rawBars = (secs * bpm) / 240,
+            bars = Math.max(
+              32,
+              8 + Math.max(3, Math.round((rawBars - 8) / arrangementUnit)) * arrangementUnit,
+            );
           const prog =
             echo?.progression && Math.random() < 0.78
               ? echo.progression.slice()
@@ -6165,6 +6961,7 @@
             root,
             bars,
             prog,
+            chordBars: chordBarsFor(genre, subStyle),
             guestDNA: dna,
             gear,
             echoOrigin: echo ? echo.seed : null,
@@ -6172,7 +6969,7 @@
             leadWave: gear.leadSynth,
             scale: SCALES[scaleName],
             scaleName,
-            sections: buildArrangement(bars),
+            sections: buildArrangement(bars, genre, subStyle),
             kick,
             kickB,
             snare,
@@ -6187,7 +6984,9 @@
               gear.drumMachine === "tight digital" &&
               Math.random() < 0.35,
             subStyle,
-            padType: padMap[gear.padSynth] || (st && st.pad ? st.pad : g.pad),
+            padRole: (st && st.pad) || g.pad || "keys",
+            padTimbre: padMap[gear.padSynth] || "keys",
+            padType: (st && st.pad) || g.pad || "keys",
             bassType,
             lateSnare: !!(st && st.late),
             hatP:
@@ -6206,18 +7005,63 @@
             lastBass: null,
           };
         });
+        assignTrackEvents(built);
         built.drumBrain = buildDrumBrain(built);
+        built.bassBrain = buildBassBrain(built);
         built.melodyBrain = buildMelodyBrain(built);
         built.composerBrain = buildComposerBrain(built);
-        built.vocalBrain = buildVocalBrain(built);
+        const guest1Voice =
+            vis1?.voiceProfile ||
+            buildPerformerVoice({
+              voiceKind: "neutral",
+              age: "adult",
+              height: 1,
+              bodyW: 1,
+              dna: built.guestDNA,
+            }),
+          guest2Voice =
+            vis2?.voiceProfile ||
+            buildPerformerVoice({
+              voiceKind: "neutral",
+              age: "adult",
+              height: 1,
+              bodyW: 1,
+              dna: built.guestDNA,
+            });
+        built.performerVoices = {
+          ari: voiceForTrack(VOCAL_VOICE_BANK.ari, built),
+          guest1: voiceForTrack(guest1Voice, built),
+          guest2: voiceForTrack(guest2Voice, built),
+        };
+        built.vocalBrains = {
+          ari: buildVocalBrain(
+            built,
+            "ari",
+            built.guestDNA,
+            built.performerVoices.ari,
+          ),
+          guest1: buildVocalBrain(
+            built,
+            "guest1",
+            vis1?.dna || built.guestDNA,
+            built.performerVoices.guest1,
+          ),
+          guest2: buildVocalBrain(
+            built,
+            "guest2",
+            vis2?.dna || built.guestDNA,
+            built.performerVoices.guest2,
+          ),
+        };
+        built.vocalBrain = built.vocalBrains.ari;
         built.audienceBrain = buildAudienceBrain(built);
         built.energyCurve = buildEnergyCurve(built);
-        assignTrackEvents(built);
-        built.generatorVersion = 99;
+        built.generatorVersion = 107;
         track = built;
-        leadEchoA.bar = leadEchoV.bar = -1;
+        leadEchoA.bar = leadEchoV.bar = leadEchoV2.bar = -1;
         leadEchoA.notes = [];
         leadEchoV.notes = [];
+        leadEchoV2.notes = [];
         if (delayNode) {
           delayNode.delayTime.value =
             (60 / track.bpm) *
@@ -6264,13 +7108,13 @@
         g.gain.linearRampToValueAtTime(peak, t + a);
         g.gain.exponentialRampToValueAtTime(0.0001, t + a + d);
       }
-      function playKick(t) {
+      function playKick(t, vol = 1) {
         const kd = track.g.kd;
         const o = ctx.createOscillator(),
           g = ctx.createGain();
         o.frequency.setValueAtTime(kd.f0, t);
         o.frequency.exponentialRampToValueAtTime(kd.f1, t + kd.d * 0.55);
-        env(t, 0.002, kd.d, 0.95, g);
+        env(t, 0.002, kd.d, 0.95 * vol, g);
         o.connect(g);
         g.connect(master);
         o.start(t);
@@ -6280,7 +7124,7 @@
           cg = ctx.createGain();
         c.frequency.setValueAtTime(kd.f0 * 6.5, t);
         c.frequency.exponentialRampToValueAtTime(kd.f0 * 1.6, t + 0.02);
-        env(t, 0.001, 0.024, 0.42, cg);
+        env(t, 0.001, 0.024, 0.42 * vol, cg);
         c.connect(cg);
         cg.connect(master);
         c.start(t);
@@ -6388,7 +7232,7 @@
         n.start(t);
         n.stop(t + (open ? 0.25 : 0.07));
       }
-      function playBass(t, midi, dur) {
+      function playBass(t, midi, dur, vol = 1) {
         midi = bassMidi(midi);
         const o = ctx.createOscillator();
         o.type = "sawtooth";
@@ -6398,21 +7242,21 @@
         f.frequency.setValueAtTime(500 + barEnergy * 400, t);
         f.frequency.exponentialRampToValueAtTime(180, t + dur);
         const g = ctx.createGain();
-        env(t, 0.008, dur, 0.34, g);
+        env(t, 0.008, dur, 0.34 * vol, g);
         o.connect(f);
         f.connect(g);
         g.connect(duckBus || master);
         o.start(t);
         o.stop(t + dur + 0.1);
       }
-      function playReese(t, midi, dur, hollow) {
+      function playReese(t, midi, dur, hollow, vol = 1) {
         midi = bassMidi(midi);
         const f = ctx.createBiquadFilter();
         f.type = "lowpass";
         f.frequency.value = hollow ? 520 : 850;
         f.Q.value = 0.7;
         const g = ctx.createGain();
-        env(t, 0.012, dur, hollow ? 0.25 : 0.31, g);
+        env(t, 0.012, dur, (hollow ? 0.25 : 0.31) * vol, g);
         f.connect(g);
         g.connect(duckBus || master);
         [-11, 11].forEach((dt) => {
@@ -6425,7 +7269,7 @@
           o.stop(t + dur + 0.1);
         });
       }
-      function playRubber(t, midi, dur) {
+      function playRubber(t, midi, dur, vol = 1) {
         midi = bassMidi(midi);
         const o = ctx.createOscillator();
         o.type = "square";
@@ -6435,14 +7279,14 @@
         f.frequency.setValueAtTime(650 + barEnergy * 480, t);
         f.frequency.exponentialRampToValueAtTime(260, t + Math.min(dur, 0.35));
         const g = ctx.createGain();
-        env(t, 0.008, dur, 0.27, g);
+        env(t, 0.008, dur, 0.27 * vol, g);
         o.connect(f);
         f.connect(g);
         g.connect(duckBus || master);
         o.start(t);
         o.stop(t + dur + 0.1);
       }
-      function playGrowl(t, midi, dur) {
+      function playGrowl(t, midi, dur, vol = 1) {
         midi = bassMidi(midi);
         const o = ctx.createOscillator();
         o.type = "triangle";
@@ -6459,7 +7303,7 @@
         f.type = "lowpass";
         f.frequency.value = 650;
         const g = ctx.createGain();
-        env(t, 0.01, dur, 0.24, g);
+        env(t, 0.01, dur, 0.24 * vol, g);
         o.connect(ws);
         ws.connect(f);
         f.connect(g);
@@ -6467,20 +7311,20 @@
         o.start(t);
         o.stop(t + dur + 0.1);
       }
-      function playPluckBass(t, midi, dur) {
+      function playPluckBass(t, midi, dur, vol = 1) {
         midi = bassMidi(midi, 26, 45);
         const o = ctx.createOscillator();
         o.type = "triangle";
         o.frequency.value = mtof(midi);
         const g = ctx.createGain();
-        env(t, 0.002, Math.min(dur, 0.24), 0.34, g);
+        env(t, 0.002, Math.min(dur, 0.24), 0.34 * vol, g);
         o.connect(g);
         g.connect(duckBus || master);
         o.start(t);
         o.stop(t + 0.35);
       }
-      function play808(t, midi, dur) {
-        midi = bassMidi(midi, 24, 40);
+      function play808(t, midi, dur, glideFrom = null, vol = 1) {
+        midi = bassMidi(midi, 24, 52);
         const fr = mtof(midi);
         const bus = ctx.createGain();
         bus.gain.value = 0.78;
@@ -6492,7 +7336,7 @@
         lp.frequency.value = 720;
         lp.Q.value = 0.45;
         const g = ctx.createGain();
-        env(t, 0.004, dur, 0.5, g);
+        env(t, 0.004, dur, 0.5 * vol, g);
         bus.connect(sat);
         sat.connect(lp);
         lp.connect(g);
@@ -6500,16 +7344,26 @@
 
         const body = ctx.createOscillator();
         body.type = "sine";
-        body.frequency.setValueAtTime(fr * 2.15, t);
-        body.frequency.exponentialRampToValueAtTime(fr, t + 0.052);
+        if (glideFrom != null) {
+          body.frequency.setValueAtTime(mtof(bassMidi(glideFrom, 24, 52)), t);
+          body.frequency.exponentialRampToValueAtTime(fr, t + 0.09);
+        } else {
+          body.frequency.setValueAtTime(fr * 2.15, t);
+          body.frequency.exponentialRampToValueAtTime(fr, t + 0.052);
+        }
         body.connect(bus);
 
         // A very quiet triangle layer makes the note survive phone/laptop speakers
         // without turning the 808 into a buzzy synth bass.
         const edge = ctx.createOscillator();
         edge.type = "triangle";
-        edge.frequency.setValueAtTime(fr * 2.08, t);
-        edge.frequency.exponentialRampToValueAtTime(fr, t + 0.048);
+        if (glideFrom != null) {
+          edge.frequency.setValueAtTime(mtof(bassMidi(glideFrom, 24, 52)), t);
+          edge.frequency.exponentialRampToValueAtTime(fr, t + 0.085);
+        } else {
+          edge.frequency.setValueAtTime(fr * 2.08, t);
+          edge.frequency.exponentialRampToValueAtTime(fr, t + 0.048);
+        }
         const edgeGain = ctx.createGain();
         edgeGain.gain.setValueAtTime(0.11, t);
         edgeGain.gain.exponentialRampToValueAtTime(0.025, t + Math.min(0.22, dur));
@@ -6524,24 +7378,24 @@
       /* ---------- TR-808 kit (the real thing, not just the sub) ---------- */
       // classic 808 bass drum with the decay knob turned up: a pitch-swept sine with a
       // long boomy tail, plus a short click transient so the attack still reads
-      function play808Kick(t) {
+      function play808Kick(t, vol = 1, short = false) {
         const o = ctx.createOscillator();
         o.type = "sine";
         o.frequency.setValueAtTime(180, t);
         o.frequency.exponentialRampToValueAtTime(52, t + 0.08);
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.linearRampToValueAtTime(0.95, t + 0.004);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6); // long decay
+        g.gain.linearRampToValueAtTime(0.95 * vol, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + (short ? 0.24 : 0.6));
         o.connect(g);
         g.connect(master);
         o.start(t);
-        o.stop(t + 0.66);
+        o.stop(t + (short ? 0.3 : 0.66));
         const c = ctx.createOscillator();
         c.type = "triangle";
         c.frequency.value = 1600;
         const cg = ctx.createGain();
-        cg.gain.setValueAtTime(0.5, t);
+        cg.gain.setValueAtTime(0.5 * vol, t);
         cg.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
         c.connect(cg);
         cg.connect(master);
@@ -6589,7 +7443,7 @@
         n.start(t);
         n.stop(t + 0.03);
       }
-      function playDeepSub(t, midi, dur) {
+      function playDeepSub(t, midi, dur, vol = 1) {
         midi = bassMidi(midi, 24, 40);
         const fr = mtof(midi);
         const bus = ctx.createGain();
@@ -6602,7 +7456,7 @@
         lp.frequency.value = 430;
         lp.Q.value = 0.55;
         const g = ctx.createGain();
-        env(t, 0.012, dur, 0.39, g);
+        env(t, 0.012, dur, 0.39 * vol, g);
         bus.connect(sat);
         sat.connect(lp);
         lp.connect(g);
@@ -6631,7 +7485,7 @@
         fundamental.stop(t + dur + 0.12);
         body.stop(t + dur + 0.12);
       }
-      function playSilkSub(t, midi, dur) {
+      function playSilkSub(t, midi, dur, vol = 1) {
         midi = bassMidi(midi, 26, 42);
         const fr = mtof(midi);
         const bus = ctx.createGain();
@@ -6648,7 +7502,7 @@
           t + Math.min(0.42, Math.max(0.12, dur * 0.45)),
         );
         const g = ctx.createGain();
-        env(t, 0.014, dur, 0.36, g);
+        env(t, 0.014, dur, 0.36 * vol, g);
         bus.connect(sat);
         sat.connect(lp);
         lp.connect(g);
@@ -6677,7 +7531,7 @@
         sub.stop(t + dur + 0.12);
         silk.stop(t + dur + 0.12);
       }
-      function playPulseBass(t, midi, dur) {
+      function playPulseBass(t, midi, dur, vol = 1) {
         midi = bassMidi(midi, 27, 44);
         const fr = mtof(midi);
         const f = ctx.createBiquadFilter();
@@ -6689,7 +7543,7 @@
           t + Math.min(0.28, Math.max(0.08, dur * 0.45)),
         );
         const g = ctx.createGain();
-        env(t, 0.006, Math.min(dur, 0.72), 0.27, g);
+        env(t, 0.006, Math.min(dur, 0.72), 0.27 * vol, g);
         f.connect(g);
         g.connect(duckBus || master);
         const o = ctx.createOscillator();
@@ -6701,10 +7555,10 @@
         o.stop(t + Math.min(dur, 0.72) + 0.1);
       }
       // Backward-compatible alias for any old/generated state that still says "sub".
-      function playSub(t, midi, dur) {
-        playDeepSub(t, midi, dur);
+      function playSub(t, midi, dur, vol = 1) {
+        playDeepSub(t, midi, dur, vol);
       }
-      function playRound(t, midi, dur) {
+      function playRound(t, midi, dur, vol = 1) {
         midi = bassMidi(midi, 25, 42);
         const fr = mtof(midi);
         const f = ctx.createBiquadFilter();
@@ -6713,7 +7567,7 @@
         f.frequency.setValueAtTime(620, t);
         f.frequency.exponentialRampToValueAtTime(360, t + Math.min(0.3, dur));
         const g = ctx.createGain();
-        env(t, 0.015, dur, 0.37, g);
+        env(t, 0.015, dur, 0.37 * vol, g);
         f.connect(g);
         g.connect(duckBus || master);
         const tri = ctx.createOscillator();
@@ -6733,21 +7587,34 @@
         tri.stop(t + dur + 0.1);
         sine.stop(t + dur + 0.1);
       }
-      function playKeys(t, midis, dur) {
+      function padTimbreProfile(name) {
+        const x = String(name || "keys");
+        if (/glass|fm|neon/.test(x))
+          return { cutoff: 1.45, attack: 0.55, gain: 0.9, wave: "sine", delay: true };
+        if (/shadow|choir/.test(x))
+          return { cutoff: 0.58, attack: 1.45, gain: 0.82, wave: "triangle", delay: false };
+        if (/air|strings/.test(x))
+          return { cutoff: 0.82, attack: 1.8, gain: 0.76, wave: "sawtooth", delay: true };
+        if (/chorus/.test(x))
+          return { cutoff: 1.05, attack: 1.1, gain: 0.86, wave: "triangle", delay: true };
+        return { cutoff: 1, attack: 1, gain: 1, wave: "triangle", delay: false };
+      }
+      function playKeys(t, midis, dur, timbre) {
+        const tone = padTimbreProfile(timbre);
         const f = ctx.createBiquadFilter();
         f.type = "lowpass";
-        f.frequency.value = 1600 + barEnergy * 1500;
+        f.frequency.value = (1600 + barEnergy * 1500) * tone.cutoff;
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.linearRampToValueAtTime(0.09, t + 0.03);
+        g.gain.linearRampToValueAtTime(0.09 * tone.gain, t + 0.03 * tone.attack);
         g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
         f.connect(g);
         g.connect(duckBus || master);
-        g.connect(delayNode);
+        if (tone.delay) g.connect(delayNode);
         midis.forEach((m) => {
           [-3, 3].forEach((det) => {
             const o = ctx.createOscillator();
-            o.type = "triangle";
+            o.type = tone.wave;
             o.frequency.value = mtof(m);
             o.detune.value = det;
             o.connect(f);
@@ -6756,17 +7623,18 @@
           });
         });
       }
-      function playStab(t, midis) {
+      function playStab(t, midis, timbre) {
+        const tone = padTimbreProfile(timbre);
         const f = ctx.createBiquadFilter();
         f.type = "lowpass";
-        f.frequency.value = 1300 + barEnergy * 1100;
+        f.frequency.value = (1300 + barEnergy * 1100) * tone.cutoff;
         const g = ctx.createGain();
-        env(t, 0.004, 0.22, 0.14, g);
+        env(t, 0.004 * tone.attack, 0.22, 0.14 * tone.gain, g);
         f.connect(g);
         g.connect(duckBus || master);
         midis.forEach((m) => {
           const o = ctx.createOscillator();
-          o.type = "sawtooth";
+          o.type = /glass|fm/.test(String(timbre)) ? "triangle" : "sawtooth";
           o.frequency.value = mtof(m + 12);
           o.connect(f);
           o.start(t);
@@ -6838,13 +7706,14 @@
         o.start(t);
         o.stop(t + 0.45);
       }
-      function playPad(t, midis, dur) {
+      function playPad(t, midis, dur, timbre) {
+        const tone = padTimbreProfile(timbre);
         const f = ctx.createBiquadFilter();
         f.type = "lowpass";
-        f.frequency.value = 700 + barEnergy * 900;
+        f.frequency.value = (700 + barEnergy * 900) * tone.cutoff;
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.linearRampToValueAtTime(0.08, t + dur * 0.3); // 3 voices per note now, keep the same weight
+        g.gain.linearRampToValueAtTime(0.08 * tone.gain, t + dur * Math.min(.48, .3 * tone.attack)); // 3 voices per note now, keep the same weight
         g.gain.linearRampToValueAtTime(0.0001, t + dur);
         f.connect(g);
         g.connect(duckBus || master);
@@ -6852,7 +7721,7 @@
           [-7, 0, 6].forEach((det) => {
             // 3-voice supersaw spread
             const o = ctx.createOscillator();
-            o.type = "sawtooth";
+            o.type = tone.wave === "sine" ? "triangle" : "sawtooth";
             o.frequency.value = mtof(m);
             o.detune.value = det;
             o.connect(f);
@@ -6861,7 +7730,8 @@
           });
         });
       }
-      function playAltPad(t, midis, dur, type) {
+      function playAltPad(t, midis, dur, type, timbre) {
+        const tone = padTimbreProfile(timbre);
         const f = ctx.createBiquadFilter();
         f.type = "lowpass";
         f.frequency.value =
@@ -6872,24 +7742,24 @@
               : type === "shadow"
                 ? 700
                 : 1200) *
-          (0.72 + barEnergy * 0.5);
+          (0.72 + barEnergy * 0.5) * tone.cutoff;
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.0001, t);
         g.gain.linearRampToValueAtTime(
-          type === "choir" ? 0.055 : 0.07,
-          t + dur * 0.28,
+          (type === "choir" ? 0.055 : 0.07) * tone.gain,
+          t + dur * Math.min(.5, .28 * tone.attack),
         );
         g.gain.linearRampToValueAtTime(0.0001, t + dur);
         f.connect(g);
         g.connect(duckBus || master);
-        if (type === "chorus" || type === "air" || type === "glass")
+        if (tone.delay || type === "chorus" || type === "air" || type === "glass")
           g.connect(delayNode);
         const wave =
           type === "glass" || type === "fm"
             ? "sine"
             : type === "strings" || type === "shadow"
               ? "sawtooth"
-              : "triangle";
+              : tone.wave;
         const dets =
           type === "chorus" ? [-9, 0, 9] : type === "choir" ? [-4, 4] : [0];
         midis.forEach((m) =>
@@ -6916,7 +7786,7 @@
         PULSE_WAVE = ctx.createPeriodicWave(re, im);
         return PULSE_WAVE;
       }
-      function playLead(t, midi, dur, instr, vmul) {
+      function playLead(t, midi, dur, instr, vmul, articulation = null) {
         const g = ctx.createGain();
         const out = ctx.createGain();
         out.gain.value = vmul || 1;
@@ -6928,13 +7798,17 @@
         send.gain.value = instr === "on the mic" ? 0.4 : 0.7;
         out.connect(send);
         send.connect(delayNode);
-        const vib = ctx.createOscillator(),
+        let vib = null,
+          vg = null;
+        if (instr !== "on the mic") {
+          vib = ctx.createOscillator();
           vg = ctx.createGain();
-        vib.frequency.value = 5.4;
-        vg.gain.value = 6;
-        vib.connect(vg);
-        vib.start(t);
-        vib.stop(t + dur + 0.2);
+          vib.frequency.value = 5.4;
+          vg.gain.value = 6;
+          vib.connect(vg);
+          vib.start(t);
+          vib.stop(t + dur + 0.2);
+        }
         if (instr === "on sax") {
           const o = ctx.createOscillator();
           o.type = "sawtooth";
@@ -7046,51 +7920,185 @@
           o.start(t);
           o.stop(t + dur + 0.2);
         } else {
-          // on the mic — a synthetic voice; the character layer varies per track
-          const o = ctx.createOscillator();
-          o.type = "sine";
-          o.frequency.value = mtof(midi);
-          const o2 = ctx.createOscillator();
-          o2.frequency.value = mtof(midi);
-          const lw = (track && track.leadWave) || "rounded vocal";
-          if (lw === "fm keys" || lw === "glass pluck") o2.type = "sine";
-          else if (
-            lw === "muted triangle" ||
-            lw === "soft organ" ||
-            lw === "digital reed"
-          )
-            o2.type = "triangle";
-          else if (
-            lw === "filtered dual" ||
-            lw === "low brass synth" ||
-            lw === "hollow mono"
-          )
-            o2.type = "sawtooth";
-          else o2.type = "square";
-          const g2 = ctx.createGain();
-          g2.gain.value = 0.2;
-          o2.connect(g2);
-          g2.connect(g);
-          vg.connect(o.detune);
-          vg.connect(o2.detune);
-          const f = ctx.createBiquadFilter();
-          f.type = "bandpass";
-          f.frequency.value = mtof(midi) * 1.8;
-          f.Q.value = 0.7;
-          /* dry fundamental alongside the formant band — without it the voice
-             is all nose and no chest, and sinks straight into the mix */
-          const dry = ctx.createGain();
-          dry.gain.value = 0.55;
-          o.connect(dry);
-          dry.connect(g);
-          env(t, 0.03, dur, 0.42, g);
-          o.connect(f);
-          o2.connect(f);
-          f.connect(g);
-          o.start(t);
-          o.stop(t + dur + 0.2);
-          o2.start(t);
-          o2.stop(t + dur + 0.2);
+          // Every visitor keeps one voice profile. Rap is dry and onset-led;
+          // sustained hooks get vowel movement, breath and delayed vibrato.
+          const mode = articulation?.mode || "half-sung",
+            performerTag = articulation?.performerTag || "ari",
+            profile = vocalProfileAt(track, performerTag),
+            lightweight = !!articulation?.echo,
+            stress =
+              articulation?.stress || (articulation?.accent ? 1.08 : 0.88),
+            voiceDur = Math.max(
+              0.035,
+              mode === "rap"
+                ? Math.min(dur, 0.23)
+                : mode === "ad-lib"
+                  ? Math.min(dur, 0.38)
+                  : dur,
+            ),
+            vowelIndex =
+              ((articulation?.syllable || 0) + profile.vowelOffset) %
+              VOCAL_VOWELS.length,
+            vowel = VOCAL_VOWELS[vowelIndex];
+          out.gain.value *= 0.84 + stress * 0.16;
+          send.gain.value =
+            profile.delaySend *
+            (mode === "rap" ? 0.42 : mode === "sung hook" ? 1 : 0.7) *
+            (lightweight ? 0.35 : 1);
+
+          const source = ctx.createOscillator(),
+            voiceMix = ctx.createGain(),
+            color = ctx.createBiquadFilter(),
+            lowCut = ctx.createBiquadFilter();
+          source.setPeriodicWave(voiceWave(profile.wave));
+          source.frequency.setValueAtTime(mtof(midi), t);
+          source.detune.setValueAtTime(profile.detune, t);
+          color.type = "lowpass";
+          color.frequency.value = Math.min(
+            profile.lp * (mode === "rap" ? profile.rapColor : 1),
+            ctx.sampleRate * 0.42,
+          );
+          color.Q.value = 0.45;
+          lowCut.type = "highpass";
+          lowCut.frequency.value = profile.hp;
+          lowCut.Q.value = 0.35;
+          voiceMix.connect(color);
+          color.connect(lowCut);
+          lowCut.connect(g);
+
+          const bodyFilter = ctx.createBiquadFilter(),
+            bodyGain = ctx.createGain();
+          bodyFilter.type = "lowpass";
+          bodyFilter.frequency.value = Math.min(
+            1200,
+            Math.max(650, mtof(midi) * 4),
+          );
+          bodyFilter.Q.value = 0.5;
+          bodyGain.gain.value =
+            profile.body * (mode === "rap" ? profile.rapBody : 1);
+          source.connect(bodyFilter);
+          bodyFilter.connect(bodyGain);
+          bodyGain.connect(voiceMix);
+
+          const formantCount =
+            lightweight || mode === "rap" || voiceDur < 0.28 ? 2 : 3;
+          for (let i = 0; i < formantCount; i++) {
+            const center = Math.min(
+                vowel[i] * profile.tract,
+                ctx.sampleRate * 0.42,
+              ),
+              formant = ctx.createBiquadFilter(),
+              formantGain = ctx.createGain();
+            formant.type = "bandpass";
+            formant.Q.value = profile.q[i];
+            formant.frequency.setValueAtTime(center * (i ? 0.97 : 0.92), t);
+            formant.frequency.exponentialRampToValueAtTime(
+              center,
+              t + Math.min(0.07, voiceDur * 0.3),
+            );
+            formantGain.gain.value = profile.fg[i];
+            source.connect(formant);
+            formant.connect(formantGain);
+            formantGain.connect(voiceMix);
+          }
+
+          vocalEnvelope(g.gain, t, voiceDur, mode, profile, stress);
+
+          if (!lightweight && mode !== "rap" && voiceDur > 0.35) {
+            const vocalVibrato = ctx.createOscillator(),
+              vibratoDepth = ctx.createGain(),
+              delay = Math.min(
+                mode === "sung hook" ? 0.16 : 0.22,
+                voiceDur * 0.45,
+              );
+            vocalVibrato.frequency.value = profile.vibRate;
+            vibratoDepth.gain.setValueAtTime(0, t);
+            vibratoDepth.gain.setValueAtTime(0, t + delay);
+            vibratoDepth.gain.linearRampToValueAtTime(
+              profile.vibDepth * (mode === "sung hook" ? 1 : 0.55),
+              Math.min(t + voiceDur * 0.72, t + delay + 0.12),
+            );
+            vocalVibrato.connect(vibratoDepth);
+            vibratoDepth.connect(source.detune);
+            vocalVibrato.start(t);
+            vocalVibrato.stop(t + voiceDur + 0.03);
+          }
+
+          if (
+            !lightweight &&
+            profile.breath > 0.035 &&
+            mode !== "rap" &&
+            voiceDur > 0.28
+          ) {
+            NB = NB || noiseBuf();
+            const breath = ctx.createBufferSource(),
+              breathFilter = ctx.createBiquadFilter(),
+              breathGain = ctx.createGain(),
+              breathOffset =
+                seededUnit(
+                  track.seed,
+                  `vbreath:${performerTag}:${articulation?.bar ?? bar}:${articulation?.step ?? 0}`,
+                ) * NB.duration;
+            breath.buffer = NB;
+            breath.loop = true;
+            breathFilter.type = "bandpass";
+            breathFilter.frequency.value = 1900 * profile.tract;
+            breathFilter.Q.value = 0.7;
+            breathGain.gain.value = profile.breath;
+            breath.connect(breathFilter);
+            breathFilter.connect(breathGain);
+            breathGain.connect(voiceMix);
+            breath.start(t, breathOffset);
+            breath.stop(t + voiceDur);
+          }
+
+          const consonantOnset =
+            mode === "rap"
+              ? articulation?.accent || (articulation?.syllable || 0) % 2 === 0
+              : articulation?.accent || vowelIndex === 2;
+          if (consonantOnset && (!lightweight || articulation?.accent)) {
+            NB = NB || noiseBuf();
+            const consonantShape = VOCAL_CONSONANTS[vowelIndex],
+              consonant = ctx.createBufferSource(),
+              consonantFilter = ctx.createBiquadFilter(),
+              consonantGain = ctx.createGain(),
+              consonantColor = ctx.createBiquadFilter(),
+              maxOffset = Math.max(
+                0,
+                NB.duration - consonantShape.dur - 0.03,
+              ),
+              consonantOffset =
+                seededUnit(
+                  track.seed,
+                  `vnoise:${performerTag}:${articulation?.bar ?? bar}:${articulation?.step ?? 0}`,
+                ) * maxOffset;
+            consonant.buffer = NB;
+            consonantFilter.type = consonantShape.type;
+            consonantFilter.frequency.value = consonantShape.frequency;
+            consonantFilter.Q.value = consonantShape.q;
+            consonantColor.type = "lowpass";
+            consonantColor.frequency.value = Math.min(
+              4800,
+              profile.lp * profile.rapColor * 1.25,
+            );
+            consonantColor.Q.value = 0.35;
+            env(
+              t,
+              0.001,
+              consonantShape.dur,
+              0.025 * profile.level * profile.consonant * stress,
+              consonantGain,
+            );
+            consonant.connect(consonantFilter);
+            consonantFilter.connect(consonantGain);
+            consonantGain.connect(consonantColor);
+            consonantColor.connect(out);
+            consonant.start(t, consonantOffset);
+            consonant.stop(t + consonantShape.dur + 0.025);
+          }
+
+          source.start(t);
+          source.stop(t + voiceDur + 0.05);
         }
       }
 
@@ -7135,6 +8143,28 @@
       ];
       let curLoc = "",
         signTimer = null;
+      function fitSignBladeText(host) {
+        const fit = () => {
+          if (!host.isConnected) return;
+          host.querySelectorAll("text.sgntxt").forEach((text) => {
+            const maxLength = Number(text.dataset.maxLength);
+            text.removeAttribute("textLength");
+            text.removeAttribute("lengthAdjust");
+            if (
+              Number.isFinite(maxLength) &&
+              text.getComputedTextLength() > maxLength
+            ) {
+              text.setAttribute("textLength", maxLength.toFixed(1));
+              text.setAttribute("lengthAdjust", "spacingAndGlyphs");
+            }
+          });
+        };
+        const queueFit = () => requestAnimationFrame(fit);
+        fit();
+        if (document.fonts?.load)
+          document.fonts.load('9px "IBM Plex Mono"').then(queueFit, queueFit);
+        else queueFit();
+      }
       // build a fresh set of blades on the pole: sometimes 1, mostly 2–3, sometimes 4.
       // even slots are readable street-name blades (facing -x), odd slots are the
       // perpendicular cross blades (facing -y) with the usual unreadable marks.
@@ -7159,24 +8189,49 @@
           ); // clamp band on the pole
           if (i % 2 === 0) {
             // readable blade, faces -x
-            const nm = i === 0 ? primary : pool[used++] || primary;
+            const nm = i === 0 ? primary : pool[used++] || primary,
+              safeName = String(nm)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;"),
+              xLeft = -3.7,
+              xRight = 0.4,
+              yFace = -4.6,
+              topLeft = iso(xLeft, yFace, zTop),
+              topRight = iso(xRight, yFace, zTop),
+              bottomLeft = iso(xLeft, yFace, zBot),
+              along = [
+                topRight[0] - topLeft[0],
+                topRight[1] - topLeft[1],
+              ],
+              down = [
+                bottomLeft[0] - topLeft[0],
+                bottomLeft[1] - topLeft[1],
+              ],
+              alongLength = Math.hypot(...along),
+              downLength = Math.hypot(...down),
+              ux = [along[0] / alongLength, along[1] / alongLength],
+              uy = [down[0] / downLength, down[1] / downLength],
+              center = iso(
+                (xLeft + xRight) / 2,
+                yFace,
+                (zTop + zBot) / 2,
+              ),
+              maxTextLength = alongLength - 0.5 * S;
             out += poly(
               [
-                [-3.7, -4.6, zBot],
-                [0.4, -4.6, zBot],
-                [0.4, -4.6, zTop],
-                [-3.7, -4.6, zTop],
+                [xLeft, yFace, zBot],
+                [xRight, yFace, zBot],
+                [xRight, yFace, zTop],
+                [xLeft, yFace, zTop],
               ],
               "signblade",
             );
-            const [tx, ty] = iso(-3.45, -4.6, zBot + 0.18);
-            const long = nm.length * 7.2 > 132;
             out +=
-              `<text class="sgntxt" transform="translate(${tx.toFixed(1)} ${ty.toFixed(1)}) rotate(30)"` +
-              (long
-                ? ' textLength="132" lengthAdjust="spacingAndGlyphs"'
-                : "") +
-              `>${nm}</text>`;
+              `<text class="sgntxt" x="0" y="0" text-anchor="middle" dominant-baseline="central" ` +
+              `data-max-length="${maxTextLength.toFixed(1)}" ` +
+              `transform="matrix(${ux[0].toFixed(6)} ${ux[1].toFixed(6)} ${uy[0].toFixed(6)} ${uy[1].toFixed(6)} ${center[0].toFixed(1)} ${center[1].toFixed(1)})">` +
+              `${safeName}</text>`;
           } else {
             // cross blade, faces -y
             // overlap the pole slightly so the right-side blades visually connect cleanly
@@ -7197,6 +8252,7 @@
           }
         }
         host.innerHTML = out;
+        fitSignBladeText(host);
       }
       function setLocation(name) {
         curLoc = name;
@@ -7330,7 +8386,7 @@
         vl.style.color = "var(--cyan)";
         vl.classList.add("on");
         speak(
-          pick(["yo", "uh huh", "check it", "ay", "okay"]),
+          pick(["all right", "here we go", "check", "okay", "let's build"]),
           ARI_VOICE,
           0.45,
           Math.max(0, tt - ctx.currentTime),
@@ -7347,27 +8403,8 @@
 
       /* ---------- scheduler ---------- */
       function chordTones(deg) {
-        // scale-degree triad (or 7th when ext), as absolute semitone offsets from root
-        const d = ((deg % 7) + 7) % 7;
-        const sc = track.scale || MINOR;
-        const sect = sectionAt(bar);
-        /* Picardy: the very last tonic of a minor track lands major */
-        if (
-          track.picardy &&
-          d === 0 &&
-          sect === "outro" &&
-          bar >= track.bars - 2
-        )
-          return [0, 4, 7];
-        /* borrowed color: only revealed in the final stretch, so it reads
-           as an event rather than part of the wallpaper */
-        const b = track.borrowed;
-        if (b && d === b.deg && (sect === "main2" || sect === "outro"))
-          return b.tones.slice();
-        return (track.g.ext ? [0, 2, 4, 6] : [0, 2, 4]).map((k) => {
-          const idx = d + k;
-          return sc[idx % 7] + Math.floor(idx / 7) * 12;
-        });
+        // Harmony, melody, bass approaches and vocals all read the same context.
+        return harmonicContextAt(track, bar).tones.slice();
       }
       function voiceChord(deg, centerMidi) {
         // smooth voice-leading: place each chord tone in the octave nearest the last voicing
@@ -7397,8 +8434,7 @@
           spb = 60 / track.bpm,
           s16 = spb / 4;
         const tt = t + (sIdx % 2 === 1 ? track.swing * s16 : 0);
-        const deg = track.prog[Math.floor(bar / 2) % track.prog.length];
-        const rootDeg = ((deg % 7) + 7) % 7;
+        const deg = progressionDegreeAt(track, bar);
         const sect = sectionAt(bar),
           D = SECT[sect] || SECT.main,
           drumState = drumStateAt(bar),
@@ -7408,10 +8444,24 @@
           gp = drumState?.ghost || track.ghost,
           hp = drumState?.hats || track.hatSteps;
         barEnergy = track.energyCurve?.[bar] ?? 0.55;
+        const plannedBassEvent = bassEventAt(track, bar, sIdx),
+          activeBassType = track.bassType || g.bass;
         /* one-shot events for this bar */
         const cut = track.cutBar != null && bar === track.cutBar; // DJ cut: total silence (or a-capella if someone is on the mic)
         const half =
           track.special?.type === "halftime" && bar >= track.special.bar;
+        const halfBassStep =
+          /house|uk garage/.test(track.genre) ||
+          (track.genre === "afrobeats" && track.subStyle === "afro house")
+            ? sIdx === 2 || sIdx === 10
+            : sIdx % 4 === 0 || (sIdx === 10 && plannedBassEvent?.linked);
+        const bassEvent =
+          plannedBassEvent &&
+          !cut &&
+          D.bass > 0 &&
+          (!half || halfBassStep)
+            ? plannedBassEvent
+            : null;
         if (sIdx === 0) {
           if (half && bar === track.special.bar && !track._specialLive) {
             track._specialLive = true;
@@ -7460,7 +8510,10 @@
             ? sIdx === 0 || (sIdx === 10 && kp[10])
             : kp[sIdx];
         if (kickNow) {
-          g.kick808 ? play808Kick(ktt) : playKick(ktt);
+          const kv = drumState?.velocity?.kick?.[sIdx] || 0.92;
+          g.kick808
+            ? play808Kick(ktt, kv, !!bassEvent)
+            : playKick(ktt, kv);
           visQ.push({ t: ktt, type: "kick" });
           /* sidechain pump — the missing glue. Four-on-the-floor genres breathe
              around the kick; dnb gets a shorter tuck so the sub stays punchy.
@@ -7476,15 +8529,9 @@
             }
           }
         }
-        /* occasional 808 cowbell accent — kept incidental so it stays a spice, not a staple */
-        if (
-          g.cowbell &&
-          !cut &&
-          D.drums > 0 &&
-          (sIdx === 4 || sIdx === 7 || sIdx === 10) &&
-          Math.random() < 0.08
-        ) {
-          play808Cowbell(tt, R(0.4, 0.7));
+        /* Auxiliary accents are part of the bar plan, so a fixed seed is audible. */
+        if (!cut && D.drums > 0 && drumState?.aux?.cowbell?.[sIdx]) {
+          play808Cowbell(tt, 0.45 + (drumState.temperature || 0.4) * 0.22);
           visQ.push({ t: tt, type: "hat" });
         }
         const snareNow = cut ? false : half ? sIdx === 8 : sp[sIdx];
@@ -7561,6 +8608,19 @@
             }
           }
         }
+        if (hatGate > 0 && !cut && drumState?.hatExtras?.length) {
+          drumState.hatExtras
+            .filter((x) => x.step === sIdx)
+            .forEach((x) =>
+              x.offsets.forEach((off, i) =>
+                playHat(
+                  htt + off * s16,
+                  false,
+                  (x.velocities[i] || 0.55) * Math.min(1, hatGate),
+                ),
+              ),
+            );
+        }
         /* Phrase/section fill. The whole fill decision is made once for the bar,
            so we never get the old half-random "maybe one tap, maybe three" result. */
         if (
@@ -7587,50 +8647,60 @@
             playHat(tt + (2 * s16) / 3, false, 0.68);
           }
         }
-        /* bass follows the chord root of the moment */
+        /* Bass Brain: planned relationship to the actual kick, chord and phrase. */
         if (
-          track.bassP[sIdx] &&
+          bassEvent &&
           !cut &&
-          (!half || sIdx % 4 === 0) &&
-          D.bass > 0 &&
-          Math.random() < D.bass + 0.2
+          D.bass > 0
         ) {
-          const bm = track.root - 12 + (track.scale || MINOR)[rootDeg];
-          const bassType = track.bassType || g.bass;
-          // bm already lives in the bass register (roughly MIDI 24–36).
-          // The old sub path subtracted another octave, pushing pure sine notes
-          // into near-infrasonic territory. Each engine now manages its own safe register.
-          if (bassType === "808") play808(tt, bm, spb * R(0.7, 1.35));
+          const bm = bassMidiForEvent(track, bar, bassEvent),
+            btt = tt + (bassEvent.micro || 0) * s16 +
+              (bassEvent.linked && g.kick808 ? 0.012 : 0),
+            bdur = s16 * bassEvent.durSteps,
+            bassType = activeBassType;
+          if (bassType === "808")
+            play808(
+              btt,
+              bm,
+              bdur,
+              bassEvent.slide && track.lastBass != null ? track.lastBass : null,
+              bassEvent.velocity,
+            );
           else if (bassType === "deepSub" || bassType === "sub")
-            playDeepSub(tt, bm, s16 * R(2.1, 4));
-          else if (bassType === "silk") playSilkSub(tt, bm, s16 * R(1.8, 3.5));
-          else if (bassType === "pulse") playPulseBass(tt, bm, s16 * R(1.2, 2.5));
-          else if (bassType === "round") playRound(tt, bm, s16 * R(2, 3.5));
-          else if (bassType === "reese") playReese(tt, bm, s16 * R(2, 4), false);
-          else if (bassType === "hollow") playReese(tt, bm, s16 * R(2, 4), true);
-          else if (bassType === "rubber") playRubber(tt, bm, s16 * R(1.5, 3));
-          else if (bassType === "growl") playGrowl(tt, bm, s16 * R(2, 4));
-          else if (bassType === "pluck") playPluckBass(tt, bm, s16 * R(1, 2));
-          else playBass(tt, bm, s16 * R(1.5, 3));
+            playDeepSub(btt, bm, bdur, bassEvent.velocity);
+          else if (bassType === "silk") playSilkSub(btt, bm, bdur, bassEvent.velocity);
+          else if (bassType === "pulse") playPulseBass(btt, bm, bdur, bassEvent.velocity);
+          else if (bassType === "round") playRound(btt, bm, bdur, bassEvent.velocity);
+          else if (bassType === "reese") playReese(btt, bm, bdur, false, bassEvent.velocity);
+          else if (bassType === "hollow") playReese(btt, bm, bdur, true, bassEvent.velocity);
+          else if (bassType === "rubber") playRubber(btt, bm, bdur, bassEvent.velocity);
+          else if (bassType === "growl") playGrowl(btt, bm, bdur, bassEvent.velocity);
+          else if (bassType === "pluck") playPluckBass(btt, bm, bdur, bassEvent.velocity);
+          else playBass(btt, bm, bdur, bassEvent.velocity);
           track.lastBass = bm;
         }
         /* harmony — voice-led, scaled by section */
         if (D.harm > 0 && !cut) {
-          const padType = track.padType || g.pad;
+          const padType = track.padRole || track.padType || g.pad,
+            padTimbre = track.padTimbre || "keys";
           if (padType === "stab") {
-            if (sIdx % 4 === 2 && Math.random() < 0.85 * D.harm) {
-              playStab(tt, voiceChord(deg));
+            if (
+              sIdx % 4 === 2 &&
+              seededUnit(track.seed, `pad-stab:${bar}:${sIdx}`) < 0.85 * D.harm
+            ) {
+              playStab(tt, voiceChord(deg), padTimbre);
               visQ.push({ t: tt, type: "stab" });
             }
-            if (sIdx === 0 && bar % 2 === 0) {
+            if (sIdx === 0 && bar % Math.max(1, track.chordBars || 2) === 0) {
               visQ.push({ t: tt, type: "chord" });
               for (let i = 0; i < 8; i++) faderTarget[i] = R(0, 1);
             }
-          } else if (sIdx === 0 && bar % 2 === 0) {
+          } else if (sIdx === 0 && bar % Math.max(1, track.chordBars || 2) === 0) {
             const notes = voiceChord(deg);
-            const dur = sect === "break" ? spb * 8 * 1.1 : spb * 8 * 0.95; // pads breathe in the breakdown
+            const chordDur = spb * 4 * Math.max(1, track.chordBars || 2),
+              dur = sect === "break" ? chordDur * 1.1 : chordDur * 0.95; // pads breathe in the breakdown
             padType === "keys"
-              ? playKeys(tt, notes, dur)
+              ? playKeys(tt, notes, dur, padTimbre)
               : [
                     "chorus",
                     "strings",
@@ -7641,8 +8711,8 @@
                     "fm",
                     "neon",
                   ].includes(padType)
-                ? playAltPad(tt, notes, dur, padType)
-                : playPad(tt, notes, dur);
+                ? playAltPad(tt, notes, dur, padType, padTimbre)
+                : playPad(tt, notes, dur, padTimbre);
             visQ.push({ t: tt, type: "chord" });
             for (let i = 0; i < 8; i++) faderTarget[i] = R(0, 1);
           }
@@ -7670,45 +8740,73 @@
           if (!ariSing && !visitor && canSing && track.ariSings)
             startAriSing(tt);
         }
+        const activeMicCypher =
+            visitor2 &&
+            visitorPhase === "performing" &&
+            vis1?.instr === "on the mic" &&
+            vis2?.instr === "on the mic",
+          activeCypherTurn = Math.floor(sectionInfoAt(bar).pos / 2) % 2;
         if (sIdx === 0) {
           // double-time echo layers ride over the fresh bar
           fireLeadEcho(leadEchoA, tt, "on the mic", 0.32);
-          if (visitor && visitorPhase === "performing" && vis1)
-            fireLeadEcho(leadEchoV, tt, vis1.instr, 0.28);
+          if (visitor && visitorPhase === "performing" && vis1) {
+            if (activeMicCypher) {
+              if (activeCypherTurn === 0)
+                fireLeadEcho(leadEchoV, tt, vis1.instr, 0.28);
+              else fireLeadEcho(leadEchoV2, tt, vis2.instr, 0.28);
+            } else {
+              fireLeadEcho(leadEchoV, tt, vis1.instr, 0.28);
+              if (visitor2 && vis2)
+                fireLeadEcho(leadEchoV2, tt, vis2.instr, 0.25);
+            }
+          }
         }
-        const duet =
+        const micCypher =
+            activeMicCypher,
+          cypherTurn = activeCypherTurn,
+          vis1OwnsTurn = !micCypher || cypherTurn === 0,
+          vis2OwnsTurn = !micCypher || cypherTurn === 1,
+          duet =
           composerState.role === "response" &&
           visitor &&
           visitorPhase === "performing" &&
           vis1 &&
+          !micCypher &&
           D.lead > 0;
         if (
           ariSing &&
+          !micCypher &&
           D.lead > 0 &&
           (composerState.ari ?? 1) > 0.12 &&
+          composerState.role !== "breath" &&
           !(duet && sIdx >= 8)
         ) {
-          const personality = "robot",
-            ev = melodyEventAt(track, personality, bar, sIdx);
-          if (ev) {
-            const midi = melodyMidi(track, ev, personality, false),
-              adur = s16 * ev.dur;
+          const ev = vocalEventAt(track, bar, sIdx),
+            ariGate = composerState.ari ?? 1;
+          if (
+            ev &&
+            (ariGate >= .6 || ev.accent || seededUnit(track.seed, `ari-gate:${bar}:${sIdx}`) < ariGate + .12)
+          ) {
+            const midi = vocalMidi(track, ev, "ari"),
+              adur = s16 * ev.dur,
+              vtt = tt + (ev.micro || 0) * s16;
             playLead(
-              tt,
+              vtt,
               midi,
               adur,
               "on the mic",
-              (0.72 + ev.velocity * 0.2) * (cut ? 1.25 : 1),
+              (0.72 + ev.velocity * 0.2) * Math.max(.48, ariGate) * (cut ? 1.25 : 1),
+              ev,
             );
-            recLeadEcho(leadEchoA, sIdx * s16, midi, adur);
-            visQ.push({ t: tt, type: "alead" });
+            recLeadEcho(leadEchoA, (sIdx + (ev.micro || 0)) * s16, midi, adur, ev);
+            visQ.push({ t: vtt, type: "alead" });
           }
         }
         /* call: the guest owns the first half of a response bar... */
         if (duet && sIdx >= 8) {
           const srcEv =
             vis1.instr === "on the mic"
-              ? vocalEventAt(track, bar, sIdx - 8)
+              ? vocalEventAt(track, bar, sIdx - 8, "guest1")
               : melodyEventAt(
                   track,
                   melodyPersonalityFor(vis1.instr, false),
@@ -7718,59 +8816,76 @@
           if (srcEv) {
             /* ...and the answer: A.R.I. repeats the guest's phrase a degree
                lower, half a bar later — imitation with a nod, not a parrot */
-            const ans = { ...srcEv, degree: srcEv.degree - 1 };
-            const midi = melodyMidi(track, ans, "robot", false);
+            const ans = {
+              ...srcEv,
+              degree: srcEv.degree - 1,
+              performerTag: "ari",
+            };
+            const midi = vocalMidi(track, ans, "ari");
             playLead(
               tt,
               midi,
               s16 * srcEv.dur,
               "on the mic",
               0.6 + (srcEv.velocity || 0.7) * 0.2,
+              { ...ans, mode: srcEv.mode || "half-sung" },
             );
             visQ.push({ t: tt, type: "alead" });
           }
         }
         /* visitor melodies now follow pre-composed motifs and phrase development */
-        if (visitor && visitorPhase === "performing" && D.lead > 0 && vis1 && (composerState.guest ?? 1) > 0.1 && !(duet && sIdx >= 8)) {
+        if (visitor && visitorPhase === "performing" && D.lead > 0 && vis1 && vis1OwnsTurn && (micCypher || (composerState.guest ?? 1) > 0.18) && !(duet && sIdx >= 8)) {
           const isMic = vis1.instr === "on the mic";
           const personality = melodyPersonalityFor(vis1.instr, false);
           const ev = isMic
-            ? vocalEventAt(track, bar, sIdx)
+            ? vocalEventAt(track, bar, sIdx, "guest1")
             : ((composerState.instrumental ?? 1) > 0.18 ? melodyEventAt(track, personality, bar, sIdx) : null);
           if (ev) {
-            const midi = melodyMidi(track, ev, isMic ? "vocal" : personality, false),
-              dur = s16 * ev.dur;
+            const midi = isMic
+                ? vocalMidi(track, ev, "guest1")
+                : melodyMidi(track, ev, personality, false),
+              dur = s16 * ev.dur,
+              vtt = tt + (isMic ? ev.micro || 0 : 0) * s16;
             let vmul =
               (0.72 + ev.velocity * 0.25) *
               Math.max(.45, composerState.guest ?? 1) *
               (cut ? 1.3 : 1);
             if (isMic) {
-              const dp = micDroop(tt, vis1.micPh || 0);
-              vmul *= Math.random() < dp * 0.22 ? 0 : 1 - dp * 0.45;
               if (ev.mode === "rap") vmul *= .88;
               if (ev.mode === "sung hook") vmul *= 1.08;
             }
             if (vmul > 0) {
-              playLead(tt, midi, dur, vis1.instr, vmul);
-              recLeadEcho(leadEchoV, sIdx * s16, midi, dur);
-              visQ.push({ t: tt, type: "lead", v: 1 });
+              playLead(vtt, midi, dur, vis1.instr, vmul, isMic ? ev : null);
+              recLeadEcho(leadEchoV, (sIdx + (isMic ? ev.micro || 0 : 0)) * s16, midi, dur, isMic ? ev : null);
+              visQ.push({ t: vtt, type: "lead", v: 1 });
             }
           }
         }
-        if (visitor2 && visitorPhase === "performing" && D.lead > 0 && vis2 && (composerState.guest ?? 1) > 0.35) {
-          const personality = melodyPersonalityFor(vis2.instr, false),
-            ev = melodyEventAt(track, personality, bar, sIdx);
+        if (visitor2 && visitorPhase === "performing" && D.lead > 0 && vis2 && vis2OwnsTurn && (micCypher || (composerState.guest ?? 1) > 0.35)) {
+          const isMic = vis2.instr === "on the mic",
+            personality = melodyPersonalityFor(vis2.instr, false),
+            ev = isMic
+              ? vocalEventAt(track, bar, sIdx, "guest2")
+              : melodyEventAt(track, personality, bar, sIdx);
           if (ev && (sIdx % 2 === 0 || personality === "vocal")) {
-            const midi = melodyMidi(track, ev, personality, true),
-              dur = s16 * ev.dur;
-            let vmul = 0.62 + ev.velocity * 0.2;
-            if (vis2.instr === "on the mic") {
-              const dp = micDroop(tt, vis2.micPh || 0);
-              vmul *= Math.random() < dp * 0.3 ? 0 : 1 - dp * 0.55;
+            const midi = isMic
+                ? vocalMidi(track, ev, "guest2")
+                : melodyMidi(track, ev, personality, true),
+              dur = s16 * ev.dur,
+              vtt = tt + (isMic ? ev.micro || 0 : 0) * s16;
+            let vmul =
+              (0.68 + ev.velocity * 0.22) *
+              Math.max(0.45, composerState.guest ?? 1) *
+              (cut ? 1.3 : 1) *
+              0.94;
+            if (isMic) {
+              if (ev.mode === "rap") vmul *= 0.88;
+              if (ev.mode === "sung hook") vmul *= 1.08;
             }
             if (vmul > 0) {
-              playLead(tt, midi, dur, vis2.instr, vmul);
-              visQ.push({ t: tt, type: "lead", v: 2 });
+              playLead(vtt, midi, dur, vis2.instr, vmul, isMic ? ev : null);
+              recLeadEcho(leadEchoV2, (sIdx + (isMic ? ev.micro || 0 : 0)) * s16, midi, dur, isMic ? ev : null);
+              visQ.push({ t: vtt, type: "lead", v: 2 });
             }
           }
         }
@@ -7868,6 +8983,8 @@
           guestDNA: t.guestDNA || null,
           gear: t.gear || null,
           leadWave: t.leadWave || null,
+          padRole: t.padRole || t.padType || null,
+          padTimbre: t.padTimbre || null,
           padType: t.padType || null,
           bassType: t.bassType || null,
           kick: Array.isArray(t.kick) ? t.kick.slice() : null,
@@ -8087,40 +9204,67 @@
       };
       const REQ_LINES = [
         "can i get a X beat",
-        "yo, a X beat please",
-        "gimme some X",
+        "could you build a X beat",
+        "let's try some X",
         "X please",
-        "you got X?",
+        "can we hear X?",
       ];
       const ARI_LINES = [
-        "say less",
-        "okay okay",
-        "i got you",
-        "bet",
-        "one second",
+        "let's make it",
+        "okay, building",
+        "i hear it",
+        "let's try",
+        "give me one second",
       ];
       const ARI_VOICE = { speed: 92, pitch: 60, mouth: 190, throat: 190 };
-      const vVoice = (kind = "neutral") =>
-        kind === "femme"
-          ? {
-              pitch: RI(62, 74),
-              speed: RI(70, 88),
-              mouth: RI(120, 172),
-              throat: RI(116, 170),
-            }
-          : kind === "masc"
-            ? {
-                pitch: RI(50, 62),
-                speed: RI(64, 82),
-                mouth: RI(104, 168),
-                throat: RI(98, 154),
-              }
-            : {
-                pitch: RI(56, 68),
-                speed: RI(66, 86),
-                mouth: RI(104, 174),
-                throat: RI(102, 168),
-              };
+      function makeGuestSpeechVoice(
+        kind = "neutral",
+        age = "adult",
+        dna = {},
+        vocalProfile = VOCAL_VOICE_BANK.velvet,
+      ) {
+        const base = {
+            chest: { pitch: 41, mouth: 108, throat: 88 },
+            velvet: { pitch: 50, mouth: 128, throat: 112 },
+            grit: { pitch: 56, mouth: 158, throat: 120 },
+            airy: { pitch: 65, mouth: 148, throat: 156 },
+          }[vocalProfile.key] || { pitch: 52, mouth: 132, throat: 118 },
+          kindBias = kind === "masc" ? -2 : kind === "femme" ? 2 : 0;
+        return {
+          pitch: Math.round(
+            voiceClamp(
+              base.pitch +
+                kindBias +
+                ((dna.energy || 50) - 50) / 16 -
+                ((dna.darkness || 50) - 50) / 18 -
+                (age === "older" ? 4 : 0),
+              36,
+              76,
+            ),
+          ),
+          speed: Math.round(
+            voiceClamp(68 + (dna.energy || 50) * 0.22, 64, 91),
+          ),
+          mouth: Math.round(
+            voiceClamp(
+              base.mouth + ((dna.warmth || 50) - 50) * 0.28,
+              82,
+              190,
+            ),
+          ),
+          throat: Math.round(
+            voiceClamp(
+              base.throat - ((dna.darkness || 50) - 50) * 0.24,
+              76,
+              185,
+            ),
+          ),
+        };
+      }
+      const vVoice = (visitor = "neutral") =>
+        typeof visitor === "object" && visitor?.speechVoice
+          ? visitor.speechVoice
+          : makeGuestSpeechVoice(String(visitor));
       function speak(text, opts, vol, when) {
         try {
           if (!window.SamJs || !ctx || !playing) return 0;
@@ -8299,7 +9443,7 @@
         }
 
         const said = playing
-          ? speak(spokenText, vVoice(vis1.voiceKind), 0.5)
+          ? speak(spokenText, vVoice(vis1), 0.5)
           : 0;
 
         showFollowBubble(vis1.headAnchor, bubbleText, vis1.color);
@@ -8353,10 +9497,17 @@
             gVis.classList.add("here");
             visitor2 = Math.random() < 0.04; // rare weird crossover moment
             if (visitor2) {
-              vis2 = buildVisitor(gVis2, pickInstr(), -2.35);
+              vis2 = ensureVisitorVoiceContrast(
+                buildVisitor(gVis2, pickInstr(), -2.35),
+                vis1,
+              );
               gVis2.classList.add("here");
             }
-            setCypherLine(visitor2);
+            setCypherLine(
+              visitor2 &&
+                vis1.instr === "on the mic" &&
+                vis2.instr === "on the mic",
+            );
             const req = pick(
               Object.keys(GENRES).filter((k) => k !== track.genre),
             );
@@ -8370,7 +9521,7 @@
             /* the request is spoken out loud, A.R.I. answers */
             const said = speak(
               pick(REQ_LINES).replace("X", SPEAK_GENRE[req]),
-              vVoice(vis1.voiceKind),
+              vVoice(vis1),
               0.55,
             );
             speak(pick(ARI_LINES), ARI_VOICE, 0.5, said + 0.35);
@@ -9445,7 +10596,21 @@
         target.style.color = col;
         const headAnchor = iso(
           ...T([headCX, -1.1, headZ + shoulderRise * 0.25 + 1.05]),
-        );
+        ),
+          dna = guestDNA(),
+          voiceProfile = buildPerformerVoice({
+            voiceKind: arche.voiceKind,
+            age,
+            height: h,
+            bodyW,
+            dna,
+          }),
+          speechVoice = makeGuestSpeechVoice(
+            arche.voiceKind,
+            age,
+            dna,
+            voiceProfile,
+          );
         return {
           instr,
           color: col,
@@ -9453,13 +10618,43 @@
           voiceKind: arche.voiceKind,
           archetype: arche.kind,
           age,
+          height: h,
+          bodyW,
           micPh,
           headAnchor,
-          dna: guestDNA(),
+          dna,
+          voiceProfile,
+          speechVoice,
         };
       }
+      function ensureVisitorVoiceContrast(visitor, against) {
+        if (
+          !visitor ||
+          !against ||
+          visitor.voiceProfile?.key !== against.voiceProfile?.key
+        )
+          return visitor;
+        visitor.voiceProfile = buildPerformerVoice({
+          voiceKind: visitor.voiceKind,
+          age: visitor.age,
+          height: visitor.height,
+          bodyW: visitor.bodyW,
+          dna: visitor.dna,
+          forcedKey: contrastingVoiceKey(visitor.voiceProfile.key),
+        });
+        visitor.speechVoice = makeGuestSpeechVoice(
+          visitor.voiceKind,
+          visitor.age,
+          visitor.dna,
+          visitor.voiceProfile,
+        );
+        return visitor;
+      }
       vis1 = buildVisitor(gVis, "on the mic", 0); // pre-built so the viewBox
-      vis2 = buildVisitor(gVis2, "on acoustic", -2.35); // reserves space for a duo
+      vis2 = ensureVisitorVoiceContrast(
+        buildVisitor(gVis2, "on acoustic", -2.35),
+        vis1,
+      ); // reserves space for a duo
       const world = document.getElementById("world");
       let kickE = 0,
         snareE = 0,
@@ -9744,7 +10939,8 @@
         if (!ctx) initAudio();
         ctx.resume();
         if (bgAudioEl) bgAudioEl.play().catch(() => {}); // must fire inside this click for iOS to grant it
-        if (!track) newTrack();
+        if (!track)
+          newTrack(DEBUG_GENRE && GENRES[DEBUG_GENRE] ? DEBUG_GENRE : undefined);
         playing = true;
         started = true;
         hint.style.display = "none";
@@ -9995,7 +11191,7 @@
             <div class="devsec"><div class="devh">BASS <span class="devh2">${esc(t.bassType)}</span></div>
               <div class="prow"><span class="plab">patt</span>${grid(t.bassP, "b")}</div>
             </div>
-            <div class="devsec"><div class="devh">HARMONY <span class="devh2">pad ${esc(t.padType)} · ${g.ext ? "7th chords" : "triads"}</span></div>
+            <div class="devsec"><div class="devh">HARMONY <span class="devh2">pad ${esc(t.padRole || t.padType)} × ${esc(t.padTimbre || "keys")} · ${g.ext ? "7th chords" : "triads"}</span></div>
               <div class="krow"><span>prog</span><b class="prog">${progHTML}</b></div>
               <div class="krow"><span>lead</span><b>${esc(t.leadWave || "—")}</b><span class="kdim">A.R.I. sings ${t.ariSings ? "yes" : "no"}</span></div>
             </div>
@@ -10099,62 +11295,12 @@
           devOpen ? closeDev() : openDev();
         }
 
-        /* ---------- liner notes: the public, diegetic layer ----------
-           A tap on the track name shows the sleeve; tap it to flip to the
-           credits on the back. The full telemetry stays available, but only
-           via long-press, Shift+D or ?dev=1 — visitors see liner notes,
-           the operator sees the engine room. */
-        const linerEl = document.getElementById("linerCard"),
-          linerInner = document.getElementById("linerInner"),
-          linerArt = document.getElementById("linerArt"),
-          linerBack = document.getElementById("linerBack");
-        function renderLiner() {
-          if (!track) return;
-          linerArt.src = track.artURL || "";
-          const gear = track.gear || {};
-          const guest =
-            typeof visitor !== "undefined" &&
-            visitor &&
-            visitorPhase === "performing" &&
-            vis1
-              ? `<div class="lb-row"><span>feat.</span> ${esc(displayInstr(vis1.instr))}${vis2 ? " + guest" : ""}</div>`
-              : "";
-          linerBack.innerHTML = `
-            <div class="lb-row"><span>style</span> ${esc(displayGenre(track.genre))}${track.subStyle ? " · " + esc(track.subStyle) : ""}</div>
-            <div class="lb-row"><span>key</span> ${esc(track.keyName)} · ${track.bpm} bpm</div>
-            <div class="lb-row"><span>drums</span> ${esc(gear.drumMachine || "—")}</div>
-            <div class="lb-row"><span>bass</span> ${esc(gear.bassSynth || "—")}</div>
-            <div class="lb-row"><span>keys</span> ${esc(gear.padSynth || "—")}</div>
-            <div class="lb-row"><span>voice</span> ${esc(gear.leadSynth || "—")}</div>
-            ${guest}`;
-        }
-        function openLiner() {
-          renderLiner();
-          linerEl.classList.add("show");
-          linerEl.classList.remove("flipped");
-          linerEl.setAttribute("aria-hidden", "false");
-        }
-        function closeLiner() {
-          linerEl.classList.remove("show");
-          linerEl.setAttribute("aria-hidden", "true");
-        }
-        linerInner.addEventListener("click", (e) => {
-          e.stopPropagation();
-          linerEl.classList.toggle("flipped");
-        });
-        linerEl.addEventListener("click", closeLiner);
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape") closeLiner();
-        });
-
+        /* ---------- hidden operator access ---------- */
         const trackNameEl = document.getElementById("trackname");
-        let pressTimer = null,
-          longFired = false;
+        let pressTimer = null;
         trackNameEl.addEventListener("pointerdown", () => {
-          longFired = false;
           clearTimeout(pressTimer);
           pressTimer = setTimeout(() => {
-            longFired = true;
             openDev(); // the engine room, for the operator only
           }, 600);
         });
@@ -10163,19 +11309,7 @@
         trackNameEl.addEventListener("pointerleave", cancelPress);
         trackNameEl.addEventListener("pointercancel", cancelPress);
         trackNameEl.addEventListener("contextmenu", (e) => e.preventDefault());
-        trackNameEl.addEventListener("click", (e) => {
-          e.stopPropagation();
-          if (longFired) return; // the long-press already opened dev
-          openLiner();
-        });
-        trackNameEl.setAttribute("role", "button");
-        trackNameEl.setAttribute("tabindex", "0");
-        trackNameEl.setAttribute("aria-label", "open liner notes");
-        trackNameEl.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            openLiner();
-          }
+        document.addEventListener("keydown", (e) => {
           if (e.key.toLowerCase() === "d" && e.shiftKey) openDev();
         });
         if (/[?&]dev=1/.test(location.search)) openDev();
@@ -10288,7 +11422,10 @@
         if (!visitor) {
           // repaint idle (invisible) visitors in the current palette
           vis1 = buildVisitor(gVis, "on the mic", 0);
-          vis2 = buildVisitor(gVis2, "on acoustic", -2.35);
+          vis2 = ensureVisitorVoiceContrast(
+            buildVisitor(gVis2, "on acoustic", -2.35),
+            vis1,
+          );
         }
       }
       sysLight.addEventListener("change", () => {
@@ -10513,7 +11650,11 @@
         const c = full.map((v, i) => Math.round(v * p + empty[i] * (1 - p)));
         return `rgb(${c[0]},${c[1]},${c[2]})`;
       }
-      let wxWeatherHTML = "";
+      let wxWeather = null;
+      let wxSignalTimer = 0;
+      let wxSignalCleanupTimer = 0;
+      const WX_SIGNAL_MIN_DELAY = 3 * 60 * 1000;
+      const WX_SIGNAL_MAX_DELAY = 6 * 60 * 1000;
       const NYC_TIME_FORMATTER = new Intl.DateTimeFormat("en-GB", {
         timeZone: "America/New_York",
         hour: "2-digit",
@@ -10523,8 +11664,59 @@
       function nycTime() {
         return NYC_TIME_FORMATTER.format(new Date());
       }
+      function wxSignalKind(label) {
+        if (label === "thunderstorm") return "storm";
+        if (label.includes("rain") || label.includes("drizzle")) return "rain";
+        if (label.includes("snow")) return "snow";
+        if (["partly cloudy", "overcast", "fog"].includes(label))
+          return "cloud";
+        return "clear";
+      }
+      function renderWxWeather() {
+        const el = document.getElementById("wxWeather");
+        if (!wxWeather) {
+          el.replaceChildren();
+          return;
+        }
+        const condition = document.createElement("span");
+        condition.className = `wxCond wxCond--${wxSignalKind(wxWeather.label)}`;
+        condition.style.setProperty("--wx-color", wxWeather.color);
+        condition.textContent = wxWeather.label;
+        el.replaceChildren(
+          document.createTextNode(
+            ` · ${wxWeather.f}°f / ${wxWeather.c}°c · `,
+          ),
+          condition,
+        );
+      }
+      function nextWxSignalDelay() {
+        return Math.round(
+          WX_SIGNAL_MIN_DELAY +
+            Math.random() * (WX_SIGNAL_MAX_DELAY - WX_SIGNAL_MIN_DELAY),
+        );
+      }
+      function scheduleWxSignal(delay = nextWxSignalDelay()) {
+        if (reduceMotion) return;
+        clearTimeout(wxSignalTimer);
+        wxSignalTimer = setTimeout(runWxSignal, delay);
+      }
+      function runWxSignal() {
+        const condition = document.querySelector("#wxWeather .wxCond");
+        if (!document.hidden && condition) {
+          clearTimeout(wxSignalCleanupTimer);
+          condition.classList.remove("wx-signal");
+          void condition.offsetWidth;
+          condition.classList.add("wx-signal");
+          wxSignalCleanupTimer = setTimeout(() => {
+            if (condition.isConnected) condition.classList.remove("wx-signal");
+          }, 2600);
+        }
+        scheduleWxSignal();
+      }
       function renderWxLine() {
         const el = document.getElementById("wxText");
+        const clockEl = document.getElementById("wxClock");
+        const batteryEl = document.getElementById("wxBattery");
         let battHTML;
         if (batteryIntermission) {
           battHTML = "rig battery: swapping now";
@@ -10538,8 +11730,8 @@
         } else {
           battHTML = `rig battery: <span style="color:${battColor(100)}">100%</span>`;
         }
-        const nycLine = `nyc ${nycTime()}${wxWeatherHTML ? " · " + wxWeatherHTML : ""}`;
-        el.innerHTML = nycLine + "<br>" + battHTML;
+        clockEl.textContent = `nyc ${nycTime()}`;
+        batteryEl.innerHTML = battHTML;
         el.classList.add("show");
       }
       async function loadWeather() {
@@ -10556,8 +11748,12 @@
           const c = Math.round(cur.temperature_2m);
           const f = Math.round((c * 9) / 5 + 32);
           const color = WX_COLOR[label] || "inherit";
-          wxWeatherHTML = `${f}°f / ${c}°c · <span class="wxCond" style="text-decoration-color:${color}">${label}</span>`;
+          const conditionChanged = wxWeather && wxWeather.label !== label;
+          wxWeather = { label, c, f, color };
+          renderWxWeather();
           renderWxLine();
+          if (conditionChanged) scheduleWxSignal(1200);
+          else if (!wxSignalTimer) scheduleWxSignal();
         } catch (e) {
           /* offline, blocked, or unavailable — weather part just stays empty */
         }
@@ -10573,7 +11769,7 @@
       if ("serviceWorker" in navigator && location.protocol === "https:") {
         addEventListener("load", () =>
           navigator.serviceWorker
-            .register("/A.R.I./sw.js", { scope: "/A.R.I./" })
+            .register("./sw.js", { scope: "./" })
             .catch(() => {}),
         );
       }
