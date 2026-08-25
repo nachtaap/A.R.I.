@@ -48,6 +48,12 @@ the music notes.
 Every track is generated from scratch with the Web Audio API. There are no
 samples or prerecorded loops.
 
+The current generator is organized as a small ensemble of cooperating musical
+systems: drum, bass, melody, vocal and composer brains. They share section,
+harmony and phrase context, so fills lead into drops, bass follows both kick and
+chords, and call-and-response leaves deliberate space instead of stacking every
+voice on every beat.
+
 A track chooses a genre — **boom bap, trap, jerk, drum n bass, 2000s rnb, house,
 UK garage, lo-fi, afrobeats, dubstep, or downtempo** — plus its own BPM, root,
 scale, chord progression, arrangement, drum patterns, swing, bass behavior,
@@ -104,6 +110,13 @@ Guests arrive at random with generated height, build, color, hair/headwear,
 stance and voice character. The interaction stays intentionally short: the guest
 requests a genre, A.R.I. answers, and the music takes over.
 
+Mic guests keep one stable voice identity across speech and performance. Four
+voice families — **chest, velvet, grit and airy** — vary register, harmonic
+source, vocal-tract shape, body, consonants and ambience. Rap uses a restrained
+two- or three-tone chord pocket with dry, rhythmic articulation; hooks open into
+longer vowels, breath, vibrato and melody. A.R.I. keeps a separate electronic
+pulse signature during call-and-response.
+
 Most guests perform on the mic. Occasionally they play:
 
 - sax
@@ -146,7 +159,11 @@ Tap the heart again to forget the track.
 - Roughly every 10–15 tracks the rig runs out of battery and triggers a short
   battery-swap intermission.
 - NYC weather is fetched live from Open-Meteo and shown quietly under the
-  header. The feature fails silently when offline.
+  header. Weather states have their own restrained color and a very occasional
+  typographic signal; reduced-motion preferences are respected. The feature
+  fails silently when offline.
+- Street names are centered on their isometric signs and follow the projected
+  angle of both sign edges, with automatic fitting for longer names.
 - The status line also shows the rig's battery level, color-coded from green to
   red.
 - Wide desktop layouts include a fictional, reactive **street chat** with
@@ -200,6 +217,29 @@ Keep these files together in the same directory:
 - `favicon-16.png`
 
 ## Current version
+
+### Version 107 — ensemble composition, distinct voices and cleaner UI
+
+- Rebuilt the musical core around coordinated **drum, bass, melody, vocal and
+  composer brains**, with section-aware energy, harmonic context, phrase roles
+  and real call-and-response.
+- Expanded rhythm, bass and arrangement behavior so genres differ in pocket and
+  development rather than only tempo and sound choice.
+- Reworked mic synthesis around four persistent guest voice families: chest,
+  velvet, grit and airy. Spoken introductions and musical performances now use
+  the same guest identity.
+- Separated rap delivery from sung hooks. Rap stays dry and declamatory around a
+  small chord-tone pocket; hooks receive sustained formants, breath, vibrato and
+  more space.
+- Gave A.R.I. a dedicated electronic vocal signature and reduced echo density,
+  level jumps and mobile audio load.
+- Removed the expandable track-information panel opened by clicking the track
+  title, keeping the player deliberately minimal.
+- Added subtle, infrequent weather typography tied to the current conditions and
+  respectful of reduced-motion settings.
+- Corrected street-sign typography so names are centered, fitted and parallel to
+  the projected sign outlines.
+- Updated the portable service-worker shell and cache to `ari-v83`.
 
 ### Version 97 — more genres, substyles for everyone, fuller bass
 
@@ -260,7 +300,8 @@ Keep these files together in the same directory:
 ### Version 76
 
 - Track info moved into fixed, predictable rows for track number/time, title,
-  genre/tempo and guest information.
+  genre/tempo and guest information. This panel was later removed in version
+  107 to restore the minimal player.
 
 ### Version 73
 
