@@ -735,41 +735,8 @@
       });
     }
 
-    // Swipe/drag right anywhere on the open drawer. Vertical scrolling remains
-    // untouched; only a clearly horizontal gesture closes it.
-    let gesture = null;
-
-    drawerPanel.addEventListener('pointerdown', e => {
-      if (!isOpen()) return;
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      if (e.target.closest('button, a, input, textarea, select, [contenteditable="true"]')) return;
-
-      gesture = {
-        id: e.pointerId,
-        x: e.clientX,
-        y: e.clientY
-      };
-    }, true);
-
-    drawerPanel.addEventListener('pointermove', e => {
-      if (!gesture || e.pointerId !== gesture.id) return;
-
-      const dx = e.clientX - gesture.x;
-      const dy = e.clientY - gesture.y;
-
-      if (dx > 58 && Math.abs(dx) > Math.abs(dy) * 1.3) {
-        e.preventDefault();
-        gesture = null;
-        closeDrawer();
-      } else if (Math.abs(dy) > 42 && Math.abs(dy) > Math.abs(dx)) {
-        gesture = null;
-      }
-    }, { capture: true, passive: false });
-
-    ['pointerup', 'pointercancel'].forEach(type =>
-      drawerPanel.addEventListener(type, () => { gesture = null; }, true)
-    );
-
+    // No swipe/drag gestures: the panel is deliberately explicit.
+    // Close it with its existing close button, or Escape on desktop.
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && isOpen()) closeDrawer();
     });
