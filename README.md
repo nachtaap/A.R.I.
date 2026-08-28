@@ -144,12 +144,13 @@ Nothing is uploaded and no account is required.
 
 The visible player remains deliberately minimal.
 
-Press and hold the track name to open the technical track view:
+The technical track view lives in a right-side drawer.
 
-- long touch on mobile;
-- long left-mouse press on desktop.
+- Tap or click the **track name** once to open it.
+- Swipe or drag right across the drawer to close it.
+- The existing close button also closes it, and desktop users can press **Escape**.
 
-Version 108 uses pointer capture so a tiny mouse movement no longer cancels the desktop long press.
+The old long-press interaction has been removed. Vertical scrolling inside the track details remains available.
 
 ## The street
 
@@ -192,7 +193,7 @@ GitHub Pages can host the PWA directly.
 - Added sparse synthesized micro-overdubs so detail accumulates around a loop instead of every layer starting at once.
 - Added extra low-frequency depth to appropriate techno material without samples.
 - Weighted random style selection toward the rap, singer, soul/R&B and flexible electronic territory at the center of the street-improv concept while keeping the long tail available.
-- Fixed long left-mouse press on the track title so desktop operator access matches long-touch behavior on mobile.
+- Replaced the hidden track-title long press with a right-side details drawer opened by a normal tap/click on the track name; swipe/drag right, close button or Escape closes it.
 
 ### Version 107 — Ensemble composition
 

@@ -601,43 +601,209 @@
     };
   }
 
-  // Reliable touch + mouse long press on the hidden operator view.
-  const title=document.getElementById('trackname');
-  if(title){
-    let press=null,suppress=false;
-    const clear=(release=true)=>{
-      if(!press)return;
-      clearTimeout(press.timer);
-      if(release&&title.hasPointerCapture?.(press.id)){try{title.releasePointerCapture(press.id)}catch(_){}}
-      press=null;
+  // ---------------------------------------------------------------------------
+  // Track details drawer — deliberately invisible until requested.
+  //
+  // Open:
+  //   tap/click the track name once.
+  //
+  // Close:
+  //   existing close button, swipe/drag right across the drawer, or Escape.
+  //
+  // This replaces the old hidden long-press interaction.
+  // ---------------------------------------------------------------------------
+  const title = document.getElementById('trackname');
+  const drawerPanel = document.getElementById('devPanel');
+
+  if (drawerPanel && typeof window.toggleDevPanel === 'function') {
+    const style = document.createElement('style');
+    style.id = 'ariDrawerStyle';
+    style.textContent = `
+      :root {
+        --ari-drawer-width: min(420px, 92vw);
+      }
+
+      #devPanel.devpanel {
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: var(--ari-drawer-width) !important;
+        max-width: none !important;
+        height: 100vh !important;
+        height: 100svh !important;
+        max-height: none !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border-top: 0 !important;
+        border-right: 0 !important;
+        border-bottom: 0 !important;
+        padding-top: max(14px, env(safe-area-inset-top)) !important;
+        padding-bottom: max(14px, env(safe-area-inset-bottom)) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translate3d(102%, 0, 0) !important;
+        transition:
+          transform 280ms cubic-bezier(.22,.75,.18,1),
+          box-shadow 280ms ease !important;
+        pointer-events: none !important;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        box-shadow: none !important;
+      }
+
+      #devPanel.devpanel.show {
+        transform: translate3d(0, 0, 0) !important;
+        pointer-events: auto !important;
+        box-shadow: -18px 0 44px rgba(0, 0, 0, .28) !important;
+      }
+
+      #trackname {
+        cursor: pointer;
+      }
+
+      @media (max-width: 640px) {
+        :root {
+          --ari-drawer-width: 92vw;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #devPanel.devpanel {
+          transition-duration: 1ms !important;
+        }
+      }
+
+      /* The animated underline already makes the weather condition read as
+         a link. v108 makes that affordance real. */
+      #wxWeather .wxCond {
+        cursor: pointer;
+        pointer-events: auto;
+      }
+
+      #wxWeather .wxCond:focus-visible {
+        outline: 1px dotted currentColor;
+        outline-offset: 3px;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const isOpen = () => drawerPanel.classList.contains('show');
+    const openDrawer = () => {
+      if (!isOpen()) window.toggleDevPanel();
     };
-    title.addEventListener('pointerdown',e=>{
-      e.stopImmediatePropagation();
-      if(e.pointerType==='mouse'&&e.button!==0)return;
-      clear();
-      press={id:e.pointerId,x:e.clientX,y:e.clientY,timer:0};
-      try{title.setPointerCapture(e.pointerId)}catch(_){}
-      press.timer=setTimeout(()=>{
-        if(!press)return;
-        suppress=true;
-        if(typeof openDev==='function')openDev();
-      },620);
-    },true);
-    title.addEventListener('pointermove',e=>{
-      if(!press||e.pointerId!==press.id)return;
-      if(Math.hypot(e.clientX-press.x,e.clientY-press.y)>12)clear();
-    },true);
-    ['pointerup','pointercancel','lostpointercapture'].forEach(type=>
-      title.addEventListener(type,e=>{
-        if(!press||(e.pointerId!=null&&e.pointerId!==press.id))return;
-        clear(type!=='lostpointercapture');
-      },true)
+    const closeDrawer = () => {
+      if (isOpen()) window.toggleDevPanel();
+    };
+
+    if (title) {
+      // Capture phase prevents the legacy pointerdown long-press timer in
+      // index.html from starting. A normal click/tap now opens the drawer.
+      title.addEventListener('pointerdown', e => {
+        e.stopImmediatePropagation();
+      }, true);
+
+      title.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        openDrawer();
+      }, true);
+
+      title.setAttribute('role', 'button');
+      title.setAttribute('tabindex', '0');
+      title.setAttribute('aria-controls', 'devPanel');
+      title.setAttribute('aria-label', 'Open track details');
+
+      title.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openDrawer();
+        }
+      });
+    }
+
+    // Swipe/drag right anywhere on the open drawer. Vertical scrolling remains
+    // untouched; only a clearly horizontal gesture closes it.
+    let gesture = null;
+
+    drawerPanel.addEventListener('pointerdown', e => {
+      if (!isOpen()) return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (e.target.closest('button, a, input, textarea, select, [contenteditable="true"]')) return;
+
+      gesture = {
+        id: e.pointerId,
+        x: e.clientX,
+        y: e.clientY
+      };
+    }, true);
+
+    drawerPanel.addEventListener('pointermove', e => {
+      if (!gesture || e.pointerId !== gesture.id) return;
+
+      const dx = e.clientX - gesture.x;
+      const dy = e.clientY - gesture.y;
+
+      if (dx > 58 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+        e.preventDefault();
+        gesture = null;
+        closeDrawer();
+      } else if (Math.abs(dy) > 42 && Math.abs(dy) > Math.abs(dx)) {
+        gesture = null;
+      }
+    }, { capture: true, passive: false });
+
+    ['pointerup', 'pointercancel'].forEach(type =>
+      drawerPanel.addEventListener(type, () => { gesture = null; }, true)
     );
-    title.addEventListener('click',e=>{
-      if(!suppress)return;
-      e.preventDefault();e.stopImmediatePropagation();suppress=false;
-    },true);
-    title.addEventListener('contextmenu',e=>e.preventDefault(),true);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && isOpen()) closeDrawer();
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Weather condition link.
+  //
+  // The live value still comes from Open-Meteo. The human-facing destination
+  // is the official National Weather Service forecast for the NYC coordinates
+  // A.R.I. already uses.
+  // ---------------------------------------------------------------------------
+  const NYC_WEATHER_URL =
+    'https://forecast.weather.gov/MapClick.php?lat=40.7128&lon=-74.0060';
+
+  const weatherRoot = document.getElementById('wxWeather');
+  if (weatherRoot) {
+    weatherRoot.addEventListener('click', e => {
+      const condition = e.target.closest('.wxCond');
+      if (!condition) return;
+      e.preventDefault();
+      e.stopPropagation();
+      window.open(NYC_WEATHER_URL, '_blank', 'noopener,noreferrer');
+    });
+
+    weatherRoot.addEventListener('keydown', e => {
+      const condition = e.target.closest?.('.wxCond');
+      if (!condition || (e.key !== 'Enter' && e.key !== ' ')) return;
+      e.preventDefault();
+      window.open(NYC_WEATHER_URL, '_blank', 'noopener,noreferrer');
+    });
+
+    // renderWxWeather replaces the condition span whenever weather updates,
+    // so decorate each new node automatically.
+    const decorateWeatherLink = () => {
+      const condition = weatherRoot.querySelector('.wxCond');
+      if (!condition) return;
+      condition.setAttribute('role', 'link');
+      condition.setAttribute('tabindex', '0');
+      condition.setAttribute('aria-label', `${condition.textContent || 'NYC weather'} — open NYC forecast`);
+      condition.setAttribute('title', 'Open NYC weather forecast');
+    };
+
+    new MutationObserver(decorateWeatherLink).observe(weatherRoot, {
+      childList: true,
+      subtree: true
+    });
+    decorateWeatherLink();
   }
 
   window.ARI108=Object.freeze({
