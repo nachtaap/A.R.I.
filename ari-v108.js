@@ -1,398 +1,660 @@
-/* A.R.I. v108 — Music Engine II
-   Add this file next to index.html and load it after the existing A.R.I. script.
-   It keeps the v107 engine intact and adds two genre-specific composition worlds:
-   Dark Techno and Oldschool Hip Hop, plus a reliable mouse/touch long-press on
-   the track title for the hidden details panel.
+/* A.R.I. v108 — Street Improv Engine
+   Origin-first architecture:
+   - everything is synthesized live; no prerecorded loops
+   - rapid patch-bank / macro-style sound switching
+   - composition grows by layering, recall and small overdubs
+   - genre requests resolve into reusable musical grammars
+   - hundreds of canonical styles + thousands of request identities
+
+   This file extends the v107 engine and is intentionally data-driven:
+   adding a style means adding musical metadata, not another standalone engine.
 */
 (() => {
   'use strict';
 
-  const clamp01 = v => Math.max(0, Math.min(1, v));
-  const pilotGenres = new Set(['dark techno', 'oldschool hiphop']);
+  const VERSION = 108;
+  const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
+  const clone = x => x == null ? x : JSON.parse(JSON.stringify(x));
 
-  // ---------------------------------------------------------------------------
-  // 1. Genre grammar: these are composition rules, not just sound presets.
-  // ---------------------------------------------------------------------------
-  if (typeof GENRES !== 'undefined') {
-    GENRES['dark techno'] = {
-      bpm: [126, 138], swing: [0, 0.018],
-      kick: { b: [0, 4, 8, 12], c: [], p: 0 },
-      snare: { b: [4, 12], c: [], p: 0 },
-      hat: 'offbeat', hatP: [0.68, 0.94],
-      bassPat: { b: [0, 3, 8, 11], c: [6, 14], p: 0.20 },
-      bass: 'reese', pad: 'stab', ext: false,
-      progs: [[0], [0, 0, 5, 0], [0, 6], [0, 5, 0, 6], [0, 3, 0, 6]],
-      kd: { f0: 154, f1: 43, d: 0.34 }
-    };
-
-    GENRES['oldschool hiphop'] = {
-      bpm: [82, 98], swing: [0.11, 0.19],
-      kick: { b: [0, 10], c: [3, 6, 7, 14], p: 0.36 },
-      snare: { b: [4, 12], c: [7, 15], p: 0.18 },
-      hat: 'eights', hatP: [0.70, 0.92],
-      bassPat: { b: [0, 10], c: [3, 6, 14], p: 0.32 },
-      bass: 'round', pad: 'keys', ext: true,
-      progs: [[0, 3], [0, 5, 3, 4], [0, 2, 5], [0, 6, 3, 4], [0, 3, 6, 5]],
-      kd: { f0: 118, f1: 46, d: 0.25 }
-    };
-  }
-
-  if (typeof SUBSTYLES !== 'undefined') {
-    SUBSTYLES['dark techno'] = {
-      hypnotic: {
-        bpm: [128, 134], swing: [0, 0.012],
-        kickA: [0,4,8,12], kickB: [0,4,8,12], snare: [4,12], ghost: [7,15], hats: [2,6,10,14],
-        pad: 'shadow', bass: 'reese', scale: 'minor',
-        bassPat: { b: [0,3,8,11], c: [14], p: 0.20 }
-      },
-      industrial: {
-        bpm: [132, 140], swing: [0, 0.008],
-        kickA: [0,4,8,12], kickB: [0,4,8,12,14], snare: [4,12], ghost: [3,7,11,15], hats: [2,6,10,14],
-        pad: 'shadow', bass: 'growl', scale: 'phryg',
-        bassPat: { b: [0,6,8,14], c: [3,11], p: 0.22 }
-      },
-      acid: {
-        bpm: [128,136], swing: [0,0.015],
-        kickA: [0,4,8,12], kickB: [0,4,8,12], snare: [4,12], ghost: [15], hats: [2,6,10,14],
-        pad: 'stab', bass: 'pulse', scale: 'phryg',
-        bassPat: { b: [0,3,6,8,11,14], c: [], p: 0 }
-      },
-      'dub techno': {
-        bpm: [122,130], swing: [0.008,0.025],
-        kickA: [0,4,8,12], kickB: [0,4,8,12], snare: [4,12], ghost: [], hats: [2,6,10,14],
-        pad: 'stab', bass: 'deepSub', scale: 'minor',
-        bassPat: { b: [0,8], c: [6,14], p: 0.25 }
-      },
-      warehouse: {
-        bpm: [132,140], swing: [0,0.01],
-        kickA: [0,4,8,12], kickB: [0,4,8,12], snare: [4,12], ghost: [7], hats: [0,2,6,10,14],
-        pad: 'fm', bass: 'reese', scale: 'minor',
-        bassPat: { b: [0,8], c: [3,11,14], p: 0.24 }
-      }
-    };
-
-    SUBSTYLES['oldschool hiphop'] = {
-      'golden age': {
-        bpm: [88,96], swing: [0.13,0.19],
-        kickA: [0,10], kickB: [0,3,10,14], snare: [4,12], ghost: [7,15], hats: [0,3,4,7,8,11,12,15],
-        pad: 'keys', bass: 'round'
-      },
-      dusty: {
-        bpm: [84,92], swing: [0.16,0.22],
-        kickA: [0,6,10], kickB: [0,6,10,14], snare: [4,12], ghost: [7,15], hats: [0,3,6,10,14],
-        pad: 'keys', bass: 'rubber'
-      },
-      jazzy: {
-        bpm: [86,96], swing: [0.11,0.17],
-        kickA: [0,10], kickB: [0,7,10], snare: [4,12], ghost: [2,7,15], hats: [0,2,4,6,8,10,12,14],
-        pad: 'keys', bass: 'round', scale: 'dorian'
-      },
-      'east coast': {
-        bpm: [90,98], swing: [0.10,0.15],
-        kickA: [0,10], kickB: [0,3,6,10], snare: [4,12], ghost: [7,14], hats: [0,2,4,6,8,10,12,14],
-        pad: 'keys', bass: 'round'
-      },
-      basement: {
-        bpm: [82,90], swing: [0.17,0.23],
-        kickA: [0,8], kickB: [0,8,11], snare: [4,12], ghost: [7,15], hats: [2,6,10,14],
-        pad: 'keys', bass: 'rubber'
-      }
-    };
-  }
-
-  if (typeof SPEAK_GENRE !== 'undefined') {
-    SPEAK_GENRE['dark techno'] = 'dark techno';
-    SPEAK_GENRE['oldschool hiphop'] = 'old school hip hop';
-  }
-
-  // ---------------------------------------------------------------------------
-  // 2. Persistent Track DNA: one identity is kept through the full track.
-  // ---------------------------------------------------------------------------
-  function unit(seed, tag) {
-    if (typeof seededUnit === 'function') return seededUnit(seed, `v108:${tag}`);
-    let x = 2166136261;
-    const s = `${seed}:${tag}`;
-    for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); }
-    return (x >>> 0) / 4294967295;
-  }
-
-  function ensureMusicDNA(t) {
-    if (!t || !pilotGenres.has(t.genre)) return null;
-    if (t.musicDNA) return t.musicDNA;
-    if (t.genre === 'dark techno') {
-      t.musicDNA = {
-        world: 'dark techno', flavour: t.subStyle || 'hypnotic',
-        evolution: 0.38 + unit(t.seed, 'evolution') * 0.55,
-        pressure: 0.50 + unit(t.seed, 'pressure') * 0.47,
-        space: 0.20 + unit(t.seed, 'space') * 0.72,
-        metallic: 0.18 + unit(t.seed, 'metal') * 0.78,
-        repetition: 0.68 + unit(t.seed, 'repeat') * 0.28,
-        melody: 0.08 + unit(t.seed, 'melody') * 0.32,
-        grit: 0.28 + unit(t.seed, 'grit') * 0.66
-      };
-    } else {
-      t.musicDNA = {
-        world: 'oldschool hiphop', flavour: t.subStyle || 'golden age',
-        dust: 0.34 + unit(t.seed, 'dust') * 0.62,
-        human: 0.62 + unit(t.seed, 'human') * 0.34,
-        chop: 0.25 + unit(t.seed, 'chop') * 0.62,
-        jazz: 0.12 + unit(t.seed, 'jazz') * 0.72,
-        pocket: 0.68 + unit(t.seed, 'pocket') * 0.30,
-        melody: 0.32 + unit(t.seed, 'melody') * 0.48,
-        grit: 0.18 + unit(t.seed, 'grit') * 0.48
-      };
+  function unit(t, tag) {
+    if (typeof seededUnit === 'function' && t?.seed != null)
+      return seededUnit(t.seed, `v108:${tag}`);
+    let h = 2166136261;
+    const s = `${t?.seed ?? 0}:${tag}`;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
     }
-    t.generatorVersion = 108;
+    return (h >>> 0) / 4294967295;
+  }
+
+  function existing(...names) {
+    for (const n of names) if (typeof GENRES !== 'undefined' && GENRES[n]) return n;
+    return 'boom bap';
+  }
+
+  const BASE = {
+    hiphop: existing('boom bap'),
+    trap: existing('trap','boom bap'),
+    rnb: existing('2000s rnb','boom bap'),
+    soul: existing('2000s rnb','boom bap'),
+    funk: existing('boom bap','2000s rnb'),
+    house: existing('house'),
+    techno: existing('house'),
+    garage: existing('UK garage','house'),
+    dnb: existing('drum n bass','UK garage','house'),
+    breaks: existing('UK garage','drum n bass','house'),
+    bass: existing('dubstep','drum n bass','house'),
+    trance: existing('house'),
+    afro: existing('afrobeats','house'),
+    reggae: existing('downtempo','afrobeats','boom bap'),
+    latin: existing('afrobeats','house'),
+    jazz: existing('2000s rnb','boom bap'),
+    ambient: existing('downtempo','lo-fi','house'),
+    pop: existing('2000s rnb','house'),
+    rock: existing('downtempo','boom bap'),
+    experimental: existing('downtempo','dubstep','house')
+  };
+
+  const FAMILY = {
+    hiphop:{weight:22,bpm:[78,104],swing:[.07,.19],chordBars:2,loop:[4,8],machine:.26,sync:.63,density:.55,repeat:.82,melody:.46,space:.44,grit:.46,patch:'warm'},
+    trap:{weight:11,bpm:[118,156],swing:[.01,.07],chordBars:2,loop:[4,8],machine:.76,sync:.60,density:.64,repeat:.76,melody:.38,space:.48,grit:.58,patch:'hard'},
+    rnb:{weight:11,bpm:[70,114],swing:[.05,.15],chordBars:1,loop:[4,8],machine:.34,sync:.58,density:.50,repeat:.72,melody:.76,space:.63,grit:.24,patch:'warm'},
+    soul:{weight:9,bpm:[68,110],swing:[.08,.18],chordBars:1,loop:[4,8],machine:.20,sync:.55,density:.47,repeat:.70,melody:.80,space:.58,grit:.28,patch:'warm'},
+    funk:{weight:8,bpm:[90,126],swing:[.05,.14],chordBars:1,loop:[4,8],machine:.24,sync:.80,density:.72,repeat:.68,melody:.62,space:.35,grit:.38,patch:'warm'},
+    house:{weight:8,bpm:[116,132],swing:[0,.04],chordBars:2,loop:[8,16],machine:.82,sync:.42,density:.62,repeat:.87,melody:.48,space:.52,grit:.30,patch:'clean'},
+    techno:{weight:6,bpm:[122,144],swing:[0,.025],chordBars:4,loop:[8,16,32],machine:.93,sync:.34,density:.58,repeat:.93,melody:.25,space:.55,grit:.63,patch:'dark'},
+    garage:{weight:5,bpm:[126,142],swing:[.04,.12],chordBars:2,loop:[4,8],machine:.61,sync:.83,density:.64,repeat:.77,melody:.47,space:.48,grit:.36,patch:'clean'},
+    dnb:{weight:5,bpm:[158,180],swing:[0,.03],chordBars:2,loop:[8,16],machine:.73,sync:.86,density:.82,repeat:.77,melody:.52,space:.48,grit:.53,patch:'digital'},
+    breaks:{weight:4,bpm:[118,152],swing:[.01,.08],chordBars:2,loop:[4,8],machine:.57,sync:.87,density:.70,repeat:.72,melody:.42,space:.40,grit:.50,patch:'hard'},
+    bass:{weight:4,bpm:[130,152],swing:[0,.05],chordBars:2,loop:[4,8],machine:.78,sync:.65,density:.65,repeat:.79,melody:.30,space:.56,grit:.73,patch:'dark'},
+    trance:{weight:2,bpm:[126,146],swing:[0,.02],chordBars:2,loop:[8,16],machine:.88,sync:.30,density:.64,repeat:.84,melody:.83,space:.70,grit:.25,patch:'digital'},
+    afro:{weight:5,bpm:[96,126],swing:[.04,.13],chordBars:2,loop:[4,8],machine:.37,sync:.89,density:.70,repeat:.72,melody:.59,space:.38,grit:.28,patch:'warm'},
+    reggae:{weight:4,bpm:[68,110],swing:[.05,.13],chordBars:2,loop:[4,8],machine:.29,sync:.73,density:.44,repeat:.83,melody:.53,space:.73,grit:.32,patch:'warm'},
+    latin:{weight:3,bpm:[88,134],swing:[.03,.11],chordBars:1,loop:[4,8],machine:.34,sync:.91,density:.76,repeat:.66,melody:.68,space:.34,grit:.24,patch:'warm'},
+    jazz:{weight:4,bpm:[70,134],swing:[.08,.21],chordBars:1,loop:[4,8],machine:.11,sync:.69,density:.58,repeat:.55,melody:.91,space:.55,grit:.20,patch:'warm'},
+    ambient:{weight:2,bpm:[56,102],swing:[0,.06],chordBars:4,loop:[8,16,32],machine:.23,sync:.28,density:.23,repeat:.75,melody:.56,space:.95,grit:.20,patch:'digital'},
+    pop:{weight:3,bpm:[86,134],swing:[.01,.08],chordBars:1,loop:[4,8],machine:.55,sync:.48,density:.58,repeat:.70,melody:.82,space:.48,grit:.20,patch:'clean'},
+    rock:{weight:2,bpm:[80,152],swing:[.01,.08],chordBars:1,loop:[4,8],machine:.27,sync:.44,density:.72,repeat:.65,melody:.72,space:.38,grit:.65,patch:'hard'},
+    experimental:{weight:1,bpm:[66,154],swing:[0,.15],chordBars:3,loop:[4,8,16],machine:.47,sync:.73,density:.46,repeat:.47,melody:.54,space:.73,grit:.67,patch:'wild'}
+  };
+
+  const STYLE_GROUPS = {
+    hiphop:[
+      'old school hip hop','golden age hip hop','east coast hip hop','west coast hip hop','underground hip hop',
+      'jazzy hip hop','conscious hip hop','alternative hip hop','abstract hip hop','hardcore hip hop','mafioso rap',
+      'memphis rap','southern hip hop','g-funk','hyphy','crunk','snap','cloud rap','lo-fi hip hop','instrumental hip hop',
+      'jazz rap','boom bap','backpack rap','native tongues hip hop','horrorcore','chopped and screwed','miami hip hop',
+      'bay area rap','brooklyn rap','queens rap','bronx hip hop','atlanta rap','houston rap','detroit rap'
+    ],
+    trap:[
+      'trap','drill','new york drill','uk drill','chicago drill','brooklyn drill','rage','plugg','pluggnb','cloud trap',
+      'dark trap','southern trap','trap soul','jersey club rap','phonk','memphis phonk','drift phonk','trap metal',
+      'melodic trap','ambient trap','atlanta trap','detroit trap','jerk rap','hood trap','minimal trap'
+    ],
+    rnb:[
+      '2000s rnb','90s rnb','80s rnb','contemporary rnb','alternative rnb','neo soul','new jack swing','quiet storm',
+      'slow jam','future rnb','progressive rnb','rnb soul','hip hop soul','bedroom rnb','dark rnb','electronic rnb',
+      'soulful rnb','uk rnb','atlanta rnb','classic rnb','late night rnb'
+    ],
+    soul:[
+      'soul','modern soul','deep soul','northern soul','southern soul','psychedelic soul','blue eyed soul','gospel soul',
+      'sweet soul','neo soul groove','philly soul','memphis soul','chicago soul','motown groove','cinematic soul',
+      'rare soul','funk soul','electronic soul','street soul'
+    ],
+    funk:[
+      'funk','p-funk','boogie','electro funk','jazz funk','rare groove','go-go','disco funk','synth funk','deep funk',
+      'breakbeat funk','street funk','80s funk','70s funk','minimal funk','psychedelic funk','space funk','future funk',
+      'funky breaks','boogie funk'
+    ],
+    house:[
+      'chicago house','deep house','acid house','tech house','soulful house','garage house','piano house','french house',
+      'progressive house','minimal house','electro house','afro house','ghetto house','lo-fi house','filter house',
+      'classic house','jackin house','microhouse','organic house','tribal house','funky house','disco house','hard house',
+      'dream house','outsider house','90s house','warehouse house','bass house','future house'
+    ],
+    techno:[
+      'detroit techno','dark techno','hypnotic techno','industrial techno','dub techno','acid techno','minimal techno',
+      'raw techno','warehouse techno','hard techno','melodic techno','deep techno','birmingham techno','tribal techno',
+      'peak time techno','berlin techno','proper techno','groove techno','hardgroove','loop techno','ambient techno',
+      'electro techno','broken techno','minimal dub techno','atmospheric techno','mental techno','driving techno'
+    ],
+    garage:[
+      'uk garage','2-step garage','speed garage','future garage','bassline','4x4 garage','uk funky','grime','breakstep',
+      'dark garage','old school garage','garage house uk','organ garage','swing garage','deep garage','minimal garage',
+      'future 2-step','bass garage','street garage'
+    ],
+    dnb:[
+      'drum n bass','jungle','liquid drum n bass','atmospheric drum n bass','techstep','neurofunk','jump up','darkstep',
+      'drumfunk','ragga jungle','intelligent drum n bass','halftime drum n bass','rollers','old school jungle','dark jungle',
+      'ambient jungle','jazzstep','liquid funk','dancefloor drum n bass','minimal drum n bass','deep drum n bass',
+      'breakcore lite','autonomic','future jungle','hardstep'
+    ],
+    breaks:[
+      'breakbeat','nu skool breaks','big beat','electro breaks','funky breaks','progressive breaks','breaks','miami bass',
+      'freestyle electro','broken beat','footwork','juke','florida breaks','acid breaks','dark breaks','future breaks',
+      'hip hop breaks','old school electro','electro bass','breakbeat hardcore','rave breaks','leftfield breaks'
+    ],
+    bass:[
+      'dubstep','deep dubstep','riddim','brostep','uk bass','future bass','bass music','wonky','glitch hop','trap edm',
+      'leftfield bass','purple sound','post dubstep','dark dubstep','minimal dubstep','tearout','deathstep','wobble bass',
+      'halftime bass','future dub','bass experimental','dubstep garage'
+    ],
+    trance:[
+      'trance','progressive trance','uplifting trance','goa trance','psytrance','tech trance','hard trance','dream trance',
+      'acid trance','deep trance','classic trance','90s trance','progressive psytrance','dark psytrance','minimal trance',
+      'ambient trance','euphoric trance'
+    ],
+    afro:[
+      'afrobeats','afrobeat','amapiano','gqom','kuduro','afro fusion','highlife','afro swing','afro house groove',
+      'afro pop','soukous groove','afro soul','afro rnb','afro trap','afro funk','afro jazz','naija groove','azonto',
+      'kwaito','log drum groove','afro percussion'
+    ],
+    reggae:[
+      'reggae','roots reggae','dub','dancehall','lovers rock','rocksteady','digital dancehall','ragga','dub poetry groove',
+      'steppers dub','reggae fusion','one drop reggae','rub a dub','digital reggae','roots dub','deep dub','modern dancehall',
+      'old school dancehall','dubwise','soundsystem groove','reggae soul'
+    ],
+    latin:[
+      'reggaeton','dembow','latin trap','salsa groove','merengue groove','bachata groove','samba groove','baile funk',
+      'cumbia groove','latin funk','soca','zouk','kompa','latin house','latin jazz groove','latin soul','bossa nova groove',
+      'afro cuban groove','mambo groove','moombahton','brazilian bass','favela funk'
+    ],
+    jazz:[
+      'jazz','bebop groove','modal jazz','cool jazz','hard bop','fusion','acid jazz','nu jazz','jazz hop','spiritual jazz',
+      'jazz ballad','broken jazz','future jazz','electro jazz','jazz funk groove','downtempo jazz','street jazz',
+      'late night jazz','soul jazz','free jazz groove','jazz house','jazztronica'
+    ],
+    ambient:[
+      'ambient','dark ambient','ambient dub','downtempo','trip hop','chillout','idm','glitch ambient','drone',
+      'cinematic ambient','illbient','leftfield downtempo','ambient techno','ambient house','space ambient',
+      'industrial ambient','beatless ambient','dub ambient','lo-fi ambient','organic ambient','minimal ambient',
+      'psychedelic downtempo','abstract downtempo','future downtempo'
+    ],
+    pop:[
+      'synthpop','electropop','indie pop','dream pop','dance pop','art pop','alt pop','bedroom pop','city pop groove',
+      'hyperpop lite','dark pop','future pop','soul pop','funk pop','electronic pop','retro pop','80s pop groove',
+      '90s pop groove','minimal pop','indie electronic'
+    ],
+    rock:[
+      'indie rock','alternative rock','post rock','funk rock','electronic rock','new wave','post punk','krautrock groove',
+      'industrial rock','shoegaze groove','dream rock','psychedelic rock groove','garage rock groove','art rock groove',
+      'space rock groove','noise rock groove','darkwave','coldwave','dance rock','minimal wave'
+    ],
+    experimental:[
+      'experimental','glitch','wonky experimental','industrial ambient','noise groove','minimal experimental',
+      'electroacoustic groove','generative groove','outsider electronic','leftfield electronic','abstract electronic',
+      'microsound groove','deconstructed club lite','industrial groove','experimental hip hop','experimental techno',
+      'experimental bass','rhythmic noise','algorithmic groove','future experimental'
+    ]
+  };
+
+  const OVERRIDE = {
+    'old school hip hop':{bpm:[84,96],tags:['oldschool','dusty','human']},
+    'golden age hip hop':{bpm:[88,98],tags:['oldschool','soulful','human']},
+    'east coast hip hop':{bpm:[88,100],tags:['dusty','hard']},
+    'west coast hip hop':{bpm:[88,104],tags:['funky','warm']},
+    'g-funk':{bpm:[88,102],tags:['funky','warm','melodic']},
+    'memphis rap':{bpm:[78,96],tags:['dark','minimal','dusty']},
+    'drill':{bpm:[138,150],tags:['dark','hard','minimal']},
+    'uk drill':{bpm:[138,146],tags:['dark','hard','syncopated']},
+    'rage':{bpm:[142,156],tags:['hard','digital','melodic']},
+    'phonk':{bpm:[88,114],tags:['dark','dusty','hard']},
+    'neo soul':{bpm:[72,98],tags:['soulful','jazzy','human']},
+    'new jack swing':{bpm:[98,116],tags:['funky','machine','bright']},
+    'quiet storm':{bpm:[68,88],tags:['soulful','spacious','warm']},
+    'p-funk':{bpm:[96,118],tags:['funky','psychedelic','human']},
+    'go-go':{bpm:[96,116],tags:['funky','percussive','human']},
+    'acid house':{bpm:[120,130],tags:['acid','machine','repetitive']},
+    'deep house':{bpm:[118,126],tags:['deep','soulful','spacious']},
+    'french house':{bpm:[120,128],tags:['funky','filtered','bright']},
+    'lo-fi house':{bpm:[116,124],tags:['dusty','warm','minimal']},
+    'dark techno':{bpm:[126,138],tags:['dark','minimal','repetitive']},
+    'hypnotic techno':{bpm:[126,136],tags:['minimal','repetitive','spacious']},
+    'industrial techno':{bpm:[130,142],tags:['dark','hard','metallic']},
+    'dub techno':{bpm:[120,130],tags:['dub','spacious','minimal']},
+    'acid techno':{bpm:[128,138],tags:['acid','hard','repetitive']},
+    'detroit techno':{bpm:[124,136],tags:['soulful','machine','futuristic']},
+    'uk garage':{bpm:[128,136],tags:['syncopated','soulful','human']},
+    '2-step garage':{bpm:[130,138],tags:['syncopated','spacious','human']},
+    'speed garage':{bpm:[132,140],tags:['hard','syncopated','bass']},
+    'jungle':{bpm:[164,174],tags:['breaks','human','hard']},
+    'liquid drum n bass':{bpm:[168,176],tags:['soulful','melodic','spacious']},
+    'techstep':{bpm:[166,174],tags:['dark','machine','hard']},
+    'neurofunk':{bpm:[170,176],tags:['dark','digital','hard']},
+    'ragga jungle':{bpm:[164,174],tags:['reggae','breaks','human']},
+    'deep dubstep':{bpm:[136,142],tags:['dark','spacious','minimal']},
+    'riddim':{bpm:[138,145],tags:['hard','minimal','repetitive']},
+    'psytrance':{bpm:[138,148],tags:['psychedelic','machine','repetitive']},
+    'amapiano':{bpm:[108,116],tags:['deep','percussive','soulful']},
+    'gqom':{bpm:[118,126],tags:['dark','percussive','minimal']},
+    'dancehall':{bpm:[88,106],tags:['syncopated','warm','vocal']},
+    'dub':{bpm:[70,88],tags:['dub','spacious','minimal']},
+    'reggaeton':{bpm:[88,104],tags:['percussive','repetitive','warm']},
+    'baile funk':{bpm:[128,150],tags:['hard','percussive','syncopated']},
+    'trip hop':{bpm:[72,96],tags:['dark','dusty','spacious']},
+    'idm':{bpm:[90,150],tags:['digital','complex','experimental']},
+    'dark ambient':{bpm:[58,82],tags:['dark','spacious','minimal']},
+    'post rock':{bpm:[72,112],tags:['spacious','melodic','human']},
+    'industrial rock':{bpm:[92,132],tags:['hard','metallic','machine']}
+  };
+
+  const MODIFIERS = [
+    'raw','dusty','warm','dark','bright','deep','minimal','maximal','soulful','jazzy','hypnotic','spacious',
+    'late-night','street','underground','futuristic','old-school','hard','soft','melodic','percussive','psychedelic',
+    'lo-fi','polished'
+  ];
+  const ERAS = ['80s','90s','2000s','modern'];
+  const META = Object.create(null);
+  const CANONICAL = [];
+
+  function effects(tags=[]) {
+    const e={machine:0,sync:0,density:0,repeat:0,melody:0,space:0,grit:0,swing:0,chord:0};
+    for(const tag of tags){
+      if(tag==='dark'){e.grit+=.18;e.space+=.05;e.melody-=.08}
+      if(tag==='hard'){e.grit+=.20;e.density+=.10;e.machine+=.07}
+      if(tag==='minimal'){e.density-=.18;e.repeat+=.12;e.melody-=.10}
+      if(tag==='soulful'){e.melody+=.16;e.machine-=.08;e.space+=.05}
+      if(tag==='jazzy'){e.melody+=.18;e.machine-=.10;e.sync+=.08}
+      if(tag==='human'){e.machine-=.16;e.swing+=.035}
+      if(tag==='machine'){e.machine+=.16;e.swing-=.02}
+      if(tag==='syncopated'){e.sync+=.16}
+      if(tag==='percussive'){e.sync+=.12;e.density+=.10}
+      if(tag==='spacious'||tag==='dub'){e.space+=.20;e.density-=.08;e.chord+=1}
+      if(tag==='dusty'||tag==='oldschool'){e.grit+=.09;e.machine-=.08;e.swing+=.02}
+      if(tag==='digital'||tag==='futuristic'){e.machine+=.10;e.space+=.06}
+      if(tag==='melodic'){e.melody+=.18}
+      if(tag==='repetitive'){e.repeat+=.14}
+      if(tag==='complex'||tag==='experimental'){e.sync+=.08;e.repeat-=.12;e.density+=.05}
+      if(tag==='funky'){e.sync+=.12;e.swing+=.02;e.melody+=.06}
+      if(tag==='psychedelic'){e.space+=.12;e.repeat-=.06;e.melody+=.08}
+      if(tag==='metallic'){e.grit+=.18;e.machine+=.10}
+      if(tag==='warm'){e.machine-=.05;e.grit-=.05}
+    }
+    return e;
+  }
+
+  function register(name,family){
+    if(!FAMILY[family] || !GENRES) return;
+    const baseKey=BASE[family]||BASE.hiphop;
+    const source=GENRES[baseKey]||GENRES['boom bap'];
+    if(!source) return;
+    const ov=OVERRIDE[name]||{}, fam=FAMILY[family], fx=effects(ov.tags||[]);
+    if(!GENRES[name]){
+      const g=clone(source);
+      g.bpm=(ov.bpm||fam.bpm).slice();
+      if(g.swing) g.swing=fam.swing.slice();
+      GENRES[name]=g;
+    }
+    if(typeof SUBSTYLES!=='undefined' && !SUBSTYLES[name] && SUBSTYLES[baseKey]){
+      SUBSTYLES[name]=clone(SUBSTYLES[baseKey]);
+      if(ov.bpm) for(const sub of Object.values(SUBSTYLES[name])) if(sub?.bpm) sub.bpm=ov.bpm.slice();
+    }
+    if(typeof SPEAK_GENRE!=='undefined' && !SPEAK_GENRE[name]) SPEAK_GENRE[name]=name;
+    META[name]={
+      name,family,baseKey,tags:ov.tags||[],weight:fam.weight,bpm:ov.bpm||fam.bpm,
+      chordBars:Math.max(1,fam.chordBars+fx.chord),loop:fam.loop,
+      machine:clamp(fam.machine+fx.machine),sync:clamp(fam.sync+fx.sync),
+      density:clamp(fam.density+fx.density),repeat:clamp(fam.repeat+fx.repeat),
+      melody:clamp(fam.melody+fx.melody),space:clamp(fam.space+fx.space),
+      grit:clamp(fam.grit+fx.grit),swingBias:fx.swing,patch:fam.patch
+    };
+    if(!CANONICAL.includes(name)) CANONICAL.push(name);
+  }
+
+  for(const [family,names] of Object.entries(STYLE_GROUPS))
+    for(const name of names) register(name,family);
+
+  const ORIGINAL={
+    'boom bap':'hiphop','trap':'trap','jerk':'hiphop','drum n bass':'dnb','2000s rnb':'rnb',
+    'house':'house','UK garage':'garage','uk garage':'garage','lo-fi':'ambient','afrobeats':'afro',
+    'dubstep':'bass','downtempo':'ambient'
+  };
+  for(const [name,family] of Object.entries(ORIGINAL))
+    if(GENRES?.[name] && !META[name]) register(name,family);
+
+  const REQUEST_CATALOG=[];
+  for(const genre of CANONICAL)
+    for(const mod of MODIFIERS.slice(0,8))
+      REQUEST_CATALOG.push({label:`${mod} ${genre}`,genre,modifier:mod,family:META[genre]?.family});
+
+  function familyFrom(text){
+    const s=String(text||'').toLowerCase();
+    const rules=[
+      ['dnb',/drum.?n.?bass|dnb|jungle|neuro|techstep|jump.?up|liquid/],
+      ['garage',/garage|2.?step|speed garage|bassline|grime|uk funky/],
+      ['techno',/techno|industrial|warehouse|hardgroove/],
+      ['house',/house|jackin|french touch/],
+      ['trap',/trap|drill|rage|plugg|phonk/],
+      ['rnb',/\br&?b\b|slow jam|new jack/],
+      ['soul',/soul|gospel/],
+      ['funk',/funk|boogie|go-go|rare groove/],
+      ['bass',/dubstep|riddim|brostep|future bass|glitch hop/],
+      ['trance',/trance|psytrance|goa/],
+      ['afro',/afro|amapiano|gqom|kuduro|highlife|soukous/],
+      ['reggae',/reggae|dancehall|dub|rocksteady|ragga|lovers rock/],
+      ['latin',/reggaeton|dembow|salsa|merengue|bachata|cumbia|baile funk|soca|zouk|kompa/],
+      ['jazz',/jazz|bebop|hard bop|fusion/],
+      ['ambient',/ambient|downtempo|trip hop|idm|drone|chillout/],
+      ['rock',/rock|post.?punk|new wave|shoegaze|kraut|darkwave|coldwave/],
+      ['pop',/pop/],
+      ['breaks',/break|footwork|juke|miami bass/],
+      ['hiphop',/hip.?hop|boom bap|rap|g-funk|hyphy|crunk|cloud/]
+    ];
+    return rules.find(([,rx])=>rx.test(s))?.[0]||'experimental';
+  }
+
+  function resolveRequest(text){
+    const raw=String(text||'').trim().toLowerCase();
+    if(!raw) return {genre:'boom bap',family:'hiphop',modifiers:[]};
+    const exact=CANONICAL.find(g=>g.toLowerCase()===raw);
+    if(exact) return {genre:exact,family:META[exact]?.family,modifiers:[]};
+    let best=null;
+    for(const g of CANONICAL)
+      if(raw.includes(g.toLowerCase()) && (!best||g.length>best.length)) best=g;
+    const family=best?META[best]?.family:familyFrom(raw);
+    const genre=best||STYLE_GROUPS[family]?.[0]||'boom bap';
+    const modifiers=MODIFIERS.filter(m=>raw.includes(m));
+    return {genre,family,modifiers};
+  }
+
+  function ensureDNA(t){
+    if(!t) return null;
+    const meta=META[t.genre]||(()=>{
+      const family=familyFrom(t.genre), fam=FAMILY[family]||FAMILY.experimental;
+      return {family,loop:fam.loop,machine:fam.machine,sync:fam.sync,density:fam.density,repeat:fam.repeat,
+        melody:fam.melody,space:fam.space,grit:fam.grit,patch:fam.patch,chordBars:fam.chordBars};
+    })();
+    if(t.musicDNA?.engine==='street-improv-v108') return t.musicDNA;
+    const eraPool=meta.family==='hiphop'?['90s','90s','2000s','modern']:
+      ['techno','house'].includes(meta.family)?['90s','2000s','modern','modern']:ERAS;
+    const era=eraPool[Math.floor(unit(t,'era')*eraPool.length)];
+    const flavours=['raw','polished','warm','dark','deep','soulful','minimal','street','late-night','futuristic'];
+    const flavour=flavours[Math.floor(unit(t,'flavour')*flavours.length)];
+    const fx=effects([flavour]);
+    const loopChoices=meta.loop||[4,8];
+    const loopBars=loopChoices[Math.floor(unit(t,'loop-bars')*loopChoices.length)];
+    t.musicDNA={
+      engine:'street-improv-v108',family:meta.family,canonical:t.genre,era,flavour,loopBars,build:'layered-live-loop',
+      machine:clamp(meta.machine+fx.machine+(unit(t,'machine')-.5)*.12),
+      sync:clamp(meta.sync+fx.sync+(unit(t,'sync')-.5)*.12),
+      density:clamp(meta.density+fx.density+(unit(t,'density')-.5)*.16),
+      repetition:clamp(meta.repeat+fx.repeat+(unit(t,'repeat')-.5)*.10),
+      melody:clamp(meta.melody+fx.melody+(unit(t,'melody')-.5)*.14),
+      space:clamp(meta.space+fx.space+(unit(t,'space')-.5)*.16),
+      grit:clamp(meta.grit+fx.grit+(unit(t,'grit')-.5)*.14),
+      overdub:clamp(.22+unit(t,'overdub')*.58),
+      human:clamp(1-meta.machine+unit(t,'human')*.16)
+    };
+    t.generatorVersion=VERSION;
+    t.styleIdentity=`${t.genre} · ${era} · ${flavour}`;
     return t.musicDNA;
   }
 
-  // ---------------------------------------------------------------------------
-  // 3. Arrangement and rhythm differences.
-  // ---------------------------------------------------------------------------
-  if (typeof buildArrangement === 'function') {
-    const oldBuildArrangement = buildArrangement;
-    buildArrangement = function(bars, genre, subStyle) {
-      if (!pilotGenres.has(genre)) return oldBuildArrangement(bars, genre, subStyle);
-      const sections = [];
-      let cursor = 0;
-      const add = (name, requested) => {
-        const len = Math.max(0, Math.min(requested, bars - cursor));
-        if (!len) return;
-        sections.push({ name, start: cursor, end: cursor + len, phraseLength: 4 });
-        cursor += len;
+  // Fast patch-bank switching, using the already safe v107 gear families.
+  if(typeof chooseGear==='function' && typeof GEAR_DB!=='undefined'){
+    const original=chooseGear;
+    chooseGear=function(dna,genre,subStyle){
+      const gear=original(dna,genre,subStyle), meta=META[genre];
+      if(!meta) return gear;
+      const one=(group,key)=>{
+        const a=GEAR_DB?.[group]?.[key];
+        return a?.length?a[Math.floor(Math.random()*a.length)]:null;
       };
-      if (genre === 'dark techno') {
-        add('intro', Math.min(8, bars));
-        if (bars - cursor > 20) add('main', Math.max(8, Math.floor((bars - cursor - 12) * 0.52 / 4) * 4));
-        if (bars - cursor > 12) add('break', Math.min(8, bars - cursor - 8));
-        if (bars - cursor > 8) add('main2', bars - cursor - 8);
-        add('outro', bars - cursor);
-      } else {
-        add('intro', Math.min(4, bars));
-        if (bars - cursor > 12) add('main', Math.max(8, Math.floor((bars - cursor - 8) * 0.58 / 4) * 4));
-        if (bars - cursor > 8) add('break', 4);
-        if (bars - cursor > 4) add('main2', bars - cursor - 4);
-        add('outro', bars - cursor);
+      if(meta.patch==='warm'){
+        gear.drumMachine=one('drums','warm')||gear.drumMachine;
+        gear.bassSynth=one('bass','warm')||gear.bassSynth;
+        gear.padSynth=one('pad','warm')||gear.padSynth;
+        gear.leadSynth=one('lead','warm')||gear.leadSynth;
+      } else if(meta.patch==='dark'){
+        gear.drumMachine=one('drums',Math.random()<.55?'hard':'wild')||gear.drumMachine;
+        gear.bassSynth=one('bass','dark')||gear.bassSynth;
+        gear.padSynth=one('pad','dark')||gear.padSynth;
+        gear.leadSynth=one('lead','dark')||gear.leadSynth;
+      } else if(meta.patch==='digital'){
+        gear.drumMachine=one('drums','hard')||gear.drumMachine;
+        gear.bassSynth=one('bass','clean')||gear.bassSynth;
+        gear.padSynth=one('pad','digital')||gear.padSynth;
+        gear.leadSynth=one('lead','digital')||gear.leadSynth;
+      } else if(meta.patch==='wild'){
+        gear.drumMachine=one('drums','wild')||gear.drumMachine;
+        gear.bassSynth=one('bass','dark')||gear.bassSynth;
+        gear.padSynth=one('pad',Math.random()<.5?'dark':'digital')||gear.padSynth;
+        gear.leadSynth=one('lead',Math.random()<.5?'dark':'digital')||gear.leadSynth;
       }
-      if (sections.length && sections.at(-1).end < bars) sections.at(-1).end = bars;
-      return sections;
+      return gear;
     };
   }
 
-  if (typeof chordBarsFor === 'function') {
-    const oldChordBarsFor = chordBarsFor;
-    chordBarsFor = function(genre, subStyle) {
-      if (genre === 'dark techno') return subStyle === 'dub techno' ? 2 : 4;
-      if (genre === 'oldschool hiphop') return 2;
-      return oldChordBarsFor(genre, subStyle);
-    };
-  }
-
-  if (typeof drumBrainDNA === 'function') {
-    const oldDrumBrainDNA = drumBrainDNA;
-    drumBrainDNA = function(t) {
-      const base = oldDrumBrainDNA(t), d = ensureMusicDNA(t);
-      if (!d) return base;
-      if (t.genre === 'dark techno') return {
-        ...base,
-        syncopation: clamp01(0.20 + d.evolution * 0.28 + d.metallic * 0.08),
-        density: clamp01(0.42 + d.pressure * 0.25),
-        machine: clamp01(0.88 + d.repetition * 0.10),
-        strangeness: clamp01(0.18 + d.grit * 0.34),
-        memory: clamp01(0.76 + d.repetition * 0.20)
+  // Family-specific live-loop form while preserving v107 section names.
+  if(typeof buildArrangement==='function'){
+    const original=buildArrangement;
+    buildArrangement=function(bars,genre,subStyle){
+      const meta=META[genre];
+      if(!meta) return original(bars,genre,subStyle);
+      const family=meta.family, sections=[]; let b=0;
+      const add=(name,len)=>{
+        len=Math.max(0,Math.min(len,bars-b));
+        if(!len)return;
+        sections.push({name,start:b,end:b+len,phraseLength:4}); b+=len;
       };
-      return {
-        ...base,
-        syncopation: clamp01(0.48 + d.pocket * 0.25),
-        density: clamp01(0.42 + d.chop * 0.19),
-        machine: clamp01(0.20 + (1 - d.human) * 0.34),
-        strangeness: clamp01(0.15 + d.grit * 0.25 + d.jazz * 0.12),
-        memory: clamp01(0.70 + d.pocket * 0.18)
+      if(['techno','house','trance','ambient'].includes(family)){
+        add('intro',Math.min(8,bars));
+        if(bars-b>20)add('main',Math.max(8,Math.floor((bars-b-12)*.52/4)*4));
+        if(bars-b>12)add('break',Math.min(8,bars-b-8));
+        if(bars-b>8)add('main2',bars-b-8);
+        add('outro',bars-b);
+      }else if(['hiphop','trap','rnb','soul','funk','jazz'].includes(family)){
+        add('intro',Math.min(4,bars));
+        if(bars-b>12)add('main',Math.max(8,Math.floor((bars-b-8)*.58/4)*4));
+        if(bars-b>8)add('break',4);
+        if(bars-b>4)add('main2',bars-b-4);
+        add('outro',bars-b);
+      }else{
+        add('intro',Math.min(4,bars));
+        if(bars-b>16)add('main',Math.max(8,Math.floor((bars-b-8)*.55/4)*4));
+        if(bars-b>8)add('break',4);
+        if(bars-b>4)add('main2',bars-b-4);
+        add('outro',bars-b);
+      }
+      if(sections.length && sections.at(-1).end<bars)sections.at(-1).end=bars;
+      return sections.length?sections:original(bars,genre,subStyle);
+    };
+  }
+
+  if(typeof chordBarsFor==='function'){
+    const original=chordBarsFor;
+    chordBarsFor=(genre,subStyle)=>META[genre]?.chordBars||original(genre,subStyle);
+  }
+
+  // Same performer, radically different pocket.
+  if(typeof drumBrainDNA==='function'){
+    const original=drumBrainDNA;
+    drumBrainDNA=function(t){
+      const base=original(t), d=ensureDNA(t);
+      if(!d)return base;
+      return {...base,
+        syncopation:clamp(base.syncopation*.42+d.sync*.58),
+        density:clamp(base.density*.48+d.density*.52),
+        machine:clamp(base.machine*.38+d.machine*.62),
+        strangeness:clamp(base.strangeness*.64+d.grit*.22+(1-d.repetition)*.14),
+        memory:clamp(base.memory*.38+d.repetition*.62)
       };
     };
   }
 
-  if (typeof drumPocketMap === 'function') {
-    const oldDrumPocketMap = drumPocketMap;
-    drumPocketMap = function(t, voice, pattern, micro, barNo) {
-      const out = oldDrumPocketMap(t, voice, pattern, micro, barNo);
-      if (t?.genre === 'oldschool hiphop') {
-        for (let i = 0; i < 16; i++) {
-          if (!pattern?.[i]) continue;
-          if (voice === 'snare') out[i] = Math.max(-0.09, Math.min(0.11, out[i] + 0.065));
-          else if (voice === 'hats') out[i] = Math.max(-0.09, Math.min(0.11, out[i] + (i % 4 === 2 ? 0.03 : -0.008)));
-          else if (voice === 'kick' && i !== 0) out[i] = Math.max(-0.09, Math.min(0.11, out[i] - 0.012));
+  if(typeof drumPocketMap==='function'){
+    const original=drumPocketMap;
+    drumPocketMap=function(t,voice,pattern,micro,barNo){
+      const out=original(t,voice,pattern,micro,barNo), d=ensureDNA(t);
+      if(!d||!Array.isArray(out))return out;
+      for(let i=0;i<16;i++){
+        if(!pattern?.[i])continue;
+        if(['hiphop','rnb','soul','jazz','funk'].includes(d.family)){
+          if(voice==='snare')out[i]=Math.max(-.09,Math.min(.11,out[i]+.018+d.human*.045));
+          if(voice==='hats'&&i%4===2)out[i]=Math.max(-.09,Math.min(.11,out[i]+.012+d.human*.020));
+          if(voice==='kick'&&i!==0)out[i]=Math.max(-.09,Math.min(.11,out[i]-d.human*.010));
         }
-      } else if (t?.genre === 'dark techno') {
-        for (let i = 0; i < 16; i++) if (pattern?.[i] && voice === 'kick') out[i] *= 0.12;
+        if(['techno','house','trance'].includes(d.family)&&voice==='kick')out[i]*=.14;
+        if(['afro','reggae','latin','garage'].includes(d.family)&&voice==='hats')
+          out[i]=Math.max(-.09,Math.min(.11,out[i]+(i%4===2?.014:-.004)));
       }
       return out;
     };
   }
 
-  // Avoid pop-style harmonic tricks in the techno pilot.
-  if (typeof assignTrackEvents === 'function') {
-    const oldAssignTrackEvents = assignTrackEvents;
-    assignTrackEvents = function(t) {
-      ensureMusicDNA(t);
-      oldAssignTrackEvents(t);
-      if (t?.genre === 'dark techno') {
-        t.special = null;
-        t.picardy = false;
-        if (unit(t.seed, 'no-cut') > 0.12) t.cutBar = null;
-        if (unit(t.seed, 'no-borrow') > 0.24) t.borrowed = null;
-      } else if (t?.genre === 'oldschool hiphop' && t.special?.type === 'keychange') {
-        t.special = null;
+  // Loop recall: fewer unrelated ideas, more small transformations of known phrases.
+  if(typeof buildMelodyPlan==='function'){
+    const original=buildMelodyPlan;
+    buildMelodyPlan=function(t,personality){
+      const r=original(t,personality), d=ensureDNA(t);
+      if(!d||!r?.plan)return r;
+      const max=['techno','ambient'].includes(d.family)?2:
+        ['hiphop','trap','reggae'].includes(d.family)?3:
+        ['jazz','funk','latin'].includes(d.family)?5:4;
+      r.dna.density=clamp((r.dna.density||.5)*.45+d.melody*.55);
+      r.dna.repetition=clamp((r.dna.repetition||.5)*.35+d.repetition*.65);
+      for(let b=0;b<r.plan.length;b++){
+        let ev=(r.plan[b]||[]).filter((x,i)=>i===0||unit(t,`mel:${personality}:${b}:${i}`)<.25+d.melody*.72).slice(0,max);
+        const dist=d.loopBars>=8?8:4;
+        if(b>=dist && unit(t,`recall:${personality}:${b}`)<d.repetition*.72){
+          const src=r.plan[b-dist];
+          if(src?.length)ev=src.slice(0,max).map((x,i)=>({...x,
+            degree:x.degree+((i===src.length-1&&unit(t,`turn:${personality}:${b}`)>.72)?(b%2?1:-1):0),
+            role:'loop recall',function:i===src.length-1?'phrase variation':'motif recall'
+          }));
+        }
+        r.plan[b]=ev;
       }
+      return r;
     };
   }
 
-  // ---------------------------------------------------------------------------
-  // 4. Sound detail: deliberately sparse so it enriches rather than masks.
-  // ---------------------------------------------------------------------------
-  let tapeCurve = null;
-  function getTapeCurve() {
-    if (tapeCurve) return tapeCurve;
-    tapeCurve = new Float32Array(512);
-    for (let i = 0; i < tapeCurve.length; i++) {
-      const x = i / (tapeCurve.length - 1) * 2 - 1;
-      tapeCurve[i] = Math.tanh(x * 1.75) / Math.tanh(1.75);
+  // Quiet one-shot overdubs: detail accumulates around a loop.
+  function microHit(t0,t,kind,amount=.03){
+    if(typeof ctx==='undefined'||!ctx||typeof master==='undefined'||!master)return;
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(amount,t0+.004);g.gain.exponentialRampToValueAtTime(.0001,t0+.11);
+    if(kind==='metal'||kind==='tone'){
+      const o=ctx.createOscillator(),f=ctx.createBiquadFilter(),r=unit(t,`micro:${t0.toFixed(2)}`);
+      o.type=kind==='metal'?'square':'triangle';o.frequency.value=kind==='metal'?750+r*1800:220+r*540;
+      f.type='bandpass';f.frequency.value=o.frequency.value;f.Q.value=kind==='metal'?5:2;
+      o.connect(f);f.connect(g);g.connect(master);o.start(t0);o.stop(t0+.12);
+    }else{
+      const len=Math.max(1,Math.floor(ctx.sampleRate*.12)),b=ctx.createBuffer(1,len,ctx.sampleRate),data=b.getChannelData(0);
+      let x=Math.floor(unit(t,`noise:${t0.toFixed(2)}`)*0x7fffffff)||1;
+      for(let i=0;i<len;i++){x=(x*1664525+1013904223)|0;data[i]=((x>>>8)/0x7fffff-1)*.7}
+      const n=ctx.createBufferSource(),f=ctx.createBiquadFilter();
+      n.buffer=b;f.type=kind==='air'?'highpass':'bandpass';f.frequency.value=kind==='air'?2600:1200;f.Q.value=1.2;
+      n.connect(f);f.connect(g);g.connect(master);n.start(t0);n.stop(t0+.12);
     }
-    return tapeCurve;
   }
 
-  function dust(t0, vol = 1) {
-    if (typeof ctx === 'undefined' || !ctx) return;
-    if (typeof NB !== 'undefined' && !NB && typeof noiseBuf === 'function') NB = noiseBuf();
-    if (typeof NB === 'undefined' || !NB) return;
-    const n = ctx.createBufferSource(), hp = ctx.createBiquadFilter(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
-    n.buffer = NB; hp.type = 'highpass'; hp.frequency.value = 1400; lp.type = 'lowpass'; lp.frequency.value = 5200;
-    g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.009 * vol, t0 + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.28);
-    n.connect(hp); hp.connect(lp); lp.connect(g); g.connect(master); n.start(t0); n.stop(t0 + 0.3);
-  }
-
-  function scratch(t0, vol = 1) {
-    if (typeof ctx === 'undefined' || !ctx) return;
-    if (typeof NB !== 'undefined' && !NB && typeof noiseBuf === 'function') NB = noiseBuf();
-    if (typeof NB === 'undefined' || !NB) return;
-    const n = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
-    n.buffer = NB; f.type = 'bandpass'; f.Q.value = 2.1;
-    f.frequency.setValueAtTime(3900, t0); f.frequency.exponentialRampToValueAtTime(850, t0 + 0.18);
-    g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.035 * vol, t0 + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.19);
-    n.connect(f); f.connect(g); g.connect(master); n.start(t0); n.stop(t0 + 0.20);
-  }
-
-  function technoRumble(t0, vol = 1) {
-    if (typeof ctx === 'undefined' || !ctx || typeof track === 'undefined' || !track) return;
-    const f = ctx.createBiquadFilter(), g = ctx.createGain(), o = ctx.createOscillator();
-    f.type = 'lowpass'; f.frequency.value = 145; f.Q.value = 0.75;
-    const base = 43 + ((track.root || 36) % 12) * 0.65;
-    o.type = 'sine'; o.frequency.setValueAtTime(base * 1.13, t0); o.frequency.exponentialRampToValueAtTime(base, t0 + 0.09);
-    g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.11 * vol, t0 + 0.025); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.55);
-    o.connect(f); f.connect(g); g.connect(master); o.start(t0); o.stop(t0 + 0.60);
-  }
-
-  if (typeof playKick === 'function') {
-    const oldPlayKick = playKick;
-    playKick = function(t0, vol = 1) {
-      oldPlayKick(t0, vol);
-      if (typeof track !== 'undefined' && track?.genre === 'dark techno') {
-        const d = ensureMusicDNA(track);
-        technoRumble(t0 + 0.018, 0.72 + (d?.pressure || 0.5) * 0.34);
-      }
+  if(typeof scheduleStep==='function'){
+    const original=scheduleStep;
+    scheduleStep=function(sIdx,t0){
+      original(sIdx,t0);
+      if(typeof track==='undefined'||!track||typeof bar==='undefined')return;
+      const d=ensureDNA(track);
+      if(!d||![3,6,10,14,15].includes(sIdx))return;
+      if(unit(track,`overdub:${bar}:${sIdx}`)>.025+d.overdub*.055)return;
+      const kind=['techno','house','trance','bass'].includes(d.family)?'metal':
+        ['ambient','rnb','soul'].includes(d.family)?'air':
+        ['hiphop','trap','reggae'].includes(d.family)?'dust':'tone';
+      microHit(t0,track,kind,.014+d.density*.018);
     };
   }
 
-  if (typeof playKeys === 'function') {
-    const oldPlayKeys = playKeys;
-    playKeys = function(t0, midis, dur, timbre) {
-      if (typeof track === 'undefined' || track?.genre !== 'oldschool hiphop' || !ctx || !midis?.length)
-        return oldPlayKeys(t0, midis, dur, timbre);
-      const hp = ctx.createBiquadFilter(), lp = ctx.createBiquadFilter(), sat = ctx.createWaveShaper(), g = ctx.createGain();
-      hp.type = 'highpass'; hp.frequency.value = 105;
-      lp.type = 'lowpass'; lp.frequency.value = 1650; lp.Q.value = 0.42;
-      sat.curve = getTapeCurve(); sat.oversample = '2x';
-      const life = Math.min(dur || 0.7, (60 / track.bpm) * 3.5);
-      g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.07, t0 + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t0 + life);
-      hp.connect(lp); lp.connect(sat); sat.connect(g); g.connect(typeof duckBus !== 'undefined' && duckBus ? duckBus : master);
-      midis.slice(0,4).forEach((m,i) => {
-        const o = ctx.createOscillator(); o.type = i % 2 ? 'triangle' : 'sawtooth'; o.frequency.value = mtof(m < 48 ? m + 12 : m); o.detune.value = i % 2 ? 4 : -5;
-        o.connect(hp); o.start(t0); o.stop(t0 + life + 0.05);
-      });
+  function rumble(t0,t,vol=.08){
+    if(typeof ctx==='undefined'||!ctx||typeof master==='undefined'||!master)return;
+    const o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain(),root=39+((t.root||36)%12)*.55;
+    o.type='sine';o.frequency.setValueAtTime(root*1.18,t0);o.frequency.exponentialRampToValueAtTime(root,t0+.08);
+    f.type='lowpass';f.frequency.value=150;f.Q.value=.8;
+    g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(vol,t0+.025);g.gain.exponentialRampToValueAtTime(.0001,t0+.48);
+    o.connect(f);f.connect(g);g.connect(master);o.start(t0);o.stop(t0+.5);
+  }
+
+  if(typeof playKick==='function'){
+    const original=playKick;
+    playKick=function(t0,vol=1){
+      original(t0,vol);
+      if(typeof track==='undefined'||!track)return;
+      const d=ensureDNA(track);
+      if(d?.family==='techno'&&d.grit>.42)rumble(t0+.015,track,.045+d.grit*.035);
     };
   }
 
-  if (typeof scheduleStep === 'function') {
-    const oldScheduleStep = scheduleStep;
-    scheduleStep = function(sIdx, t0) {
-      oldScheduleStep(sIdx, t0);
-      if (typeof track === 'undefined' || !track || !pilotGenres.has(track.genre)) return;
-      const d = ensureMusicDNA(track);
-      if (track.genre === 'oldschool hiphop') {
-        if (sIdx === 0 && bar % 2 === 0 && unit(track.seed, `dust:${bar}`) < 0.35 + d.dust * 0.50) dust(t0, 0.65 + d.dust * 0.7);
-        if (sIdx === 14 && bar % 4 === 3 && unit(track.seed, `scratch:${bar}`) < 0.12 + d.chop * 0.24) scratch(t0, 0.70 + d.grit * 0.45);
-      }
+  // Weighted like a street session, not an encyclopedia shuffle.
+  const WEIGHTED=[];
+  for(const genre of CANONICAL){
+    const n=Math.max(1,Math.round((META[genre]?.weight||1)/2));
+    for(let i=0;i<n;i++)WEIGHTED.push(genre);
+  }
+
+  if(typeof newTrack==='function'){
+    const original=newTrack;
+    newTrack=function(forced){
+      const chosen=forced||(WEIGHTED.length?WEIGHTED[Math.floor(Math.random()*WEIGHTED.length)]:undefined);
+      const out=original(chosen);
+      if(typeof track!=='undefined'&&track)ensureDNA(track);
+      return out;
     };
   }
 
-  // ---------------------------------------------------------------------------
-  // 5. Desktop + mobile long press on the track name.
-  //    Pointer capture is the key difference: a tiny mouse movement can no
-  //    longer cause pointerleave to cancel the timer.
-  // ---------------------------------------------------------------------------
-  const title = document.getElementById('trackname');
-  if (title) {
-    let press = null;
-    let suppressClick = false;
-
-    const clearPress = release => {
-      if (!press) return;
+  // Reliable touch + mouse long press on the hidden operator view.
+  const title=document.getElementById('trackname');
+  if(title){
+    let press=null,suppress=false;
+    const clear=(release=true)=>{
+      if(!press)return;
       clearTimeout(press.timer);
-      if (release && title.hasPointerCapture?.(press.id)) {
-        try { title.releasePointerCapture(press.id); } catch (_) {}
-      }
-      press = null;
+      if(release&&title.hasPointerCapture?.(press.id)){try{title.releasePointerCapture(press.id)}catch(_){}}
+      press=null;
     };
-
-    title.addEventListener('pointerdown', e => {
-      // Capture before the old handler sees it. This replaces the previous
-      // long-press path only for the title, not the rest of the player.
+    title.addEventListener('pointerdown',e=>{
       e.stopImmediatePropagation();
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      clearPress(true);
-      press = { id: e.pointerId, x: e.clientX, y: e.clientY, timer: 0 };
-      try { title.setPointerCapture(e.pointerId); } catch (_) {}
-      press.timer = setTimeout(() => {
-        if (!press) return;
-        suppressClick = true;
-        const panel = document.getElementById('devPanel');
-        if (!panel?.classList.contains('show') && typeof toggleDevPanel === 'function') toggleDevPanel();
-      }, 620);
-    }, true);
-
-    title.addEventListener('pointermove', e => {
-      if (!press || e.pointerId !== press.id) return;
-      if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > 11) clearPress(true);
-    }, true);
-
-    ['pointerup','pointercancel','lostpointercapture'].forEach(type => {
-      title.addEventListener(type, e => {
-        if (!press || (e.pointerId != null && e.pointerId !== press.id)) return;
-        clearPress(type !== 'lostpointercapture');
-      }, true);
-    });
-
-    title.addEventListener('click', e => {
-      if (!suppressClick) return;
-      e.preventDefault(); e.stopImmediatePropagation(); suppressClick = false;
-    }, true);
-
-    title.addEventListener('contextmenu', e => e.preventDefault(), true);
+      if(e.pointerType==='mouse'&&e.button!==0)return;
+      clear();
+      press={id:e.pointerId,x:e.clientX,y:e.clientY,timer:0};
+      try{title.setPointerCapture(e.pointerId)}catch(_){}
+      press.timer=setTimeout(()=>{
+        if(!press)return;
+        suppress=true;
+        if(typeof openDev==='function')openDev();
+      },620);
+    },true);
+    title.addEventListener('pointermove',e=>{
+      if(!press||e.pointerId!==press.id)return;
+      if(Math.hypot(e.clientX-press.x,e.clientY-press.y)>12)clear();
+    },true);
+    ['pointerup','pointercancel','lostpointercapture'].forEach(type=>
+      title.addEventListener(type,e=>{
+        if(!press||(e.pointerId!=null&&e.pointerId!==press.id))return;
+        clear(type!=='lostpointercapture');
+      },true)
+    );
+    title.addEventListener('click',e=>{
+      if(!suppress)return;
+      e.preventDefault();e.stopImmediatePropagation();suppress=false;
+    },true);
+    title.addEventListener('contextmenu',e=>e.preventDefault(),true);
   }
 
-  // Version label, if present.
-  const tribute = document.querySelector('header .tribute');
-  if (tribute) tribute.textContent = 'inspired by ARIatHOME · version 108';
+  window.ARI108=Object.freeze({
+    version:VERSION,
+    canonicalGenres:[...new Set(CANONICAL)],
+    requestCatalog:REQUEST_CATALOG,
+    styleMeta:META,
+    resolveRequest,
+    resolveAndPlay(text){
+      const r=resolveRequest(text);
+      if(typeof newTrack==='function')newTrack(r.genre);
+      return r;
+    }
+  });
 
-  console.info('[A.R.I.] Music Engine II v108 loaded');
+  const tribute=document.querySelector('header .tribute');
+  if(tribute)tribute.textContent='inspired by ARIatHOME · version 108';
+
+  console.info(`[A.R.I.] Street Improv Engine v108 loaded · ${new Set(CANONICAL).size} canonical styles · ${REQUEST_CATALOG.length}+ request identities`);
 })();
