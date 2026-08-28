@@ -663,7 +663,24 @@
 
       @media (max-width: 640px) {
         :root {
-          --ari-drawer-width: 92vw;
+          --ari-drawer-width: 100vw;
+        }
+
+        #devPanel.devpanel,
+        #devPanel.devpanel.show {
+          left: 0 !important;
+          right: 0 !important;
+          top: 0 !important;
+          bottom: 0 !important;
+          width: 100vw !important;
+          max-width: 100vw !important;
+          height: 100vh !important;
+          height: 100svh !important;
+          max-height: 100svh !important;
+          margin: 0 !important;
+          border: 0 !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
         }
       }
 
@@ -673,16 +690,13 @@
         }
       }
 
-      /* The animated underline already makes the weather condition read as
-         a link. v108 makes that affordance real. */
+      /* Weather is informational only. Keep its animated/status-colored
+         underline, but do not make the text interactive. */
       #wxWeather .wxCond {
-        cursor: pointer;
-        pointer-events: auto;
-      }
-
-      #wxWeather .wxCond:focus-visible {
-        outline: 1px dotted currentColor;
-        outline-offset: 3px;
+        cursor: default;
+        pointer-events: none !important;
+        color: inherit;
+        text-decoration: none !important;
       }
     `;
     document.head.appendChild(style);
@@ -759,51 +773,6 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && isOpen()) closeDrawer();
     });
-  }
-
-  // ---------------------------------------------------------------------------
-  // Weather condition link.
-  //
-  // The live value still comes from Open-Meteo. The human-facing destination
-  // is the official National Weather Service forecast for the NYC coordinates
-  // A.R.I. already uses.
-  // ---------------------------------------------------------------------------
-  const NYC_WEATHER_URL =
-    'https://forecast.weather.gov/MapClick.php?lat=40.7128&lon=-74.0060';
-
-  const weatherRoot = document.getElementById('wxWeather');
-  if (weatherRoot) {
-    weatherRoot.addEventListener('click', e => {
-      const condition = e.target.closest('.wxCond');
-      if (!condition) return;
-      e.preventDefault();
-      e.stopPropagation();
-      window.open(NYC_WEATHER_URL, '_blank', 'noopener,noreferrer');
-    });
-
-    weatherRoot.addEventListener('keydown', e => {
-      const condition = e.target.closest?.('.wxCond');
-      if (!condition || (e.key !== 'Enter' && e.key !== ' ')) return;
-      e.preventDefault();
-      window.open(NYC_WEATHER_URL, '_blank', 'noopener,noreferrer');
-    });
-
-    // renderWxWeather replaces the condition span whenever weather updates,
-    // so decorate each new node automatically.
-    const decorateWeatherLink = () => {
-      const condition = weatherRoot.querySelector('.wxCond');
-      if (!condition) return;
-      condition.setAttribute('role', 'link');
-      condition.setAttribute('tabindex', '0');
-      condition.setAttribute('aria-label', `${condition.textContent || 'NYC weather'} — open NYC forecast`);
-      condition.setAttribute('title', 'Open NYC weather forecast');
-    };
-
-    new MutationObserver(decorateWeatherLink).observe(weatherRoot, {
-      childList: true,
-      subtree: true
-    });
-    decorateWeatherLink();
   }
 
   window.ARI108=Object.freeze({

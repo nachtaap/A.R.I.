@@ -147,6 +147,7 @@ The visible player remains deliberately minimal.
 The technical track view lives in a right-side drawer.
 
 - Tap or click the **track name** once to open it.
+- On mobile the details view is fully screen-filling, without an outer border or floating-card shadow.
 - Swipe or drag right across the drawer to close it.
 - The existing close button also closes it, and desktop users can press **Escape**.
 
