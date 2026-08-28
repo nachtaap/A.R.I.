@@ -7,139 +7,160 @@ A.R.I. is a minimalist generative street-music web experience: an isometric neon
 
 > **Unofficial fan tribute.** A.R.I. is inspired by ARIatHOME, the NYC street musician and streamer. It is not affiliated with, endorsed by, or connected to ARIatHOME. No recordings, samples, footage, names or likenesses from ARIatHOME are used. All music and visuals in this project are generated or drawn by the project itself.
 
-## What makes A.R.I. different
+## How it works
 
-There is no playlist behind the interface. A.R.I. synthesizes the music with the Web Audio API and coordinates a small ensemble of musical systems: drums, bass, harmony, melody, vocals and arrangement. Guests can join, request a style and temporarily become part of the performance.
+There is no playlist behind the interface. A.R.I. synthesizes the music with the Web Audio API and coordinates a small ensemble of musical systems: drums, bass, harmony, melody, vocals and arrangement.
+
+Every track is generated from a deterministic seed and develops through sections, motifs, fills, harmonic context and call-and-response. Guests can arrive, request a style and temporarily become part of the performance.
 
 The visual world is procedural SVG line art. The rig, keys, speakers, street signs, guests, weather, expressions and small stage details react to what the music engine is doing.
 
-## Music Engine II — v108
+A.R.I. itself is the play/pause control. Click or tap the robot to start, pause or resume. The Space key does the same thing.
+
+## Music Engine II
 
 Version 108 starts a new phase of the generator: **genre identity is moving from preset selection to composition grammar**.
 
-The first two pilot worlds are:
+Instead of treating a genre as mostly BPM, drums and synth choice, Music Engine II lets a genre define its own:
+
+- rhythmic language;
+- harmonic behavior;
+- phrase structure;
+- arrangement style;
+- density and evolution;
+- sound palette;
+- micro-details;
+- performance character.
+
+The first two pilot worlds are deliberately very different from one another.
 
 ### Dark Techno
 
-Dark Techno is no longer treated as house with darker synths. It receives its own composition rules:
+Dark Techno is designed around pressure, repetition, texture and long-form development rather than constant harmonic movement.
 
-- 126–140-ish BPM depending on substyle;
-- machine-tight four-on-the-floor foundation;
-- long harmonic memory and fewer chord changes;
-- pressure and texture development instead of pop-style harmonic tricks;
-- restrained melody with recurring motifs;
-- substyles for **hypnotic, industrial, acid, dub techno and warehouse**;
-- low kick rumble and a stronger sense of physical space;
-- Track DNA values for pressure, evolution, space, repetition, metallic character and grit.
+Its first substyles are:
 
-The goal is a track that develops through filtering, density, timbre and repetition rather than constantly introducing new musical material.
+- hypnotic;
+- industrial;
+- acid;
+- dub techno;
+- warehouse.
+
+Tracks can vary in evolution speed, pressure, space, metallic character, repetition, melodic density and grit.
+
+The engine favors a tight four-on-the-floor foundation, restrained melodic material, longer harmonic memory and evolving timbre. Additional synthesized low-frequency rumble gives the kick more physical depth without relying on prerecorded material.
 
 ### Oldschool Hip Hop
 
-Oldschool Hip Hop becomes its own genre rather than merely another boom-bap label. Its grammar emphasizes:
+Oldschool Hip Hop becomes a full musical world of its own rather than just another boom-bap variation.
 
-- roughly 82–98 BPM;
-- a deliberately human pocket;
-- late snares and slightly displaced hats;
-- sparse, memorable four-bar ideas;
-- restrained chord movement;
-- tape-like keys and synthesized crate texture;
-- occasional procedural dust and scratch details — still **no samples**;
-- substyles for **golden age, dusty, jazzy, east coast and basement**;
-- Track DNA values for dust, human feel, chopping, jazz influence, pocket and grit.
+Its first substyles are:
 
-This is still the existing A.R.I. synthesis engine underneath. v108 adds a genre-specific layer on top instead of replacing the stable v107 core all at once.
+- golden age;
+- dusty;
+- jazzy;
+- east coast;
+- basement.
+
+Tracks can vary in dust, human feel, chopping behavior, jazz influence, pocket, melodic density and grit.
+
+The rhythmic engine deliberately allows a looser pocket, late snares and displaced hats. Harmony moves more slowly, phrases are given more room to recur, and synthesized tape-like keys, dust and scratch gestures create a crate-digging feel without using samples.
+
+## Track DNA
+
+Music Engine II introduces persistent **Track DNA** for its pilot genres.
+
+A track receives a small set of musical character values when it is created. Those values stay with the track and influence many decisions at once.
+
+That means two Dark Techno tracks can share a genre while still feeling fundamentally different: one may be sparse, hypnotic and spacious, while another is industrial, dense and metallic.
+
+Likewise, one Oldschool Hip Hop track can lean dusty and loose while another is cleaner, jazzier and more melodic.
+
+The goal is variation at the level of the **song identity**, not just random variation inside individual bars.
+
+## Ensemble brains
+
+A.R.I. coordinates several musical systems:
+
+- **Drum Brain** — pocket, fills, ghost notes, velocity and rhythmic memory;
+- **Bass Brain** — low-end arrangement, chord awareness and kick relationship;
+- **Melody Brain** — motifs, phrase memory, contour and harmonic targets;
+- **Vocal Brain** — rap, hooks, ad-libs and phrasing;
+- **Composer Brain** — section roles, density and call-and-response.
+
+Music Engine II sits above those systems. It does not replace them; it gives them a more genre-specific musical language.
+
+## Guests and voices
+
+Guests arrive with their own hidden personality profile, or **Guest DNA**, which can influence tempo, scale, density, gear and musical behavior.
+
+Mic guests keep one stable voice identity across speech and performance. Voice families vary register, body, consonants, ambience and articulation.
+
+Rap and sung hooks are treated differently: rap stays dry and rhythmic around a small tonal pocket, while hooks receive longer vowels, vibrato and more space.
+
+Guests can also perform on synthesized instruments such as sax, flute, acoustic guitar, electric guitar, violin and e-violin.
+
+## Echoes
+
+The pink heart remembers the current track locally in the browser.
+
+Remembered tracks become **Echoes**. Future tracks in the same genre can occasionally inherit and mutate parts of an Echo, including musical DNA, gear, BPM area, progression or rhythm.
+
+Nothing is uploaded and no account is required.
 
 ## Hidden track details
 
-The minimal player stays minimal, but the technical track/details screen remains available as a hidden operator view.
+The visible player stays deliberately minimal.
 
-- **Touch:** press and hold the track name.
-- **Mouse:** press and hold the **left mouse button** on the track name for about 0.6 seconds.
+A hidden technical/details view is still available by pressing and holding the track name:
 
-Version 108 uses Pointer Events with pointer capture, so tiny mouse movements no longer cancel the long press. A short click remains a normal short click.
+- long touch on mobile;
+- long left-mouse press on desktop.
 
-## Other musical systems
+## Other details
 
-A.R.I. still includes:
-
-- coordinated drum, bass, melody, vocal and composer brains;
-- deterministic per-track seeds;
-- Guest DNA influencing musical personality;
-- track-specific gear choices;
-- arrangement-aware fills and transitions;
-- call-and-response between guest, A.R.I. and instruments;
-- locally remembered tracks (“Echoes”) that can influence future descendants;
-- synthesized sax, flute, acoustic guitar, electric guitar, violin and e-violin;
-- mic guests with persistent voice identities;
-- procedural cover art for Media Session / lock-screen playback.
-
-Existing genres remain available and continue to use the v107 engine unless explicitly upgraded by Music Engine II.
-
-## Visual and world details
-
-The scene includes a reactive portable performance rig, generated guests, NYC-inspired street signs, live weather, battery state, rare battery swaps and a fictional street chat on wide screens. A rare reverse-camera shot reveals cameraman robot **Dill-2000 (model Z)**.
-
-A.R.I. itself is the play/pause control. Click or tap the robot to start, pause or resume. The Space key does the same thing.
+- NYC weather is shown quietly beneath the header.
+- Street names follow the perspective of their projected signs.
+- The rig has a fictional battery level and occasional battery-swap intermissions.
+- Wide desktop layouts include a fictional reactive street chat.
+- Each track gets generated Media Session artwork for the browser or lock screen.
+- A rare reverse-camera shot reveals fictional cameraman robot **Dill-2000 (model Z)**.
 
 ## Running locally
 
 There is no build step.
 
-For the simplest test, keep the files together and serve the directory over localhost:
+Open the project from a local web server, for example:
 
 ```bash
 npx serve .
 ```
 
-Then open the local address in a modern browser.
-
-## Installing as a PWA
-
-When served over HTTPS (GitHub Pages is fine), A.R.I. can be installed as a Progressive Web App.
-
-- **Android / Chrome:** browser menu → Install app.
-- **iOS / Safari:** Share → Add to Home Screen.
-
-The service worker caches the app shell for fast startup and limited offline use.
-
-## v108 files
-
-The v108 upload adds one external engine file to the existing project:
-
-- `index.html` — existing main application; add the v108 script tag before `</body>`.
-- `ari-v108.js` — Music Engine II pilot genres + desktop/touch long-press fix.
-- `sw.js` — cache bumped and `ari-v108.js` added to the app shell.
-- `README.md` — this documentation.
-
-Add this line near the very bottom of `index.html`, **after the existing application script and before `</body>`**:
-
-```html
-<script src="./ari-v108.js"></script>
-```
-
-That load order matters because `ari-v108.js` extends the existing v107 engine.
+For PWA features such as the service worker and wake lock, use HTTPS or localhost.
 
 ## Version history
 
-### v108 — Music Engine II
+### Version 108 — Music Engine II
 
-- Added the first genre-specific composition grammars: Dark Techno and Oldschool Hip Hop.
-- Added persistent Track DNA for those two musical worlds.
-- Added five Dark Techno substyles and five Oldschool Hip Hop substyles.
-- Added darker techno pressure/rumble behavior and more human oldschool hip-hop pocket behavior.
-- Added synthesized dust/scratch-style micro-details for hip hop without introducing prerecorded samples.
-- Kept the stable v107 ensemble engine as the base for all existing genres.
-- Fixed the hidden track-details gesture on desktop: long left-mouse press now behaves like long touch.
-- Bumped the PWA cache and included the new v108 engine file in the app shell.
+- Introduced genre-specific composition grammar as a new layer above the v107 ensemble engine.
+- Added **Dark Techno** as a full genre with hypnotic, industrial, acid, dub techno and warehouse substyles.
+- Added **Oldschool Hip Hop** as a full genre with golden age, dusty, jazzy, east coast and basement substyles.
+- Added persistent Track DNA for the two Music Engine II pilot genres.
+- Added techno-specific pressure, long-form repetition and synthesized low-end rumble.
+- Added a more human oldschool hip-hop pocket with late snares, displaced hats and slower harmonic movement.
+- Added synthesized dust and scratch-style micro-details without introducing prerecorded samples.
+- Improved long-press handling on desktop so a held left-mouse click on the track name matches long-touch behavior on mobile.
+- Updated the portable service-worker cache.
 
-### v107 — Ensemble composition
+### Version 107 — ensemble composition, distinct voices and cleaner UI
 
-- Coordinated drum, bass, melody, vocal and composer brains around shared musical context.
-- Improved call-and-response, phrase roles and section-aware energy.
-- Reworked guest voice families and separated rap delivery from sung hooks.
-- Kept the visible player minimal while retaining the hidden diagnostic/operator panel.
-- Improved weather typography and street-sign alignment.
+- Rebuilt the musical core around coordinated **drum, bass, melody, vocal and composer brains**, with section-aware energy, harmonic context, phrase roles and real call-and-response.
+- Expanded rhythm, bass and arrangement behavior so genres differ in pocket and development rather than only tempo and sound choice.
+- Reworked mic synthesis around four persistent guest voice families: chest, velvet, grit and airy.
+- Separated rap delivery from sung hooks.
+- Gave A.R.I. a dedicated electronic vocal signature and reduced echo density, level jumps and mobile audio load.
+- Added subtle, infrequent weather typography tied to current conditions.
+- Corrected street-sign typography so names are centered, fitted and parallel to the projected sign outlines.
 
 ### Earlier versions
 
