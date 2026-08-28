@@ -1,9 +1,10 @@
 /* A.R.I. service worker — app shell, cache-first, relative to its scope */
-const CACHE = 'ari-v83';
+const CACHE = 'ari-v84';
 const BASE = new URL('./', self.location.href).pathname;
 const SHELL = [
   BASE,
   BASE + 'index.html',
+  BASE + 'ari-v108.js',
   BASE + 'manifest.webmanifest',
   BASE + 'apple-touch-icon.png',
   BASE + 'icon-192.png',

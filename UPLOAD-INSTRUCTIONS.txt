@@ -1,0 +1,20 @@
+A.R.I. v108 — upload instructions
+================================
+
+1. Upload/replace README.md
+2. Upload/replace sw.js
+3. Add ari-v108.js to the repository root
+4. Edit index.html and add this ONE line just before </body>, after the existing application script:
+
+   <script src="./ari-v108.js"></script>
+
+5. Commit the changes.
+6. After GitHub Pages updates, hard-refresh once or close/reopen the installed PWA.
+
+Why no replacement index.html?
+------------------------------
+The current index.html is a ~438 KB monolith. The v108 engine is deliberately isolated in a new file so the stable v107 application does not need to be rewritten wholesale. It also makes future Music Engine II work much cleaner.
+
+Expected desktop test
+---------------------
+Hold the left mouse button on the track title for roughly 0.6 seconds. The hidden details/operator panel should open, matching long-touch behavior on mobile.
