@@ -221,3 +221,8 @@ Code: MIT. See `LICENSE`.
 - Track details now use a direct toggle interaction: click/tap the track name to open or close, or click/tap outside the drawer to dismiss it.
 
 - Rebuilt M.A.R.C. as an authored full-body animation rather than fast per-limb sine motion. The 34-second choreography uses smooth pose-to-pose transitions, independent shoulder/elbow and hip/knee joints, relaxed drift, slow analogue afterimages, and a long final dissolve. Socks are now subtle lower-leg shapes instead of two bright white lines.
+
+- M.A.R.C. now has his defining shirtless character details: moustache, stylised chest/six-pack outlines and two subtle magenta chest marks.
+- After a naturally completed M.A.R.C. apparition, a temporary street-chat aftermath appears with an enthusiastic fan pile-on, then clears itself.
+
+- M.A.R.C. is now tied to the special location **ADULTS ONLY BOATRIDE**. When the rare event rolls, that name appears on the actual street sign for several seconds before he materialises, then the normal location returns.

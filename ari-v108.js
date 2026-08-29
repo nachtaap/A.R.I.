@@ -653,6 +653,9 @@
   const LOOP_FREAK_CHANCE = 0.0075; // ~1 in 133 tracks
   const LOOP_FREAK_COOLDOWN = 45 * 60 * 1000;
   const MARC_FEVER_DURATION = 34 * 1000;
+  const MARC_LOCATION = 'ADULTS ONLY BOATRIDE';
+  const MARC_LOCATION_PRELUDE_MS = 6200;
+  const MARC_LOCATION_RESTORE_MS = 5200;
 
   // Hand-authored slow choreography. Values are degrees / SVG units.
   // The apparition moves through recognizable poses instead of having each
@@ -741,7 +744,12 @@
     forced: false,
     titleTimer: 0,
     glitchTimer: 0,
-    retireTimer: 0
+    retireTimer: 0,
+    suppressReaction: false,
+    locationTimer: 0,
+    locationRestoreTimer: 0,
+    previousLocation: '',
+    signWasHere: false
   };
 
   function midiHz(n) {
@@ -990,8 +998,119 @@
         stroke-width: 1.25;
       }
 
+      #ariLoopFreak .lf-body-detail {
+        fill: none;
+        stroke: var(--cyan);
+        stroke-width: .9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        opacity: .66;
+      }
+
+      #ariLoopFreak .lf-chest-mark {
+        fill: var(--magenta);
+        stroke: none;
+        opacity: .72;
+      }
+
+      #ariLoopFreak .lf-moustache {
+        fill: none;
+        stroke: var(--key);
+        stroke-width: 1.55;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        opacity: .9;
+      }
+
       #ariLoopFreak .lf-shadow {
         display: none;
+      }
+
+      /* The block collectively loses its mind after M.A.R.C. dissolves. */
+      #marcFanChat {
+        position: fixed;
+        right: max(18px, env(safe-area-inset-right));
+        bottom: max(58px, calc(env(safe-area-inset-bottom) + 18px));
+        z-index: 45;
+        width: min(350px, calc(100vw - 36px));
+        padding: 12px 13px 10px;
+        border: 1px solid rgba(62,232,222,.30);
+        background: rgba(3,4,9,.88);
+        backdrop-filter: blur(9px);
+        -webkit-backdrop-filter: blur(9px);
+        box-shadow:
+          0 0 0 1px rgba(255,43,214,.07),
+          0 10px 32px rgba(0,0,0,.32),
+          0 0 22px rgba(62,232,222,.08);
+        font-family: "IBM Plex Mono", monospace;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(14px);
+        transition:
+          opacity 420ms ease,
+          transform 520ms cubic-bezier(.16,.8,.25,1);
+      }
+
+      #marcFanChat.on {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .marc-chat-head {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 8px;
+        color: var(--key-dim);
+        font-size: 8px;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+      }
+
+      .marc-chat-head::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #ff2bd6;
+        box-shadow: 0 0 8px rgba(255,43,214,.85);
+      }
+
+      .marc-chat-line {
+        min-height: 18px;
+        margin-top: 3px;
+        font-size: 10px;
+        line-height: 1.45;
+        color: var(--text);
+        opacity: 0;
+        transform: translateX(6px);
+        transition: opacity 240ms ease, transform 300ms ease;
+      }
+
+      .marc-chat-line.on {
+        opacity: 1;
+        transform: none;
+      }
+
+      .marc-chat-user {
+        color: var(--cyan);
+        margin-right: 5px;
+      }
+
+      .marc-chat-line:nth-child(3n) .marc-chat-user {
+        color: #ff2bd6;
+      }
+
+      .marc-chat-line:nth-child(4n) .marc-chat-user {
+        color: #b8ff00;
+      }
+
+      @media (max-width: 640px) {
+        #marcFanChat {
+          right: 12px;
+          bottom: max(48px, calc(env(safe-area-inset-bottom) + 12px));
+          width: min(330px, calc(100vw - 24px));
+        }
       }
 
       /* M.A.R.C. character introduction — deliberately loud 80s arcade/VHS. */
@@ -1177,10 +1296,23 @@
           <path class="lf-shorts" d="M57 132 L107 132 L104 163 L86 160 L82 146 L78 160 L59 163Z"/>
           <path class="lf-accent" d="M82 133 L82 148 M65 142 L75 142 M90 142 L100 142"/>
 
-          <!-- gloriously shirtless robot torso -->
+          <!-- unmistakably shirtless robot torso -->
           <path class="lf-main" d="M61 72 Q82 62 103 72 L108 128 Q83 138 56 128Z"/>
-          <path class="lf-accent" d="M65 89 L78 86 L82 94 L86 86 L99 89 M68 110 L96 110"/>
-          <circle class="lf-joint" cx="82" cy="116" r="2.7"/>
+
+          <!-- stylised chest / six-pack line art -->
+          <path class="lf-body-detail"
+                d="M65 85 Q72 80 79 85
+                   M86 85 Q94 80 101 85
+                   M82 91 L82 119
+                   M70 97 Q75 94 79 97
+                   M85 97 Q90 94 96 97
+                   M70 106 Q75 103 79 106
+                   M85 106 Q90 103 96 106
+                   M71 115 Q76 112 79 115
+                   M85 115 Q89 112 95 115"/>
+          <circle class="lf-chest-mark" cx="72.5" cy="88.2" r="1.25"/>
+          <circle class="lf-chest-mark" cx="93.5" cy="88.2" r="1.25"/>
+          <circle class="lf-joint" cx="82" cy="121" r="2.15"/>
 
           <!-- arms -->
           <g id="lfArmL">
@@ -1221,7 +1353,15 @@
             <line class="lf-glasses" x1="80" y1="43.5" x2="86" y2="43.5"/>
             <circle class="lf-accent" cx="70" cy="43" r="1.2"/>
             <circle class="lf-accent" cx="95" cy="43" r="1.2"/>
-            <path class="lf-accent" d="M75 56 Q83 60 92 55"/>
+
+            <!-- M.A.R.C.'s glorious moustache -->
+            <path class="lf-moustache"
+                  d="M82 51
+                     Q78 47 73.5 50.5
+                     Q77 54 82 52
+                     Q87 54 92 50
+                     Q87.5 47 82 51"/>
+            <path class="lf-accent" d="M76 58 Q83 61 91 57"/>
           </g>
         </g>
 
@@ -1256,43 +1396,147 @@
     svg.style.top = `${r.top + r.height * .12}px`;
   }
 
+  function restoreMARCLocationSign() {
+    clearTimeout(loopFreak.locationRestoreTimer);
+    loopFreak.locationRestoreTimer = 0;
+
+    const sign = document.getElementById('gSign');
+
+    try {
+      const fallback =
+        loopFreak.previousLocation ||
+        (typeof curLoc !== 'undefined' ? curLoc : '');
+
+      if (fallback && typeof buildSignBlades === 'function') {
+        buildSignBlades(fallback);
+      }
+    } catch (_) {}
+
+    if (sign) {
+      if (loopFreak.signWasHere) {
+        sign.classList.add('here');
+      } else {
+        sign.classList.remove('here');
+      }
+    }
+
+    loopFreak.previousLocation = '';
+    loopFreak.signWasHere = false;
+  }
+
+  function showMARCLocationPrelude(t, force, onReady) {
+    clearTimeout(loopFreak.locationTimer);
+    clearTimeout(loopFreak.locationRestoreTimer);
+    loopFreak.locationTimer = 0;
+    loopFreak.locationRestoreTimer = 0;
+
+    const sign = document.getElementById('gSign');
+    loopFreak.signWasHere = !!sign?.classList.contains('here');
+
+    try {
+      loopFreak.previousLocation =
+        typeof curLoc !== 'undefined' && curLoc ? String(curLoc) : '';
+    } catch (_) {
+      loopFreak.previousLocation = '';
+    }
+
+    // Suspend the ordinary sign fade timer while the omen is visible.
+    try {
+      if (typeof signTimer !== 'undefined' && signTimer) {
+        clearTimeout(signTimer);
+      }
+    } catch (_) {}
+
+    try {
+      if (typeof buildSignBlades === 'function') {
+        // One readable blade gives this deliberately weird "place" maximum
+        // impact, rather than burying it amongst normal cross streets.
+        buildSignBlades(MARC_LOCATION, { k: 1 });
+      }
+    } catch (_) {}
+
+    if (sign) sign.classList.add('here');
+
+    if (t) {
+      t.specialLocation = MARC_LOCATION;
+      t.specialEventPrelude = 'street-sign omen';
+    }
+
+    const wait = force ? 3200 : MARC_LOCATION_PRELUDE_MS;
+    const seed = t?.seed;
+
+    loopFreak.locationTimer = setTimeout(() => {
+      loopFreak.locationTimer = 0;
+
+      // The omen only belongs to the track that rolled M.A.R.C.
+      if (
+        typeof track === 'undefined' ||
+        !track ||
+        (seed != null && track.seed !== seed)
+      ) {
+        restoreMARCLocationSign();
+        return;
+      }
+
+      onReady?.();
+    }, wait);
+  }
+
   function queueLoopFreakCameo(t, force = false) {
     clearTimeout(loopFreak.queued);
+    clearTimeout(loopFreak.locationTimer);
     loopFreak.queued = 0;
+    loopFreak.locationTimer = 0;
 
     if (!t) return false;
 
     const now = Date.now();
     const rareEnough = unit(t, 'special:loop-freak') < LOOP_FREAK_CHANCE;
-    if (!force && (!rareEnough || now - loopFreak.lastAt < LOOP_FREAK_COOLDOWN)) return false;
+    if (
+      !force &&
+      (!rareEnough || now - loopFreak.lastAt < LOOP_FREAK_COOLDOWN)
+    ) return false;
 
     const bpm = Number(t.bpm) || 112;
     const barMs = (60000 / bpm) * 4;
     const seed = t.seed;
-    const delay = force ? 100 : Math.min(15000, Math.max(4500, barMs * 4));
+    const initialDelay =
+      force ? 100 : Math.min(12000, Math.max(3500, barMs * 3));
 
-    loopFreak.queued = setTimeout(() => {
-      loopFreak.queued = 0;
-
-      // The event belongs to this exact track. If the track changed, forget it.
+    const waitUntilSceneIsFree = () => {
       if (typeof track === 'undefined' || !track || track.seed !== seed) return;
 
-      // Don't trample an existing visitor conversation or the battery cutscene.
       const busy =
         (typeof cutsceneActive !== 'undefined' && cutsceneActive) ||
         (typeof visitor !== 'undefined' && visitor);
 
       if (busy && !force) {
-        loopFreak.queued = setTimeout(() => {
-          loopFreak.queued = 0;
-          if (typeof track !== 'undefined' && track && track.seed === seed)
-            startLoopFreakCameo(track, false);
-        }, Math.max(3000, barMs * 2));
+        loopFreak.queued = setTimeout(
+          waitUntilSceneIsFree,
+          Math.max(2500, barMs)
+        );
         return;
       }
 
-      startLoopFreakCameo(track, force);
-    }, delay);
+      // First the location changes. M.A.R.C. only appears after the player has
+      // had several seconds to notice ADULTS ONLY BOATRIDE on the street sign.
+      showMARCLocationPrelude(track, force, () => {
+        if (
+          typeof track !== 'undefined' &&
+          track &&
+          track.seed === seed
+        ) {
+          startLoopFreakCameo(track, force);
+        } else {
+          restoreMARCLocationSign();
+        }
+      });
+    };
+
+    loopFreak.queued = setTimeout(() => {
+      loopFreak.queued = 0;
+      waitUntilSceneIsFree();
+    }, initialDelay);
 
     return true;
   }
@@ -1312,8 +1556,15 @@
     loopFreak.lastAt = Date.now();
 
     t.specialEvent = 'M.A.R.C. — fever-dream cameo';
+    t.specialLocation = MARC_LOCATION;
     document.body.classList.add('marc-fever');
     wrap.classList.add('on');
+
+    clearTimeout(loopFreak.locationRestoreTimer);
+    loopFreak.locationRestoreTimer = setTimeout(
+      restoreMARCLocationSign,
+      MARC_LOCATION_RESTORE_MS
+    );
 
     const titleCard = wrap.querySelector('#lfTitleCard');
     if (titleCard) {
@@ -1350,6 +1601,7 @@
     if (!loopFreak.active) return;
 
     if (immediate) {
+      loopFreak.suppressReaction = true;
       finishLoopFreakCameo();
       return;
     }
@@ -1357,7 +1609,67 @@
     if (!loopFreak.exitingAt) loopFreak.exitingAt = performance.now();
   }
 
+  function showMARCReactionChat() {
+    const old = document.getElementById('marcFanChat');
+    if (old) old.remove();
+
+    const reactions = [
+      ['pixelpapi', 'M.A.R.C.?!?!?!'],
+      ['bklynbeats', 'NO WAY 😂'],
+      ['loopchild', 'THE MUSTACHE. ABSOLUTE LEGEND.'],
+      ['synthghost', 'did everybody else just see that'],
+      ['808mami', 'MARC MARC MARC MARC'],
+      ['streetfreq', 'bro appeared from another dimension'],
+      ['cassettekid', 'best guest of the night idc'],
+      ['gridwatcher', 'we love you M.A.R.C. 💚']
+    ];
+
+    const chat = document.createElement('div');
+    chat.id = 'marcFanChat';
+    chat.setAttribute('aria-live', 'polite');
+
+    const head = document.createElement('div');
+    head.className = 'marc-chat-head';
+    head.textContent = 'street chat // signal restored';
+    chat.appendChild(head);
+
+    reactions.forEach(([user, message]) => {
+      const line = document.createElement('div');
+      line.className = 'marc-chat-line';
+
+      const u = document.createElement('span');
+      u.className = 'marc-chat-user';
+      u.textContent = user;
+
+      const msg = document.createElement('span');
+      msg.textContent = message;
+
+      line.append(u, msg);
+      chat.appendChild(line);
+    });
+
+    document.body.appendChild(chat);
+    requestAnimationFrame(() => chat.classList.add('on'));
+
+    const lines = [...chat.querySelectorAll('.marc-chat-line')];
+    lines.forEach((line, index) => {
+      setTimeout(() => line.classList.add('on'), 450 + index * 480);
+    });
+
+    // Let the whole room enjoy the aftermath for a moment, then quietly clear it.
+    setTimeout(() => {
+      chat.classList.remove('on');
+      setTimeout(() => chat.remove(), 650);
+    }, 9000);
+  }
+
   function finishLoopFreakCameo() {
+    const shouldReact =
+      !loopFreak.suppressReaction &&
+      !!loopFreak.startedAt &&
+      performance.now() - loopFreak.startedAt > 6000;
+
+    loopFreak.suppressReaction = false;
     loopFreak.active = false;
     loopFreak.seed = null;
     loopFreak.exitingAt = 0;
@@ -1367,9 +1679,13 @@
     clearTimeout(loopFreak.titleTimer);
     clearTimeout(loopFreak.glitchTimer);
     clearTimeout(loopFreak.retireTimer);
+    clearTimeout(loopFreak.locationTimer);
     loopFreak.titleTimer = 0;
     loopFreak.glitchTimer = 0;
     loopFreak.retireTimer = 0;
+    loopFreak.locationTimer = 0;
+
+    restoreMARCLocationSign();
 
     document.body.classList.remove('marc-fever');
 
@@ -1379,6 +1695,10 @@
       if (titleCard) titleCard.classList.remove('show', 'glitch');
       const robot = loopFreak.el.querySelector('#lfRobot');
       if (robot) robot.removeAttribute('transform');
+    }
+
+    if (shouldReact) {
+      setTimeout(showMARCReactionChat, 500);
     }
   }
 
@@ -2274,6 +2594,8 @@
     specialEvents:Object.freeze({
       marcChance:LOOP_FREAK_CHANCE,
       marcDurationMs:MARC_FEVER_DURATION,
+      marcLocation:MARC_LOCATION,
+      marcLocationPreludeMs:MARC_LOCATION_PRELUDE_MS,
       loopFreakChance:LOOP_FREAK_CHANCE,
       forceMARC(){
         if(typeof track==='undefined'||!track)return false;
