@@ -14,9 +14,24 @@
 
   const VERSION = 108;
 
-  // Pointer affordance: the scene itself is not a giant button.
-  // Only A.R.I. and genuinely interactive UI should show the hand cursor.
+  // First-paint/runtime affordance preflight.
+  // The service worker also injects the cursor rule into navigation HTML so
+  // returning visits get the correct cursor before the page has painted.
   (() => {
+    const stage = document.getElementById('stage');
+    if (stage) stage.style.setProperty('cursor', 'default', 'important');
+
+    // Freeze the legacy inspector before its old CSS can animate into the new
+    // drawer position. The drawer code releases these inline guards only after
+    // its final CSS is installed.
+    const bootPanel = document.getElementById('devPanel');
+    if (bootPanel) {
+      bootPanel.style.setProperty('transition', 'none', 'important');
+      bootPanel.style.setProperty('visibility', 'hidden', 'important');
+      bootPanel.style.setProperty('opacity', '0', 'important');
+      bootPanel.style.setProperty('transform', 'translate3d(102%,0,0)', 'important');
+    }
+
     const style = document.createElement('style');
     style.id = 'ariPointerAffordance';
     style.textContent = `
@@ -24,16 +39,10 @@
         cursor: default !important;
       }
 
-      #gAri {
-        cursor: pointer;
-      }
-
-      #trackname {
-        cursor: pointer;
-      }
-
+      #gAri,
+      #trackname,
       header h1 a[href*="github.com"] {
-        cursor: pointer;
+        cursor: pointer !important;
       }
     `;
     document.head.appendChild(style);
@@ -1294,6 +1303,11 @@
         box-shadow: -18px 0 44px rgba(0, 0, 0, .28) !important;
       }
 
+      /* Never animate from the legacy floating-panel coordinates on boot. */
+      #devPanel.devpanel:not(.ari-drawer-motion-ready) {
+        transition: none !important;
+      }
+
       #trackname {
         cursor: pointer;
       }
@@ -1337,6 +1351,21 @@
       }
     `;
     document.head.appendChild(style);
+
+    // Final geometry is now known. Remove the legacy-panel boot guard without
+    // allowing a transition between the two coordinate systems.
+    drawerPanel.style.removeProperty('visibility');
+    drawerPanel.style.removeProperty('opacity');
+    drawerPanel.style.removeProperty('transform');
+    drawerPanel.style.removeProperty('transition');
+    drawerPanel.classList.add('ari-drawer-ready');
+    document.body?.classList.add('ari-v108-ready');
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        drawerPanel.classList.add('ari-drawer-motion-ready');
+      });
+    });
 
     const isOpen = () => drawerPanel.classList.contains('show');
     const openDrawer = () => {
