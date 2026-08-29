@@ -215,25 +215,4 @@ Code: MIT. See `LICENSE`.
 
 - Tightened the real-ARI takeover composition: symmetric comic burst with a clear top spike, black keyline, reduced copy, and a cleaner hover state on the live button.
 
-- Reworked the ultra-rare M.A.R.C. cameo into a fever-dream apparition: large translucent spectral presence, chromatic afterimages, drifting aura and subtle scene colour warping instead of a second physical robot standing on A.R.I.'s street plane. Debug trigger: `ARI108.specialEvents.forceMARC()`.
-
-- M.A.R.C. fever-dream events now self-resolve after roughly 25 seconds and pulse in and out while visible instead of lingering until the next track.
 - Track details now use a direct toggle interaction: click/tap the track name to open or close, or click/tap outside the drawer to dismiss it.
-
-- Rebuilt M.A.R.C. as an authored full-body animation rather than fast per-limb sine motion. The 34-second choreography uses smooth pose-to-pose transitions, independent shoulder/elbow and hip/knee joints, relaxed drift, slow analogue afterimages, and a long final dissolve. Socks are now subtle lower-leg shapes instead of two bright white lines.
-
-- M.A.R.C. now has his defining shirtless character details: moustache, stylised chest/six-pack outlines and two subtle magenta chest marks.
-- After a naturally completed M.A.R.C. apparition, a temporary street-chat aftermath appears with an enthusiastic fan pile-on, then clears itself.
-
-- M.A.R.C. is now tied to the special location **ADULTS ONLY BOATRIDE**. When the rare event rolls, that name appears on the actual street sign for several seconds before he materialises, then the normal location returns.
-
-- Refined M.A.R.C.'s face: the moustache is now six short mirrored diagonal hair strokes instead of a looped shape, and both his shoulder-length hair and moustache use a warm brown tone for clearer separation from the neon line art.
-
-- M.A.R.C.'s hair is now much fuller and messier: layered shoulder-length curtains, crown volume, front wisps and flyaways in multiple warm-brown tones. The moustache was refined into eight short mirrored radiating hairs.
-
-- Shortened M.A.R.C.'s layered hair to true shoulder length while keeping the messy volume and flyaways.
-- Expanded the fever dream to the whole page: the stage and UI now undergo a very slow zoom/rotation/skew cycle, chromatic scene breathing, drifting lens haze and concentric psychedelic distortion while M.A.R.C. remains comparatively relaxed.
-
-- Added M.A.R.C.'s missing goatee: five small warm-brown hairs beneath the lower lip/chin, matching the moustache and hair palette.
-
-- Re-themed the M.A.R.C. fever dream around **ADULTS ONLY BOATRIDE**: slow ocean-blue page tinting, a glowing horizon, three large wave bands, moving water-caustic reflections and a soft cyan sun-glare layer. The entire interface now sways like a boat while the psychedelic pink/green chromatic ghosts remain on top.
