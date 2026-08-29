@@ -964,8 +964,9 @@
 
       #ariLoopFreak .lf-hair {
         fill: none;
-        stroke: var(--magenta);
+        stroke: #a86f43;
         stroke-width: 2.25;
+        filter: drop-shadow(0 0 2px rgba(168,111,67,.38));
       }
 
       #ariLoopFreak .lf-glasses {
@@ -1015,11 +1016,12 @@
 
       #ariLoopFreak .lf-moustache {
         fill: none;
-        stroke: var(--key);
-        stroke-width: 1.55;
+        stroke: #a86f43;
+        stroke-width: 1.35;
         stroke-linecap: round;
         stroke-linejoin: round;
-        opacity: .9;
+        opacity: .92;
+        filter: drop-shadow(0 0 1.5px rgba(168,111,67,.34));
       }
 
       #ariLoopFreak .lf-shadow {
@@ -1356,11 +1358,13 @@
 
             <!-- M.A.R.C.'s glorious moustache -->
             <path class="lf-moustache"
-                  d="M82 51
-                     Q78 47 73.5 50.5
-                     Q77 54 82 52
-                     Q87 54 92 50
-                     Q87.5 47 82 51"/>
+                  d="M80.5 51 L74.5 47.8
+                     M80.8 52.2 L73.8 51.2
+                     M80.5 53.2 L74.8 55.2
+
+                     M83.5 51 L89.5 47.8
+                     M83.2 52.2 L90.2 51.2
+                     M83.5 53.2 L89.2 55.2"/>
             <path class="lf-accent" d="M76 58 Q83 61 91 57"/>
           </g>
         </g>
