@@ -230,3 +230,10 @@ Code: MIT. See `LICENSE`.
 - Refined M.A.R.C.'s face: the moustache is now six short mirrored diagonal hair strokes instead of a looped shape, and both his shoulder-length hair and moustache use a warm brown tone for clearer separation from the neon line art.
 
 - M.A.R.C.'s hair is now much fuller and messier: layered shoulder-length curtains, crown volume, front wisps and flyaways in multiple warm-brown tones. The moustache was refined into eight short mirrored radiating hairs.
+
+- Shortened M.A.R.C.'s layered hair to true shoulder length while keeping the messy volume and flyaways.
+- Expanded the fever dream to the whole page: the stage and UI now undergo a very slow zoom/rotation/skew cycle, chromatic scene breathing, drifting lens haze and concentric psychedelic distortion while M.A.R.C. remains comparatively relaxed.
+
+- Added M.A.R.C.'s missing goatee: five small warm-brown hairs beneath the lower lip/chin, matching the moustache and hair palette.
+
+- Re-themed the M.A.R.C. fever dream around **ADULTS ONLY BOATRIDE**: slow ocean-blue page tinting, a glowing horizon, three large wave bands, moving water-caustic reflections and a soft cyan sun-glare layer. The entire interface now sways like a boat while the psychedelic pink/green chromatic ghosts remain on top.

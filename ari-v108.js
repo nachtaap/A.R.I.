@@ -860,6 +860,390 @@
         animation: marcSceneFever 20s ease-in-out infinite alternate;
       }
 
+      /*
+       * Reality distortion:
+       * M.A.R.C. himself remains calm; the whole interface slowly breathes,
+       * zooms and bends around him. Long periods keep it uncanny rather than
+       * looking like a music visualizer.
+       */
+      body.marc-fever {
+        overflow: hidden;
+      }
+
+      #marcBeachDream {
+        position: fixed;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+        overflow: hidden;
+        opacity: 0;
+        transition: opacity 1800ms ease;
+        mix-blend-mode: screen;
+      }
+
+      body.marc-fever #marcBeachDream {
+        opacity: 1;
+      }
+
+      #marcBeachDream .marc-beach-sky {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(
+            to bottom,
+            rgba(5,34,76,.20) 0%,
+            rgba(0,108,154,.14) 34%,
+            rgba(32,190,205,.08) 54%,
+            rgba(4,10,24,0) 76%
+          );
+        filter: saturate(1.25);
+        animation: marcSkyDrift 24s ease-in-out infinite alternate;
+      }
+
+      #marcBeachDream .marc-horizon {
+        position: absolute;
+        left: -10%;
+        right: -10%;
+        top: 56%;
+        height: 2px;
+        background:
+          linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(132,241,255,.15) 14%,
+            rgba(132,241,255,.62) 50%,
+            rgba(132,241,255,.15) 86%,
+            transparent 100%
+          );
+        box-shadow:
+          0 0 16px rgba(60,208,255,.35),
+          0 0 42px rgba(0,123,255,.18);
+        opacity: .66;
+        animation: marcHorizonSwell 13s ease-in-out infinite alternate;
+      }
+
+      #marcBeachDream .marc-wave {
+        position: absolute;
+        left: -12%;
+        width: 124%;
+        border-radius: 50%;
+        border-top-style: solid;
+        transform-origin: 50% 50%;
+        opacity: .30;
+        filter: drop-shadow(0 0 6px rgba(62,232,222,.16));
+      }
+
+      #marcBeachDream .marc-wave.w1 {
+        top: 61%;
+        height: 92px;
+        border-top-width: 2px;
+        border-top-color: rgba(100,231,255,.70);
+        animation: marcWaveOne 11s ease-in-out infinite alternate;
+      }
+
+      #marcBeachDream .marc-wave.w2 {
+        top: 69%;
+        height: 118px;
+        border-top-width: 2px;
+        border-top-color: rgba(53,151,255,.58);
+        animation: marcWaveTwo 15s ease-in-out infinite alternate;
+      }
+
+      #marcBeachDream .marc-wave.w3 {
+        top: 79%;
+        height: 150px;
+        border-top-width: 1px;
+        border-top-color: rgba(184,255,255,.34);
+        animation: marcWaveThree 19s ease-in-out infinite alternate;
+      }
+
+      #marcBeachDream .marc-caustics {
+        position: absolute;
+        inset: 44% -12% -14%;
+        opacity: .22;
+        background:
+          repeating-radial-gradient(
+            ellipse at 50% 20%,
+            rgba(124,242,255,.22) 0 2px,
+            transparent 3px 17px
+          );
+        background-size: 110px 54px;
+        filter: blur(.35px);
+        transform: perspective(800px) rotateX(66deg) scale(1.35);
+        transform-origin: 50% 0%;
+        animation: marcCausticsDrift 17s linear infinite;
+      }
+
+      #marcBeachDream .marc-sun-glare {
+        position: absolute;
+        left: 50%;
+        top: 49%;
+        width: 36vw;
+        height: 36vw;
+        min-width: 260px;
+        min-height: 260px;
+        transform: translate(-50%,-50%);
+        border-radius: 50%;
+        background:
+          radial-gradient(
+            circle,
+            rgba(168,244,255,.14) 0%,
+            rgba(38,191,255,.08) 22%,
+            rgba(0,89,255,.035) 48%,
+            transparent 70%
+          );
+        filter: blur(12px);
+        animation: marcSunGlare 16s ease-in-out infinite alternate;
+      }
+
+      @keyframes marcSkyDrift {
+        0% {
+          transform: scale(1.02) translateY(-1%);
+          filter: hue-rotate(-7deg) saturate(1.15);
+        }
+        55% {
+          transform: scale(1.06,1.03) translateY(1%);
+          filter: hue-rotate(8deg) saturate(1.36);
+        }
+        100% {
+          transform: scale(1.025) translateY(-.5%);
+          filter: hue-rotate(-3deg) saturate(1.23);
+        }
+      }
+
+      @keyframes marcHorizonSwell {
+        0% {
+          transform: translateY(-6px) scaleX(.96) rotate(-.12deg);
+          opacity: .42;
+        }
+        50% {
+          transform: translateY(5px) scaleX(1.04) rotate(.10deg);
+          opacity: .72;
+        }
+        100% {
+          transform: translateY(-2px) scaleX(.99) rotate(-.08deg);
+          opacity: .52;
+        }
+      }
+
+      @keyframes marcWaveOne {
+        0%   { transform: translateX(-2.5%) scaleX(.98) scaleY(.72) rotate(-.18deg); }
+        50%  { transform: translateX(2.0%) scaleX(1.04) scaleY(1.12) rotate(.12deg); }
+        100% { transform: translateX(-1.0%) scaleX(1.00) scaleY(.84) rotate(-.10deg); }
+      }
+
+      @keyframes marcWaveTwo {
+        0%   { transform: translateX(3%) scaleX(1.03) scaleY(.88) rotate(.16deg); }
+        50%  { transform: translateX(-2%) scaleX(.96) scaleY(1.08) rotate(-.14deg); }
+        100% { transform: translateX(1%) scaleX(1.01) scaleY(.94) rotate(.08deg); }
+      }
+
+      @keyframes marcWaveThree {
+        0%   { transform: translateX(-1%) scaleX(.96) scaleY(1.05); }
+        50%  { transform: translateX(2.5%) scaleX(1.05) scaleY(.90); }
+        100% { transform: translateX(-2%) scaleX(.99) scaleY(1.12); }
+      }
+
+      @keyframes marcCausticsDrift {
+        0% {
+          background-position: 0 0;
+          opacity: .14;
+        }
+        50% {
+          background-position: 54px 26px;
+          opacity: .28;
+        }
+        100% {
+          background-position: 110px 54px;
+          opacity: .18;
+        }
+      }
+
+      @keyframes marcSunGlare {
+        0% {
+          transform: translate(-52%,-49%) scale(.88,.96);
+          opacity: .16;
+        }
+        45% {
+          transform: translate(-48%,-51%) scale(1.14,1.03);
+          opacity: .30;
+        }
+        100% {
+          transform: translate(-51%,-50%) scale(.96,1.12);
+          opacity: .20;
+        }
+      }
+
+      body.marc-fever #stage,
+      body.marc-fever > header,
+      body.marc-fever > footer {
+        transform-origin: 50% 50%;
+        will-change: transform, filter;
+        animation: marcRealityWarp 18s cubic-bezier(.45,0,.55,1) infinite alternate;
+      }
+
+      body.marc-fever #trackinfo,
+      body.marc-fever #trackInfo,
+      body.marc-fever #hud,
+      body.marc-fever #wxText {
+        transform-origin: 50% 50%;
+        animation: marcUiFloat 13s ease-in-out infinite alternate;
+      }
+
+      body.marc-fever::before {
+        content: "";
+        position: fixed;
+        inset: -12%;
+        z-index: 40;
+        pointer-events: none;
+        opacity: .34;
+        mix-blend-mode: screen;
+        background:
+          radial-gradient(circle at 44% 43%, rgba(184,255,0,.10), transparent 22%),
+          radial-gradient(circle at 58% 49%, rgba(255,43,214,.11), transparent 27%),
+          radial-gradient(circle at 51% 61%, rgba(62,232,222,.08), transparent 32%);
+        filter: blur(34px) saturate(1.55);
+        animation: marcLensBreath 15s ease-in-out infinite alternate;
+      }
+
+      body.marc-fever::after {
+        content: "";
+        position: fixed;
+        inset: -6%;
+        z-index: 41;
+        pointer-events: none;
+        opacity: .24;
+        mix-blend-mode: color-dodge;
+        background:
+          repeating-radial-gradient(
+            ellipse at 50% 50%,
+            rgba(255,43,214,.025) 0 7px,
+            rgba(184,255,0,.018) 8px 15px,
+            transparent 16px 28px
+          );
+        transform-origin: 50% 50%;
+        animation: marcConcentricDrift 21s ease-in-out infinite alternate;
+      }
+
+      @keyframes marcRealityWarp {
+        0% {
+          transform:
+            translate3d(-.5vw, .8vh, 0)
+            scale(1.018,1.012)
+            rotate(-.22deg)
+            skewX(-.12deg);
+          filter:
+            hue-rotate(-4deg)
+            saturate(1.08)
+            contrast(1.02);
+        }
+
+        30% {
+          transform:
+            translate3d(.7vw, -.5vh, 0)
+            scale(1.040,1.020)
+            rotate(.30deg)
+            skewX(.16deg);
+          filter:
+            hue-rotate(5deg)
+            saturate(1.18)
+            contrast(1.025);
+        }
+
+        58% {
+          transform:
+            translate3d(-.2vw, .9vh, 0)
+            scale(1.026,1.052)
+            rotate(-.35deg)
+            skewX(-.18deg);
+          filter:
+            hue-rotate(-8deg)
+            saturate(1.24)
+            contrast(1.03);
+        }
+
+        82% {
+          transform:
+            translate3d(.5vw, -.35vh, 0)
+            scale(1.050,1.026)
+            rotate(.20deg)
+            skewX(.12deg);
+          filter:
+            hue-rotate(9deg)
+            saturate(1.16)
+            contrast(1.025);
+        }
+
+        100% {
+          transform:
+            translate3d(-.4vw, .6vh, 0)
+            scale(1.022,1.014)
+            rotate(-.16deg)
+            skewX(-.08deg);
+          filter:
+            hue-rotate(-3deg)
+            saturate(1.11)
+            contrast(1.02);
+        }
+      }
+
+      @keyframes marcUiFloat {
+        0% {
+          transform: translate3d(-2px, 1px, 0) scale(.995);
+          filter: blur(0);
+        }
+        42% {
+          transform: translate3d(4px, -3px, 0) scale(1.012);
+          filter: blur(.12px);
+        }
+        73% {
+          transform: translate3d(-3px, 4px, 0) scale(1.004);
+          filter: blur(.22px);
+        }
+        100% {
+          transform: translate3d(2px, -1px, 0) scale(1.009);
+          filter: blur(0);
+        }
+      }
+
+      @keyframes marcLensBreath {
+        0% {
+          transform: translate3d(-3%, 1%, 0) scale(.92) rotate(-2deg);
+          filter: blur(42px) hue-rotate(-10deg) saturate(1.35);
+          opacity: .20;
+        }
+        34% {
+          transform: translate3d(2%, -2%, 0) scale(1.12, .96) rotate(2.4deg);
+          filter: blur(26px) hue-rotate(18deg) saturate(1.75);
+          opacity: .39;
+        }
+        68% {
+          transform: translate3d(-1%, 3%, 0) scale(.98, 1.15) rotate(-1.3deg);
+          filter: blur(48px) hue-rotate(-18deg) saturate(1.48);
+          opacity: .27;
+        }
+        100% {
+          transform: translate3d(3%, -1%, 0) scale(1.09) rotate(1.1deg);
+          filter: blur(30px) hue-rotate(11deg) saturate(1.82);
+          opacity: .36;
+        }
+      }
+
+      @keyframes marcConcentricDrift {
+        0% {
+          transform: scale(.93, 1.05) rotate(-2deg);
+          opacity: .12;
+        }
+        45% {
+          transform: scale(1.12, .94) rotate(1.8deg);
+          opacity: .28;
+        }
+        100% {
+          transform: scale(.98, 1.13) rotate(-.8deg);
+          opacity: .16;
+        }
+      }
+
       @keyframes marcAuraDrift {
         0% {
           transform: scale(.93) rotate(-2deg) translate(-2%, 1%);
@@ -914,26 +1298,35 @@
       @keyframes marcSceneFever {
         0% {
           filter:
-            hue-rotate(-5deg)
-            saturate(1.05)
-            drop-shadow(0 0 6px var(--glow1))
-            drop-shadow(0 0 26px var(--glow2));
+            hue-rotate(-4deg)
+            saturate(1.08)
+            drop-shadow(-1px 0 4px rgba(255,43,214,.12))
+            drop-shadow(1px 0 4px rgba(184,255,0,.10))
+            drop-shadow(0 0 24px var(--glow2));
         }
-        42% {
+        38% {
           filter:
-            hue-rotate(11deg)
-            saturate(1.28)
-            drop-shadow(-2px 0 7px rgba(255,43,214,.28))
-            drop-shadow(2px 0 7px rgba(184,255,0,.20))
-            drop-shadow(0 0 26px var(--glow2));
+            hue-rotate(10deg)
+            saturate(1.24)
+            drop-shadow(-4px 1px 8px rgba(255,43,214,.22))
+            drop-shadow(4px -1px 8px rgba(184,255,0,.18))
+            drop-shadow(0 0 30px var(--glow2));
+        }
+        67% {
+          filter:
+            hue-rotate(-15deg)
+            saturate(1.31)
+            drop-shadow(3px 0 9px rgba(255,43,214,.20))
+            drop-shadow(-3px 0 9px rgba(184,255,0,.22))
+            drop-shadow(0 0 33px var(--glow2));
         }
         100% {
           filter:
-            hue-rotate(-13deg)
-            saturate(1.18)
-            drop-shadow(2px 1px 7px rgba(255,43,214,.22))
-            drop-shadow(-2px -1px 7px rgba(184,255,0,.22))
-            drop-shadow(0 0 30px var(--glow2));
+            hue-rotate(6deg)
+            saturate(1.15)
+            drop-shadow(-2px -1px 7px rgba(255,43,214,.18))
+            drop-shadow(2px 1px 7px rgba(184,255,0,.16))
+            drop-shadow(0 0 28px var(--glow2));
         }
       }
 
@@ -1042,6 +1435,15 @@
         stroke-linejoin: round;
         opacity: .92;
         filter: drop-shadow(0 0 1.5px rgba(168,111,67,.34));
+      }
+
+      #ariLoopFreak .lf-goatee {
+        fill: none;
+        stroke: #9a673f;
+        stroke-width: 1.25;
+        stroke-linecap: round;
+        opacity: .9;
+        filter: drop-shadow(0 0 1.4px rgba(154,103,63,.30));
       }
 
       #ariLoopFreak .lf-shadow {
@@ -1275,8 +1677,20 @@
         #ariLoopFreak::before,
         #ariLoopFreak::after,
         #ariLoopFreak svg,
-        body.marc-fever #scene {
+        body.marc-fever #scene,
+        body.marc-fever #stage,
+        body.marc-fever > header,
+        body.marc-fever > footer,
+        body.marc-fever #trackinfo,
+        body.marc-fever #trackInfo,
+        body.marc-fever #hud,
+        body.marc-fever #wxText,
+        body.marc-fever::before,
+        body.marc-fever::after,
+        body.marc-fever #marcBeachDream *,
+        body.marc-fever #marcBeachDream {
           animation: none !important;
+          transform: none !important;
         }
       }
     `;
@@ -1284,6 +1698,23 @@
 
     const wrap = document.createElement('div');
     wrap.id = 'ariLoopFreak';
+
+    let beach = document.getElementById('marcBeachDream');
+    if (!beach) {
+      beach = document.createElement('div');
+      beach.id = 'marcBeachDream';
+      beach.setAttribute('aria-hidden', 'true');
+      beach.innerHTML = `
+        <div class="marc-beach-sky"></div>
+        <div class="marc-sun-glare"></div>
+        <div class="marc-horizon"></div>
+        <div class="marc-wave w1"></div>
+        <div class="marc-wave w2"></div>
+        <div class="marc-wave w3"></div>
+        <div class="marc-caustics"></div>
+      `;
+      document.body.appendChild(beach);
+    }
     wrap.setAttribute('aria-hidden', 'true');
     wrap.innerHTML = `
       <div id="lfTitleCard" aria-hidden="true">
@@ -1365,12 +1796,12 @@
             <!-- shoulder-length hair -->
             <!-- fuller messy shoulder-length hair -->
             <g class="lf-hair-back">
-              <path d="M64 25 Q49 34 47 52 Q45 72 51 96"/>
-              <path d="M69 20 Q53 34 53 57 Q52 78 57 101"/>
-              <path d="M74 17 Q60 35 59 61 Q59 84 63 104"/>
-              <path d="M99 18 Q111 33 113 57 Q115 81 109 103"/>
-              <path d="M104 22 Q119 36 120 58 Q121 78 114 98"/>
-              <path d="M108 29 Q124 42 125 61 Q126 79 119 92"/>
+              <path d="M64 25 Q49 34 47 52 Q45 68 51 88"/>
+              <path d="M69 20 Q53 34 53 57 Q52 74 57 90"/>
+              <path d="M74 17 Q60 35 59 61 Q59 77 63 91"/>
+              <path d="M99 18 Q111 33 113 57 Q114 75 109 91"/>
+              <path d="M104 22 Q119 36 120 58 Q120 73 114 89"/>
+              <path d="M108 29 Q124 42 125 61 Q125 72 119 87"/>
             </g>
 
             <g class="lf-hair">
@@ -1382,14 +1813,14 @@
               <path d="M96 20 Q104 13 109 27"/>
 
               <!-- left curtain -->
-              <path d="M60 27 Q48 41 49 61 Q49 80 54 93"/>
-              <path d="M65 24 Q55 42 56 65 Q56 85 60 99"/>
-              <path d="M70 23 Q62 44 63 66 Q63 86 66 101"/>
+              <path d="M60 27 Q48 41 49 61 Q49 73 54 87"/>
+              <path d="M65 24 Q55 42 56 65 Q56 76 60 90"/>
+              <path d="M70 23 Q62 44 63 66 Q63 78 66 91"/>
 
               <!-- right curtain -->
-              <path d="M99 23 Q108 41 109 64 Q110 84 106 101"/>
-              <path d="M104 26 Q115 43 116 64 Q117 83 112 97"/>
-              <path d="M108 30 Q121 46 121 65 Q121 81 116 92"/>
+              <path d="M99 23 Q108 41 109 64 Q110 77 106 91"/>
+              <path d="M104 26 Q115 43 116 64 Q117 75 112 89"/>
+              <path d="M108 30 Q121 46 121 65 Q121 73 116 87"/>
             </g>
 
             <g class="lf-hair-front">
@@ -1425,6 +1856,14 @@
                      M83.4 52.8 L89.2 52.2
                      M83.2 53.5 L88.5 54.9"/>
             <path class="lf-accent" d="M76 58 Q83 61 91 57"/>
+
+            <!-- small loose goatee -->
+            <path class="lf-goatee"
+                  d="M80.2 61.8 L79.3 66.2
+                     M82.0 62.2 L82.0 67.4
+                     M83.8 62.0 L84.7 66.4
+                     M78.7 62.6 L77.2 65.7
+                     M85.2 62.5 L86.8 65.6"/>
           </g>
         </g>
 
