@@ -594,12 +594,623 @@
   if(typeof newTrack==='function'){
     const original=newTrack;
     newTrack=function(forced){
+      retireLoopFreakCameo();
       const chosen=forced||(WEIGHTED.length?WEIGHTED[Math.floor(Math.random()*WEIGHTED.length)]:undefined);
       const out=original(chosen);
-      if(typeof track!=='undefined'&&track)ensureDNA(track);
+      if(typeof track!=='undefined'&&track){
+        ensureDNA(track);
+        queueLoopFreakCameo(track);
+      }
       return out;
     };
   }
+
+
+  // ---------------------------------------------------------------------------
+  // Ultra-rare street cameo.
+  //
+  // A.R.I. occasionally gets joined for one complete track by a wildly
+  // performing robot: exposed metal torso, shorts, tall socks, shoes, glasses
+  // and shoulder-length hair. It is deliberately an easter egg rather than a
+  // normal visitor. The cameo adds a tiny live synth call-and-response layer;
+  // there are still no prerecorded samples.
+  // ---------------------------------------------------------------------------
+  const LOOP_FREAK_CHANCE = 0.0075; // ~1 in 133 tracks
+  const LOOP_FREAK_COOLDOWN = 45 * 60 * 1000;
+
+  const loopFreak = {
+    queued: 0,
+    active: false,
+    raf: 0,
+    el: null,
+    seed: null,
+    bpm: 112,
+    startedAt: 0,
+    exitingAt: 0,
+    lastAt: 0,
+    forced: false,
+    titleTimer: 0,
+    glitchTimer: 0
+  };
+
+  function midiHz(n) {
+    return 440 * Math.pow(2, (n - 69) / 12);
+  }
+
+  function ensureLoopFreakUI() {
+    if (loopFreak.el?.isConnected) return loopFreak.el;
+
+    const style = document.createElement('style');
+    style.id = 'ariLoopFreakStyle';
+    style.textContent = `
+      #ariLoopFreak {
+        position: fixed;
+        inset: 0;
+        z-index: 4;
+        overflow: hidden;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 420ms ease;
+      }
+
+      #ariLoopFreak.on {
+        opacity: 1;
+      }
+
+      #ariLoopFreak svg {
+        position: fixed;
+        overflow: visible;
+        filter:
+          drop-shadow(0 0 5px var(--glow1))
+          drop-shadow(0 0 18px var(--glow2));
+      }
+
+      #ariLoopFreak .lf-main,
+      #ariLoopFreak .lf-joint,
+      #ariLoopFreak .lf-glasses,
+      #ariLoopFreak .lf-sock,
+      #ariLoopFreak .lf-shoe,
+      #ariLoopFreak .lf-shorts,
+      #ariLoopFreak .lf-hair,
+      #ariLoopFreak .lf-accent {
+        vector-effect: non-scaling-stroke;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      #ariLoopFreak .lf-main {
+        fill: none;
+        stroke: var(--cyan);
+        stroke-width: 2;
+      }
+
+      #ariLoopFreak .lf-joint {
+        fill: var(--bg);
+        stroke: var(--cyan);
+        stroke-width: 1.6;
+      }
+
+      #ariLoopFreak .lf-hair {
+        fill: none;
+        stroke: var(--magenta);
+        stroke-width: 2.25;
+      }
+
+      #ariLoopFreak .lf-glasses {
+        fill: rgba(167,139,255,.08);
+        stroke: var(--purple);
+        stroke-width: 2;
+      }
+
+      #ariLoopFreak .lf-shorts {
+        fill: rgba(167,139,255,.12);
+        stroke: var(--purple);
+        stroke-width: 2;
+      }
+
+      #ariLoopFreak .lf-sock {
+        fill: none;
+        stroke: var(--key);
+        stroke-width: 3;
+      }
+
+      #ariLoopFreak .lf-shoe {
+        fill: rgba(62,232,222,.08);
+        stroke: var(--cyan);
+        stroke-width: 2.4;
+      }
+
+      #ariLoopFreak .lf-accent {
+        fill: none;
+        stroke: var(--key-dim);
+        stroke-width: 1.25;
+      }
+
+      #ariLoopFreak .lf-shadow {
+        fill: rgba(0,0,0,.24);
+        stroke: none;
+      }
+
+      /* M.A.R.C. character introduction — deliberately loud 80s arcade/VHS. */
+      #lfTitleCard {
+        --marc-green: #b8ff00;
+        --marc-pink: #ff2bd6;
+        position: absolute;
+        left: 50%;
+        top: clamp(68px, 13%, 142px);
+        width: min(90vw, 780px);
+        transform: translate(-50%, -10px) scale(.98);
+        text-align: center;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+          opacity 240ms ease,
+          transform 340ms cubic-bezier(.16,.82,.22,1),
+          visibility 0s linear 360ms;
+      }
+
+      #lfTitleCard.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, 0) scale(1);
+        transition-delay: 0s;
+      }
+
+      #lfTitleCard::before {
+        content: "";
+        position: absolute;
+        inset: -18px -26px;
+        background:
+          repeating-linear-gradient(
+            to bottom,
+            rgba(255,255,255,0) 0 3px,
+            rgba(184,255,0,.045) 3px 4px
+          );
+        opacity: .7;
+        mix-blend-mode: screen;
+      }
+
+      #lfTitleCard .lf-title-main {
+        position: relative;
+        display: inline-block;
+        font-family: "Space Grotesk", "IBM Plex Mono", monospace;
+        font-size: clamp(27px, 5.8vw, 62px);
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: var(--marc-green);
+        text-shadow:
+          0 0 2px rgba(184,255,0,1),
+          0 0 9px rgba(184,255,0,.9),
+          0 0 24px rgba(124,255,0,.62),
+          3px 2px 0 rgba(255,43,214,.32);
+        -webkit-text-stroke: .35px rgba(30,48,0,.7);
+      }
+
+      #lfTitleCard .lf-title-main::before {
+        content: "M.A.R.C. APPEARS";
+        position: absolute;
+        inset: 0;
+        color: var(--marc-pink);
+        opacity: .22;
+        transform: translate(3px, 2px);
+        clip-path: inset(48% 0 34% 0);
+        text-shadow: 0 0 8px rgba(255,43,214,.8);
+      }
+
+      #lfTitleCard .lf-title-main::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: .16em;
+        bottom: -8px;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          var(--marc-green) 0 46%,
+          var(--marc-pink) 54% 100%
+        );
+        box-shadow:
+          0 0 6px rgba(184,255,0,.9),
+          0 0 14px rgba(255,43,214,.62);
+        opacity: .92;
+      }
+
+      #lfTitleCard .lf-title-sub {
+        margin-top: 17px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: clamp(8px, 1.55vw, 13px);
+        font-weight: 500;
+        line-height: 1.4;
+        letter-spacing: .2em;
+        text-transform: uppercase;
+        color: var(--marc-pink);
+        text-shadow:
+          0 0 3px rgba(255,43,214,.95),
+          0 0 11px rgba(255,43,214,.7),
+          0 0 20px rgba(255,43,214,.4);
+      }
+
+      #lfTitleCard.glitch .lf-title-main {
+        animation: marcTitleGlitch 170ms steps(2,end) 2;
+      }
+
+      @keyframes marcTitleGlitch {
+        0%   { transform: translate(0,0); }
+        25%  { transform: translate(-2px,1px); }
+        50%  { transform: translate(2px,-1px); }
+        75%  { transform: translate(-1px,0); }
+        100% { transform: translate(0,0); }
+      }
+
+      @media (max-width: 640px) {
+        #lfTitleCard {
+          top: max(56px, env(safe-area-inset-top));
+          width: 94vw;
+        }
+
+        #lfTitleCard .lf-title-main {
+          font-size: clamp(24px, 8.3vw, 40px);
+          letter-spacing: .11em;
+        }
+
+        #lfTitleCard .lf-title-sub {
+          margin-top: 14px;
+          font-size: clamp(7px, 2.5vw, 10px);
+          letter-spacing: .14em;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #ariLoopFreak {
+          transition-duration: 1ms;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    const wrap = document.createElement('div');
+    wrap.id = 'ariLoopFreak';
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.innerHTML = `
+      <div id="lfTitleCard" aria-hidden="true">
+        <div class="lf-title-main">M.A.R.C. APPEARS</div>
+        <div class="lf-title-sub">Musically Autonomous Raving Cyborg</div>
+      </div>
+      <svg viewBox="0 0 170 270" aria-hidden="true">
+        <ellipse class="lf-shadow" cx="84" cy="252" rx="58" ry="9"/>
+
+        <g id="lfRobot">
+          <!-- legs -->
+          <g id="lfLegL">
+            <line class="lf-main" x1="67" y1="157" x2="61" y2="203"/>
+            <circle class="lf-joint" cx="61" cy="203" r="4"/>
+            <line class="lf-main" x1="61" y1="203" x2="57" y2="230"/>
+            <line class="lf-sock" x1="58" y1="213" x2="57" y2="231"/>
+            <path class="lf-shoe" d="M54 229 L70 230 Q77 233 73 239 L53 239 Q48 236 54 229Z"/>
+          </g>
+          <g id="lfLegR">
+            <line class="lf-main" x1="98" y1="157" x2="104" y2="203"/>
+            <circle class="lf-joint" cx="104" cy="203" r="4"/>
+            <line class="lf-main" x1="104" y1="203" x2="108" y2="230"/>
+            <line class="lf-sock" x1="106" y1="213" x2="108" y2="231"/>
+            <path class="lf-shoe" d="M105 229 L121 230 Q128 233 124 239 L104 239 Q99 236 105 229Z"/>
+          </g>
+
+          <!-- shorts -->
+          <path class="lf-shorts" d="M57 132 L107 132 L104 163 L86 160 L82 146 L78 160 L59 163Z"/>
+          <path class="lf-accent" d="M82 133 L82 148 M65 142 L75 142 M90 142 L100 142"/>
+
+          <!-- gloriously shirtless robot torso -->
+          <path class="lf-main" d="M61 72 Q82 62 103 72 L108 128 Q83 138 56 128Z"/>
+          <path class="lf-accent" d="M65 89 L78 86 L82 94 L86 86 L99 89 M68 110 L96 110"/>
+          <circle class="lf-joint" cx="82" cy="116" r="2.7"/>
+
+          <!-- arms -->
+          <g id="lfArmL">
+            <circle class="lf-joint" cx="59" cy="82" r="4"/>
+            <line class="lf-main" x1="59" y1="82" x2="39" y2="113"/>
+            <circle class="lf-joint" cx="39" cy="113" r="3.5"/>
+            <line class="lf-main" x1="39" y1="113" x2="28" y2="145"/>
+            <path class="lf-main" d="M25 145 q4 7 9 0"/>
+          </g>
+          <g id="lfArmR">
+            <circle class="lf-joint" cx="104" cy="82" r="4"/>
+            <line class="lf-main" x1="104" y1="82" x2="125" y2="111"/>
+            <circle class="lf-joint" cx="125" cy="111" r="3.5"/>
+            <line class="lf-main" x1="125" y1="111" x2="140" y2="139"/>
+            <path class="lf-main" d="M137 139 q5 7 10 -1"/>
+          </g>
+
+          <!-- neck + head -->
+          <line class="lf-main" x1="77" y1="70" x2="77" y2="61"/>
+          <line class="lf-main" x1="89" y1="70" x2="89" y2="61"/>
+          <g id="lfHead">
+            <path class="lf-main" d="M59 26 Q82 10 107 28 L104 61 Q82 72 60 59Z"/>
+
+            <!-- shoulder-length hair -->
+            <path class="lf-hair" d="M60 29 Q48 42 53 77"/>
+            <path class="lf-hair" d="M66 21 Q52 45 60 84"/>
+            <path class="lf-hair" d="M73 17 Q61 46 67 88"/>
+            <path class="lf-hair" d="M98 20 Q112 42 106 83"/>
+            <path class="lf-hair" d="M105 28 Q119 46 112 78"/>
+
+            <!-- glasses -->
+            <rect class="lf-glasses" x="63" y="38" width="17" height="11" rx="4"/>
+            <rect class="lf-glasses" x="86" y="38" width="17" height="11" rx="4"/>
+            <line class="lf-glasses" x1="80" y1="43.5" x2="86" y2="43.5"/>
+            <circle class="lf-accent" cx="70" cy="43" r="1.2"/>
+            <circle class="lf-accent" cx="95" cy="43" r="1.2"/>
+            <path class="lf-accent" d="M75 56 Q83 60 92 55"/>
+          </g>
+        </g>
+      </svg>
+    `;
+    document.body.appendChild(wrap);
+    loopFreak.el = wrap;
+    return wrap;
+  }
+
+  function layoutLoopFreak() {
+    const wrap = ensureLoopFreakUI();
+    const svg = wrap.querySelector('svg');
+    const scene = document.getElementById('scene');
+    if (!svg || !scene) return;
+
+    const r = scene.getBoundingClientRect();
+    const w = Math.max(125, Math.min(245, r.width * 0.30));
+    const h = w * (270 / 170);
+
+    // Park him just to A.R.I.'s right, standing on roughly the same street plane.
+    svg.style.width = `${w}px`;
+    svg.style.height = `${h}px`;
+    svg.style.left = `${r.left + r.width * 0.61}px`;
+    svg.style.top = `${r.top + r.height * 0.39}px`;
+  }
+
+  function queueLoopFreakCameo(t, force = false) {
+    clearTimeout(loopFreak.queued);
+    loopFreak.queued = 0;
+
+    if (!t) return false;
+
+    const now = Date.now();
+    const rareEnough = unit(t, 'special:loop-freak') < LOOP_FREAK_CHANCE;
+    if (!force && (!rareEnough || now - loopFreak.lastAt < LOOP_FREAK_COOLDOWN)) return false;
+
+    const bpm = Number(t.bpm) || 112;
+    const barMs = (60000 / bpm) * 4;
+    const seed = t.seed;
+    const delay = force ? 100 : Math.min(15000, Math.max(4500, barMs * 4));
+
+    loopFreak.queued = setTimeout(() => {
+      loopFreak.queued = 0;
+
+      // The event belongs to this exact track. If the track changed, forget it.
+      if (typeof track === 'undefined' || !track || track.seed !== seed) return;
+
+      // Don't trample an existing visitor conversation or the battery cutscene.
+      const busy =
+        (typeof cutsceneActive !== 'undefined' && cutsceneActive) ||
+        (typeof visitor !== 'undefined' && visitor);
+
+      if (busy && !force) {
+        loopFreak.queued = setTimeout(() => {
+          loopFreak.queued = 0;
+          if (typeof track !== 'undefined' && track && track.seed === seed)
+            startLoopFreakCameo(track, false);
+        }, Math.max(3000, barMs * 2));
+        return;
+      }
+
+      startLoopFreakCameo(track, force);
+    }, delay);
+
+    return true;
+  }
+
+  function startLoopFreakCameo(t, forced = false) {
+    if (!t || loopFreak.active) return false;
+
+    const wrap = ensureLoopFreakUI();
+    layoutLoopFreak();
+
+    loopFreak.active = true;
+    loopFreak.seed = t.seed;
+    loopFreak.bpm = Number(t.bpm) || 112;
+    loopFreak.startedAt = performance.now();
+    loopFreak.exitingAt = 0;
+    loopFreak.forced = forced;
+    loopFreak.lastAt = Date.now();
+
+    t.specialEvent = 'wild-loop-cameo';
+    wrap.classList.add('on');
+
+    const titleCard = wrap.querySelector('#lfTitleCard');
+    if (titleCard) {
+      titleCard.classList.remove('show', 'glitch');
+      void titleCard.offsetWidth;
+      titleCard.classList.add('show', 'glitch');
+
+      clearTimeout(loopFreak.titleTimer);
+      clearTimeout(loopFreak.glitchTimer);
+
+      loopFreak.glitchTimer = setTimeout(() => {
+        titleCard.classList.remove('glitch');
+      }, 520);
+
+      loopFreak.titleTimer = setTimeout(() => {
+        titleCard.classList.remove('show');
+      }, 4200);
+    }
+
+    cancelAnimationFrame(loopFreak.raf);
+    loopFreak.raf = requestAnimationFrame(animateLoopFreak);
+    return true;
+  }
+
+  function retireLoopFreakCameo(immediate = false) {
+    clearTimeout(loopFreak.queued);
+    loopFreak.queued = 0;
+
+    if (!loopFreak.active) return;
+
+    if (immediate) {
+      finishLoopFreakCameo();
+      return;
+    }
+
+    if (!loopFreak.exitingAt) loopFreak.exitingAt = performance.now();
+  }
+
+  function finishLoopFreakCameo() {
+    loopFreak.active = false;
+    loopFreak.seed = null;
+    loopFreak.exitingAt = 0;
+    cancelAnimationFrame(loopFreak.raf);
+    loopFreak.raf = 0;
+
+    clearTimeout(loopFreak.titleTimer);
+    clearTimeout(loopFreak.glitchTimer);
+    loopFreak.titleTimer = 0;
+    loopFreak.glitchTimer = 0;
+
+    if (loopFreak.el) {
+      loopFreak.el.classList.remove('on');
+      const titleCard = loopFreak.el.querySelector('#lfTitleCard');
+      if (titleCard) titleCard.classList.remove('show', 'glitch');
+      const robot = loopFreak.el.querySelector('#lfRobot');
+      if (robot) robot.removeAttribute('transform');
+    }
+  }
+
+  function animateLoopFreak(now) {
+    if (!loopFreak.active || !loopFreak.el) return;
+
+    const robot = loopFreak.el.querySelector('#lfRobot');
+    const head = loopFreak.el.querySelector('#lfHead');
+    const armL = loopFreak.el.querySelector('#lfArmL');
+    const armR = loopFreak.el.querySelector('#lfArmR');
+    const legL = loopFreak.el.querySelector('#lfLegL');
+    const legR = loopFreak.el.querySelector('#lfLegR');
+    if (!robot || !head || !armL || !armR || !legL || !legR) {
+      finishLoopFreakCameo();
+      return;
+    }
+
+    layoutLoopFreak();
+
+    const elapsed = now - loopFreak.startedAt;
+    const beat = elapsed / (60000 / loopFreak.bpm);
+    const phase = beat * Math.PI * 2;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let entryX = 0;
+    const entry = Math.min(1, elapsed / 1800);
+    entryX = (1 - (1 - Math.pow(1 - entry, 3))) * 185;
+
+    let exitX = 0;
+    if (loopFreak.exitingAt) {
+      const exit = Math.min(1, (now - loopFreak.exitingAt) / 1100);
+      exitX = exit * exit * 220;
+      if (exit >= 1) {
+        finishLoopFreakCameo();
+        return;
+      }
+    }
+
+    if (reduced) {
+      robot.setAttribute('transform', `translate(${entryX + exitX} 0)`);
+    } else {
+      const bounce = -Math.abs(Math.sin(phase)) * 10 - Math.abs(Math.sin(phase * .5)) * 4;
+      const sway = Math.sin(phase * .5) * 9 + Math.sin(phase * 1.5) * 4;
+      const side = Math.sin(phase * .25) * 8;
+      robot.setAttribute(
+        'transform',
+        `translate(${(entryX + exitX + side).toFixed(2)} ${bounce.toFixed(2)}) rotate(${sway.toFixed(2)} 82 150)`
+      );
+
+      // Intentionally ridiculous, beat-driven limbs.
+      armL.setAttribute('transform', `rotate(${(-58 + Math.sin(phase) * 75).toFixed(1)} 59 82)`);
+      armR.setAttribute('transform', `rotate(${(48 - Math.cos(phase * 1.05) * 82).toFixed(1)} 104 82)`);
+      legL.setAttribute('transform', `rotate(${(Math.sin(phase) * 16).toFixed(1)} 67 157)`);
+      legR.setAttribute('transform', `rotate(${(-Math.sin(phase) * 16).toFixed(1)} 98 157)`);
+      head.setAttribute('transform', `rotate(${(Math.sin(phase * .75) * 11).toFixed(1)} 82 54) translate(0 ${(Math.sin(phase * 2) * 1.8).toFixed(1)})`);
+    }
+
+    loopFreak.raf = requestAnimationFrame(animateLoopFreak);
+  }
+
+  function loopFreakStab(t0, t, sIdx) {
+    if (!loopFreak.active || loopFreak.seed !== t.seed) return;
+    if (typeof ctx === 'undefined' || !ctx || typeof master === 'undefined' || !master) return;
+    if (typeof bar === 'undefined') return;
+
+    // A loose two-bar call/response, deliberately sparse enough to sit on top
+    // of any family grammar without taking over the track.
+    const patterns = [
+      [2, 7, 11, 14],
+      [1, 6, 10, 15],
+      [3, 8, 12],
+      [0, 7, 10, 14]
+    ];
+    const pat = patterns[Math.abs(bar) % patterns.length];
+    if (!pat.includes(sIdx)) return;
+
+    const scale = Array.isArray(t.scale) && t.scale.length ? t.scale : [0, 2, 3, 5, 7, 10];
+    const degree = (Math.abs(bar) * 3 + sIdx) % Math.min(scale.length, 6);
+    const root = Number(t.root) || 36;
+    const note = root + 12 + Number(scale[degree] || 0);
+    const f0 = midiHz(note);
+
+    const o1 = ctx.createOscillator();
+    const o2 = ctx.createOscillator();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+
+    o1.type = 'square';
+    o2.type = 'triangle';
+    o1.frequency.setValueAtTime(f0, t0);
+    o2.frequency.setValueAtTime(f0 * 2, t0);
+    o2.detune.setValueAtTime(7, t0);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1700, t0);
+    filter.frequency.exponentialRampToValueAtTime(720, t0 + .18);
+    filter.Q.value = 2.8;
+
+    const level = .018 + (Number(t.energy) || .55) * .012;
+    gain.gain.setValueAtTime(.0001, t0);
+    gain.gain.linearRampToValueAtTime(level, t0 + .012);
+    gain.gain.exponentialRampToValueAtTime(.0001, t0 + .20);
+
+    o1.connect(filter);
+    o2.connect(filter);
+    filter.connect(gain);
+    gain.connect(master);
+
+    o1.start(t0);
+    o2.start(t0);
+    o1.stop(t0 + .22);
+    o2.stop(t0 + .22);
+  }
+
+  // Add the cameo's live-played synth voice to the normal step scheduler.
+  if (typeof scheduleStep === 'function') {
+    const beforeCameo = scheduleStep;
+    scheduleStep = function(sIdx, t0) {
+      beforeCameo(sIdx, t0);
+      if (typeof track !== 'undefined' && track)
+        loopFreakStab(t0, track, sIdx);
+    };
+  }
+
+  addEventListener('resize', () => {
+    if (loopFreak.active) layoutLoopFreak();
+  });
+
 
   // ---------------------------------------------------------------------------
   // Track details drawer — deliberately invisible until requested.
@@ -748,6 +1359,14 @@
     requestCatalog:REQUEST_CATALOG,
     styleMeta:META,
     resolveRequest,
+    specialEvents:Object.freeze({
+      loopFreakChance:LOOP_FREAK_CHANCE,
+      forceLoopFreak(){
+        if(typeof track==='undefined'||!track)return false;
+        retireLoopFreakCameo(true);
+        return queueLoopFreakCameo(track,true);
+      }
+    }),
     resolveAndPlay(text){
       const r=resolveRequest(text);
       if(typeof newTrack==='function')newTrack(r.genre);
