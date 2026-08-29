@@ -228,3 +228,5 @@ Code: MIT. See `LICENSE`.
 - M.A.R.C. is now tied to the special location **ADULTS ONLY BOATRIDE**. When the rare event rolls, that name appears on the actual street sign for several seconds before he materialises, then the normal location returns.
 
 - Refined M.A.R.C.'s face: the moustache is now six short mirrored diagonal hair strokes instead of a looped shape, and both his shoulder-length hair and moustache use a warm brown tone for clearer separation from the neon line art.
+
+- M.A.R.C.'s hair is now much fuller and messier: layered shoulder-length curtains, crown volume, front wisps and flyaways in multiple warm-brown tones. The moustache was refined into eight short mirrored radiating hairs.

@@ -964,9 +964,29 @@
 
       #ariLoopFreak .lf-hair {
         fill: none;
-        stroke: #a86f43;
-        stroke-width: 2.25;
-        filter: drop-shadow(0 0 2px rgba(168,111,67,.38));
+        stroke: #9a673f;
+        stroke-width: 2.1;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        filter: drop-shadow(0 0 2px rgba(154,103,63,.34));
+      }
+
+      #ariLoopFreak .lf-hair-back {
+        fill: none;
+        stroke: #765036;
+        stroke-width: 2.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        opacity: .78;
+      }
+
+      #ariLoopFreak .lf-hair-front {
+        fill: none;
+        stroke: #b47a49;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        opacity: .95;
       }
 
       #ariLoopFreak .lf-glasses {
@@ -1343,11 +1363,48 @@
             <path class="lf-main" d="M59 26 Q82 10 107 28 L104 61 Q82 72 60 59Z"/>
 
             <!-- shoulder-length hair -->
-            <path class="lf-hair" d="M60 29 Q48 42 53 77"/>
-            <path class="lf-hair" d="M66 21 Q52 45 60 84"/>
-            <path class="lf-hair" d="M73 17 Q61 46 67 88"/>
-            <path class="lf-hair" d="M98 20 Q112 42 106 83"/>
-            <path class="lf-hair" d="M105 28 Q119 46 112 78"/>
+            <!-- fuller messy shoulder-length hair -->
+            <g class="lf-hair-back">
+              <path d="M64 25 Q49 34 47 52 Q45 72 51 96"/>
+              <path d="M69 20 Q53 34 53 57 Q52 78 57 101"/>
+              <path d="M74 17 Q60 35 59 61 Q59 84 63 104"/>
+              <path d="M99 18 Q111 33 113 57 Q115 81 109 103"/>
+              <path d="M104 22 Q119 36 120 58 Q121 78 114 98"/>
+              <path d="M108 29 Q124 42 125 61 Q126 79 119 92"/>
+            </g>
+
+            <g class="lf-hair">
+              <!-- messy crown -->
+              <path d="M58 28 Q63 17 72 16"/>
+              <path d="M67 20 Q74 10 82 15"/>
+              <path d="M76 17 Q82 8 89 16"/>
+              <path d="M86 16 Q93 9 99 19"/>
+              <path d="M96 20 Q104 13 109 27"/>
+
+              <!-- left curtain -->
+              <path d="M60 27 Q48 41 49 61 Q49 80 54 93"/>
+              <path d="M65 24 Q55 42 56 65 Q56 85 60 99"/>
+              <path d="M70 23 Q62 44 63 66 Q63 86 66 101"/>
+
+              <!-- right curtain -->
+              <path d="M99 23 Q108 41 109 64 Q110 84 106 101"/>
+              <path d="M104 26 Q115 43 116 64 Q117 83 112 97"/>
+              <path d="M108 30 Q121 46 121 65 Q121 81 116 92"/>
+            </g>
+
+            <g class="lf-hair-front">
+              <!-- loose front wisps around the glasses / face -->
+              <path d="M68 22 Q64 34 66 49"/>
+              <path d="M73 19 Q70 30 72 45"/>
+              <path d="M97 20 Q101 31 99 47"/>
+              <path d="M103 24 Q108 35 105 51"/>
+
+              <!-- stray flyaways -->
+              <path d="M63 18 Q55 12 49 17"/>
+              <path d="M72 14 Q66 7 61 11"/>
+              <path d="M90 14 Q95 7 101 12"/>
+              <path d="M101 18 Q110 12 116 18"/>
+            </g>
 
             <!-- glasses -->
             <rect class="lf-glasses" x="63" y="38" width="17" height="11" rx="4"/>
@@ -1358,13 +1415,15 @@
 
             <!-- M.A.R.C.'s glorious moustache -->
             <path class="lf-moustache"
-                  d="M80.5 51 L74.5 47.8
-                     M80.8 52.2 L73.8 51.2
-                     M80.5 53.2 L74.8 55.2
+                  d="M80.7 51.2 L76.2 47.9
+                     M80.6 52.0 L75.2 49.9
+                     M80.6 52.8 L74.8 52.2
+                     M80.8 53.5 L75.5 54.9
 
-                     M83.5 51 L89.5 47.8
-                     M83.2 52.2 L90.2 51.2
-                     M83.5 53.2 L89.2 55.2"/>
+                     M83.3 51.2 L87.8 47.9
+                     M83.4 52.0 L88.8 49.9
+                     M83.4 52.8 L89.2 52.2
+                     M83.2 53.5 L88.5 54.9"/>
             <path class="lf-accent" d="M76 58 Q83 61 91 57"/>
           </g>
         </g>
