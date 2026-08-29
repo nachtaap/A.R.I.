@@ -652,6 +652,7 @@
   // ---------------------------------------------------------------------------
   const LOOP_FREAK_CHANCE = 0.0075; // ~1 in 133 tracks
   const LOOP_FREAK_COOLDOWN = 45 * 60 * 1000;
+  const MARC_FEVER_DURATION = 25 * 1000;
 
   const loopFreak = {
     queued: 0,
@@ -665,7 +666,8 @@
     lastAt: 0,
     forced: false,
     titleTimer: 0,
-    glitchTimer: 0
+    glitchTimer: 0,
+    retireTimer: 0
   };
 
   function midiHz(n) {
@@ -1249,6 +1251,11 @@
       }, 4200);
     }
 
+    clearTimeout(loopFreak.retireTimer);
+    loopFreak.retireTimer = setTimeout(() => {
+      retireLoopFreakCameo();
+    }, MARC_FEVER_DURATION);
+
     cancelAnimationFrame(loopFreak.raf);
     loopFreak.raf = requestAnimationFrame(animateLoopFreak);
     return true;
@@ -1277,8 +1284,10 @@
 
     clearTimeout(loopFreak.titleTimer);
     clearTimeout(loopFreak.glitchTimer);
+    clearTimeout(loopFreak.retireTimer);
     loopFreak.titleTimer = 0;
     loopFreak.glitchTimer = 0;
+    loopFreak.retireTimer = 0;
 
     document.body.classList.remove('marc-fever');
 
@@ -1329,7 +1338,19 @@
       }
     }
 
-    const dreamOpacity = (.18 + materialise * .50) * dissolve;
+    // The apparition never simply sits at one opacity. After materialising it
+    // drifts in and out like a fever image: readable, then almost gone, then
+    // back again before the final dissolution.
+    const feverPulse =
+      .60 +
+      Math.sin(phase * .075) * .18 +
+      Math.sin(phase * .021 + 1.7) * .12;
+
+    const dreamOpacity =
+      (.10 + materialise * .58) *
+      Math.max(.22, Math.min(1, feverPulse)) *
+      dissolve;
+
     svg.style.opacity = dreamOpacity.toFixed(3);
 
     if (reduced) {
@@ -1604,6 +1625,16 @@
     });
 
     const isOpen = () => drawerPanel.classList.contains('show');
+
+    // The panel behaves like a normal drawer/modal surface:
+    // click/tap anywhere outside it to dismiss. The title itself is handled by
+    // its own toggle listener above.
+    document.addEventListener('pointerdown', e => {
+      if (!isOpen()) return;
+      if (drawerPanel.contains(e.target)) return;
+      if (title.contains(e.target)) return;
+      closeDrawer();
+    }, true);
     const openDrawer = () => {
       if (!isOpen()) window.toggleDevPanel();
     };
@@ -1622,18 +1653,21 @@
       title.addEventListener('click', e => {
         e.preventDefault();
         e.stopImmediatePropagation();
-        openDrawer();
+        if (isOpen()) closeDrawer();
+        else openDrawer();
       }, true);
 
       title.setAttribute('role', 'button');
       title.setAttribute('tabindex', '0');
+      title.setAttribute('aria-expanded', 'false');
       title.setAttribute('aria-controls', 'devPanel');
       title.setAttribute('aria-label', 'Open track details');
 
       title.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          openDrawer();
+          if (isOpen()) closeDrawer();
+          else openDrawer();
         }
       });
     }
@@ -2141,6 +2175,7 @@
     resolveRequest,
     specialEvents:Object.freeze({
       marcChance:LOOP_FREAK_CHANCE,
+      marcDurationMs:MARC_FEVER_DURATION,
       loopFreakChance:LOOP_FREAK_CHANCE,
       forceMARC(){
         if(typeof track==='undefined'||!track)return false;

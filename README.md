@@ -216,3 +216,6 @@ Code: MIT. See `LICENSE`.
 - Tightened the real-ARI takeover composition: symmetric comic burst with a clear top spike, black keyline, reduced copy, and a cleaner hover state on the live button.
 
 - Reworked the ultra-rare M.A.R.C. cameo into a fever-dream apparition: large translucent spectral presence, chromatic afterimages, drifting aura and subtle scene colour warping instead of a second physical robot standing on A.R.I.'s street plane. Debug trigger: `ARI108.specialEvents.forceMARC()`.
+
+- M.A.R.C. fever-dream events now self-resolve after roughly 25 seconds and pulse in and out while visible instead of lingering until the next track.
+- Track details now use a direct toggle interaction: click/tap the track name to open or close, or click/tap outside the drawer to dismiss it.
