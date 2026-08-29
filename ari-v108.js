@@ -1353,6 +1353,157 @@
     });
   }
 
+
+  // ---------------------------------------------------------------------------
+  // Real ARI signal — standalone public check.
+  //
+  // DecAPI's Twitch uptime endpoint returns the current uptime while live and
+  // our explicit OFFLINE marker otherwise. No Twitch credentials or backend
+  // are required in A.R.I. itself.
+  // ---------------------------------------------------------------------------
+  (() => {
+    const STATUS_URL =
+      'https://decapi.me/twitch/uptime/ariathome?offline_msg=OFFLINE';
+    const TWITCH_URL = 'https://www.twitch.tv/ariathome';
+    const POLL_MS = 60 * 1000;
+
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+
+    const label =
+      footer.querySelector('[data-live-label]') ||
+      [...footer.querySelectorAll('span')]
+        .find(el => !el.classList.contains('liveDot'));
+
+    if (!label) return;
+
+    const originalText = label.textContent || 'live from the grid';
+    let link = null;
+    let pollTimer = 0;
+    let lastConfirmedLive = false;
+
+    const style = document.createElement('style');
+    style.id = 'ariRealSignalStyle';
+    style.textContent = `
+      footer.real-ari-signal {
+        pointer-events: auto;
+      }
+
+      footer.real-ari-signal .liveDot {
+        background: #ff2bd6 !important;
+        box-shadow:
+          0 0 5px rgba(255,43,214,.95),
+          0 0 13px rgba(184,255,0,.58);
+        animation: realAriPulse 1.3s ease-in-out infinite;
+      }
+
+      #realAriSignalLink {
+        color: #b8ff00;
+        text-decoration: none;
+        cursor: pointer;
+        text-shadow:
+          0 0 4px rgba(184,255,0,.72),
+          0 0 10px rgba(255,43,214,.30);
+      }
+
+      #realAriSignalLink::after {
+        content: "";
+        display: block;
+        width: 100%;
+        height: 1px;
+        margin-top: 2px;
+        background: linear-gradient(90deg, #b8ff00, #ff2bd6);
+        opacity: .74;
+      }
+
+      @keyframes realAriPulse {
+        0%,100% { opacity:.55; transform:scale(.88); }
+        50% { opacity:1; transform:scale(1.12); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        footer.real-ari-signal .liveDot {
+          animation: none !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    function setOffline() {
+      footer.classList.remove('real-ari-signal');
+
+      if (link?.isConnected) link.replaceWith(label);
+      link = null;
+
+      label.textContent = originalText;
+      label.removeAttribute('title');
+      lastConfirmedLive = false;
+    }
+
+    function setLive(uptimeText) {
+      if (!link || !link.isConnected) {
+        link = document.createElement('a');
+        link.id = 'realAriSignalLink';
+        link.href = TWITCH_URL;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        label.replaceWith(link);
+      }
+
+      link.textContent = 'REAL ARI SIGNAL DETECTED';
+      link.title = uptimeText
+        ? `ARIatHOME is live · ${uptimeText}`
+        : 'ARIatHOME is live on Twitch';
+
+      footer.classList.add('real-ari-signal');
+      lastConfirmedLive = true;
+    }
+
+    async function pollRealAriSignal() {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 7000);
+
+        const res = await fetch(STATUS_URL, {
+          cache: 'no-store',
+          signal: controller.signal,
+          headers: { 'Accept': 'text/plain' }
+        });
+
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error(`DecAPI ${res.status}`);
+
+        const text = (await res.text()).trim();
+
+        if (!text || /^offline$/i.test(text)) setOffline();
+        else setLive(text);
+      } catch (_) {
+        // A third-party status failure must never break or visually disturb A.R.I.
+        // Keep a confirmed live state until a successful check says otherwise;
+        // otherwise use the ordinary fictional grid status.
+        if (!lastConfirmedLive) setOffline();
+      } finally {
+        clearTimeout(pollTimer);
+        pollTimer = setTimeout(pollRealAriSignal, POLL_MS);
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        clearTimeout(pollTimer);
+        pollRealAriSignal();
+      }
+    });
+
+    pollRealAriSignal();
+
+    window.ARI108RealSignal = Object.freeze({
+      refresh: pollRealAriSignal,
+      source: 'DecAPI Twitch uptime',
+      channel: 'ariathome'
+    });
+  })();
+
   window.ARI108=Object.freeze({
     version:VERSION,
     canonicalGenres:[...new Set(CANONICAL)],
