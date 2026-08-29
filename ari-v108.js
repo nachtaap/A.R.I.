@@ -1531,7 +1531,7 @@
         content: "";
         position: absolute;
         inset: 0;
-        opacity: .28;
+        opacity: .20;
         pointer-events: none;
         background-image:
           radial-gradient(circle, #b8ff00 0 1px, transparent 1.35px),
@@ -1559,44 +1559,59 @@
 
       #realAriComic {
         position: relative;
-        width: min(900px, 94vw);
-        min-height: min(610px, 78svh);
+        width: min(840px, 92vw);
+        min-height: min(590px, 76svh);
         display: grid;
         place-items: center;
         text-align: center;
         isolation: isolate;
-        transform: rotate(-1.4deg);
+        transform: rotate(-1deg);
       }
 
+      /* Three flat comic-print layers:
+         black keyline -> hot pink -> toxic green.
+         The single 50%/0% vertex makes the top spike unmistakable. */
       #realAriBurst {
         position: absolute;
-        inset: 2% 0;
+        inset: 0;
         z-index: -2;
-        background: #ff2bd6;
+        background: #030409;
         clip-path: polygon(
-          50% 0%, 58% 15%, 70% 3%, 74% 20%, 91% 12%,
-          87% 31%, 100% 34%, 87% 46%, 98% 57%, 81% 61%,
-          88% 79%, 69% 75%, 63% 97%, 51% 82%, 39% 100%,
-          34% 80%, 15% 90%, 20% 69%, 1% 63%, 17% 50%,
-          0% 38%, 20% 32%, 10% 15%, 31% 21%, 38% 2%
+          50% 0%,
+          56% 14%, 67% 4%, 70% 20%, 84% 10%, 82% 27%,
+          98% 29%, 86% 41%, 100% 49%, 84% 57%, 97% 69%,
+          79% 68%, 84% 87%, 65% 80%, 58% 100%,
+          50% 84%,
+          42% 100%, 35% 80%, 16% 87%, 21% 68%, 3% 69%,
+          16% 57%, 0% 49%, 14% 41%, 2% 29%, 18% 27%,
+          16% 10%, 30% 20%, 33% 4%, 44% 14%
         );
-        filter: drop-shadow(0 0 18px rgba(255,43,214,.70));
-        animation: realAriBurstBlink .92s steps(2,end) infinite;
+        filter: drop-shadow(0 0 18px rgba(255,43,214,.52));
+        animation: realAriBurstBlink .98s steps(2,end) infinite;
       }
 
+      #realAriBurst::before,
       #realAriBurst::after {
         content: "";
         position: absolute;
-        inset: 4.5%;
-        background: #b8ff00;
         clip-path: inherit;
-        opacity: .96;
+      }
+
+      #realAriBurst::before {
+        inset: 7px;
+        background: #ff2bd6;
+      }
+
+      #realAriBurst::after {
+        inset: 17px;
+        background: #b8ff00;
       }
 
       #realAriCopy {
         position: relative;
-        width: min(730px, 83vw);
-        padding: clamp(34px, 7vw, 76px) clamp(22px, 6vw, 66px);
+        width: min(700px, 82vw);
+        padding: clamp(58px, 7vw, 76px) clamp(22px, 6vw, 60px)
+                 clamp(42px, 5vw, 58px);
         color: #030409;
         font-family: "Space Grotesk", sans-serif;
         text-transform: uppercase;
@@ -1604,15 +1619,15 @@
 
       .real-alert-kicker {
         display: inline-block;
-        padding: 7px 13px 6px;
-        margin-bottom: 14px;
+        padding: 7px 12px 6px;
+        margin: 8px 0 15px;
         background: #030409;
         color: #ff2bd6;
-        font: 600 clamp(11px, 2vw, 16px)/1 "IBM Plex Mono", monospace;
-        letter-spacing: .18em;
-        transform: rotate(1.5deg);
-        box-shadow: 5px 5px 0 rgba(255,43,214,.42);
-        animation: realAriKickerBlink .7s steps(1,end) infinite;
+        font: 600 clamp(10px, 1.8vw, 14px)/1 "IBM Plex Mono", monospace;
+        letter-spacing: .16em;
+        transform: rotate(.6deg);
+        box-shadow: 4px 4px 0 #ff2bd6;
+        animation: realAriKickerBlink .78s steps(1,end) infinite;
       }
 
       .real-alert-main {
@@ -1622,9 +1637,7 @@
         line-height: .86;
         letter-spacing: -.055em;
         text-wrap: balance;
-        text-shadow:
-          3px 3px 0 #ff2bd6,
-          6px 6px 0 rgba(3,4,9,.20);
+        text-shadow: 3px 3px 0 #ff2bd6;
       }
 
       .real-alert-stamp {
@@ -1638,8 +1651,8 @@
         font-weight: 600;
         line-height: 1;
         letter-spacing: .04em;
-        transform: rotate(-4deg);
-        box-shadow: 7px 7px 0 rgba(3,4,9,.22);
+        transform: rotate(-2.2deg);
+        box-shadow: 5px 5px 0 #030409;
       }
 
       .real-alert-sub {
@@ -1662,22 +1675,29 @@
         margin-top: 25px;
         padding: 13px 18px 11px;
         background: #030409;
-        border: 2px solid #030409;
+        border: 3px solid #030409;
         color: #b8ff00;
         text-decoration: none;
         font: 600 clamp(13px, 2.4vw, 18px)/1 "IBM Plex Mono", monospace;
-        letter-spacing: .08em;
-        box-shadow: 7px 7px 0 #ff2bd6;
-        transform: rotate(1deg);
+        letter-spacing: .07em;
+        box-shadow: 6px 6px 0 #ff2bd6;
+        transform: rotate(.6deg);
         cursor: pointer;
+        transition:
+          transform 110ms ease,
+          box-shadow 110ms ease,
+          color 110ms ease;
       }
 
-      #realAriWatch:hover,
+      #realAriWatch:hover {
+        color: #ff2bd6;
+        transform: translate(2px, 2px) rotate(.2deg);
+        box-shadow: 3px 3px 0 #ff2bd6;
+      }
+
       #realAriWatch:focus-visible {
-        background: #ff2bd6;
-        color: #030409;
-        outline: 3px solid #030409;
-        outline-offset: 3px;
+        outline: 3px solid #b8ff00;
+        outline-offset: 5px;
       }
 
       @keyframes realAriPulse {
@@ -1687,12 +1707,12 @@
 
       @keyframes realAriBurstBlink {
         0%, 46% {
-          filter: drop-shadow(0 0 20px rgba(255,43,214,.78));
-          transform: scale(1) rotate(0deg);
+          filter: drop-shadow(0 0 17px rgba(255,43,214,.58));
+          transform: scale(1);
         }
         47%, 100% {
-          filter: drop-shadow(0 0 28px rgba(184,255,0,.68));
-          transform: scale(1.015) rotate(.45deg);
+          filter: drop-shadow(0 0 23px rgba(184,255,0,.48));
+          transform: scale(1.006);
         }
       }
 
@@ -1708,8 +1728,8 @@
         }
 
         #realAriCopy {
-          width: 88vw;
-          padding: 34px 18px;
+          width: 87vw;
+          padding: 54px 18px 38px;
         }
 
         .real-alert-main {
@@ -1742,9 +1762,6 @@
           <div class="real-alert-kicker">!!! EXTERNAL SIGNAL !!!</div>
           <h2 class="real-alert-main">REAL ARI<br>SIGNAL DETECTED!</h2>
           <div class="real-alert-stamp">A.R.I. OUT OF ORDER</div>
-          <p class="real-alert-sub">
-            PRIMARY ARTIST ONLINE // STAND-IN UNIT SUSPENDED
-          </p>
           <a id="realAriWatch" href="${TWITCH_URL}" target="_blank"
              rel="noopener noreferrer">WATCH ARIatHOME LIVE ↗</a>
         </div>

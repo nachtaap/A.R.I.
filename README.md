@@ -212,3 +212,5 @@ Earlier releases introduced deterministic track seeds, Guest DNA, Echoes, expand
 ## License
 
 Code: MIT. See `LICENSE`.
+
+- Tightened the real-ARI takeover composition: symmetric comic burst with a clear top spike, black keyline, reduced copy, and a cleaner hover state on the live button.
