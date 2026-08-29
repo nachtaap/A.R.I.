@@ -219,3 +219,5 @@ Code: MIT. See `LICENSE`.
 
 - M.A.R.C. fever-dream events now self-resolve after roughly 25 seconds and pulse in and out while visible instead of lingering until the next track.
 - Track details now use a direct toggle interaction: click/tap the track name to open or close, or click/tap outside the drawer to dismiss it.
+
+- Rebuilt M.A.R.C. as an authored full-body animation rather than fast per-limb sine motion. The 34-second choreography uses smooth pose-to-pose transitions, independent shoulder/elbow and hip/knee joints, relaxed drift, slow analogue afterimages, and a long final dissolve. Socks are now subtle lower-leg shapes instead of two bright white lines.

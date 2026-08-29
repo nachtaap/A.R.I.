@@ -652,7 +652,81 @@
   // ---------------------------------------------------------------------------
   const LOOP_FREAK_CHANCE = 0.0075; // ~1 in 133 tracks
   const LOOP_FREAK_COOLDOWN = 45 * 60 * 1000;
-  const MARC_FEVER_DURATION = 25 * 1000;
+  const MARC_FEVER_DURATION = 34 * 1000;
+
+  // Hand-authored slow choreography. Values are degrees / SVG units.
+  // The apparition moves through recognizable poses instead of having each
+  // limb driven independently by fast sine waves.
+  const MARC_POSES = Object.freeze([
+    { t:0.00, x:-5, y:18, body:-3, scale:.965, head: 2, hx:0, hy:1,
+      armL:  2, elbowL:  5, armR: -2, elbowR: -4,
+      legL:  1, kneeL: -2, legR: -1, kneeR:  2, opacity:.04 },
+
+    { t:0.10, x:-2, y: 7, body:-2, scale:.985, head: 5, hx:1, hy:0,
+      armL: -7, elbowL: 12, armR:  5, elbowR:-10,
+      legL:  2, kneeL: -4, legR: -2, kneeR:  3, opacity:.56 },
+
+    { t:0.22, x: 4, y: 1, body: 2, scale:1.000, head:-4, hx:-1, hy:-1,
+      armL:-16, elbowL: 20, armR: -7, elbowR: 12,
+      legL: -3, kneeL:  5, legR:  3, kneeR: -4, opacity:.40 },
+
+    // loose two-step: shoulders move, elbows lag behind
+    { t:0.36, x:-4, y:-3, body:-3, scale:1.012, head: 6, hx:1, hy:0,
+      armL:-27, elbowL: 31, armR: 10, elbowR:-20,
+      legL:  4, kneeL: -7, legR: -4, kneeR:  6, opacity:.63 },
+
+    // one slow arm lift — the biggest gesture in the whole event
+    { t:0.50, x: 2, y: 0, body: 2, scale:1.018, head:-7, hx:-1, hy:1,
+      armL:-49, elbowL: 42, armR: -5, elbowR: 16,
+      legL: -2, kneeL:  5, legR:  2, kneeR: -4, opacity:.49 },
+
+    { t:0.62, x: 6, y:-4, body: 4, scale:1.010, head: 4, hx:1, hy:-1,
+      armL:-31, elbowL: 22, armR:-34, elbowR: 28,
+      legL:  3, kneeL: -5, legR: -3, kneeR:  5, opacity:.61 },
+
+    // almost disappears while returning to a neutral loose stance
+    { t:0.74, x:-1, y: 2, body:-1, scale:.998, head:-3, hx:0, hy:1,
+      armL:-12, elbowL: 13, armR:-16, elbowR: 17,
+      legL: -1, kneeL:  3, legR:  1, kneeR: -3, opacity:.27 },
+
+    // one final relaxed sway before dissolving
+    { t:0.87, x:-5, y:-1, body:-4, scale:.990, head: 5, hx:1, hy:0,
+      armL: -5, elbowL:  8, armR:  8, elbowR:-10,
+      legL:  2, kneeL: -3, legR: -2, kneeR:  3, opacity:.46 },
+
+    { t:1.00, x: 2, y: 8, body: 1, scale:.975, head: 0, hx:0, hy:1,
+      armL:  0, elbowL:  0, armR:  0, elbowR:  0,
+      legL:  0, kneeL:  0, legR:  0, kneeR:  0, opacity:.12 }
+  ]);
+
+  function marcEase(u) {
+    u = Math.max(0, Math.min(1, u));
+    // smootherstep: zero velocity and zero acceleration at both ends
+    return u * u * u * (u * (u * 6 - 15) + 10);
+  }
+
+  function marcPoseAt(t) {
+    t = Math.max(0, Math.min(1, t));
+    let a = MARC_POSES[0], b = MARC_POSES[MARC_POSES.length - 1];
+
+    for (let i = 0; i < MARC_POSES.length - 1; i++) {
+      if (t >= MARC_POSES[i].t && t <= MARC_POSES[i + 1].t) {
+        a = MARC_POSES[i];
+        b = MARC_POSES[i + 1];
+        break;
+      }
+    }
+
+    const span = Math.max(.0001, b.t - a.t);
+    const u = marcEase((t - a.t) / span);
+    const out = {};
+
+    for (const key of Object.keys(a)) {
+      if (key === 't') continue;
+      out[key] = a[key] + (b[key] - a[key]) * u;
+    }
+    return out;
+  }
 
   const loopFreak = {
     queued: 0,
@@ -712,7 +786,7 @@
 
       #ariLoopFreak.on::before {
         opacity: 1;
-        animation: marcAuraDrift 8.5s ease-in-out infinite alternate;
+        animation: marcAuraDrift 19s ease-in-out infinite alternate;
       }
 
       #ariLoopFreak::after {
@@ -733,7 +807,7 @@
 
       #ariLoopFreak.on::after {
         opacity: .75;
-        animation: marcScanDrift 5.8s linear infinite;
+        animation: marcScanDrift 16s linear infinite;
       }
 
       #ariLoopFreak svg {
@@ -747,7 +821,7 @@
           drop-shadow(8px -1px 1px rgba(184,255,0,.28))
           drop-shadow(0 0 8px rgba(62,232,222,.55))
           drop-shadow(0 0 28px rgba(167,139,255,.22));
-        animation: marcSpectralShift 3.6s ease-in-out infinite alternate;
+        animation: marcSpectralShift 12s ease-in-out infinite alternate;
       }
 
       #ariLoopFreak .lf-shadow {
@@ -775,7 +849,7 @@
       }
 
       body.marc-fever #scene {
-        animation: marcSceneFever 6.2s ease-in-out infinite alternate;
+        animation: marcSceneFever 20s ease-in-out infinite alternate;
       }
 
       @keyframes marcAuraDrift {
@@ -899,9 +973,9 @@
       }
 
       #ariLoopFreak .lf-sock {
-        fill: none;
-        stroke: var(--key);
-        stroke-width: 3;
+        fill: rgba(238,246,246,.035);
+        stroke: var(--key-dim);
+        stroke-width: 1.05;
       }
 
       #ariLoopFreak .lf-shoe {
@@ -1082,17 +1156,21 @@
           <!-- legs -->
           <g id="lfLegL">
             <line class="lf-main" x1="67" y1="157" x2="61" y2="203"/>
-            <circle class="lf-joint" cx="61" cy="203" r="4"/>
-            <line class="lf-main" x1="61" y1="203" x2="57" y2="230"/>
-            <line class="lf-sock" x1="58" y1="213" x2="57" y2="231"/>
-            <path class="lf-shoe" d="M54 229 L70 230 Q77 233 73 239 L53 239 Q48 236 54 229Z"/>
+            <g id="lfShinL">
+              <circle class="lf-joint" cx="61" cy="203" r="4"/>
+              <line class="lf-main" x1="61" y1="203" x2="57" y2="230"/>
+              <path class="lf-sock" d="M57.5 211 Q61 210 64 212 L61 230 L53.5 230 Z"/>
+              <path class="lf-shoe" d="M54 229 L70 230 Q77 233 73 239 L53 239 Q48 236 54 229Z"/>
+            </g>
           </g>
           <g id="lfLegR">
             <line class="lf-main" x1="98" y1="157" x2="104" y2="203"/>
-            <circle class="lf-joint" cx="104" cy="203" r="4"/>
-            <line class="lf-main" x1="104" y1="203" x2="108" y2="230"/>
-            <line class="lf-sock" x1="106" y1="213" x2="108" y2="231"/>
-            <path class="lf-shoe" d="M105 229 L121 230 Q128 233 124 239 L104 239 Q99 236 105 229Z"/>
+            <g id="lfShinR">
+              <circle class="lf-joint" cx="104" cy="203" r="4"/>
+              <line class="lf-main" x1="104" y1="203" x2="108" y2="230"/>
+              <path class="lf-sock" d="M101 212 Q104 210 108 211 L112 230 L104 230 Z"/>
+              <path class="lf-shoe" d="M105 229 L121 230 Q128 233 124 239 L104 239 Q99 236 105 229Z"/>
+            </g>
           </g>
 
           <!-- shorts -->
@@ -1108,16 +1186,20 @@
           <g id="lfArmL">
             <circle class="lf-joint" cx="59" cy="82" r="4"/>
             <line class="lf-main" x1="59" y1="82" x2="39" y2="113"/>
-            <circle class="lf-joint" cx="39" cy="113" r="3.5"/>
-            <line class="lf-main" x1="39" y1="113" x2="28" y2="145"/>
-            <path class="lf-main" d="M25 145 q4 7 9 0"/>
+            <g id="lfForearmL">
+              <circle class="lf-joint" cx="39" cy="113" r="3.5"/>
+              <line class="lf-main" x1="39" y1="113" x2="28" y2="145"/>
+              <path class="lf-main" d="M25 145 q4 7 9 0"/>
+            </g>
           </g>
           <g id="lfArmR">
             <circle class="lf-joint" cx="104" cy="82" r="4"/>
             <line class="lf-main" x1="104" y1="82" x2="125" y2="111"/>
-            <circle class="lf-joint" cx="125" cy="111" r="3.5"/>
-            <line class="lf-main" x1="125" y1="111" x2="140" y2="139"/>
-            <path class="lf-main" d="M137 139 q5 7 10 -1"/>
+            <g id="lfForearmR">
+              <circle class="lf-joint" cx="125" cy="111" r="3.5"/>
+              <line class="lf-main" x1="125" y1="111" x2="140" y2="139"/>
+              <path class="lf-main" d="M137 139 q5 7 10 -1"/>
+            </g>
           </g>
 
           <!-- neck + head -->
@@ -1248,7 +1330,7 @@
 
       loopFreak.titleTimer = setTimeout(() => {
         titleCard.classList.remove('show');
-      }, 4200);
+      }, 5000);
     }
 
     clearTimeout(loopFreak.retireTimer);
@@ -1310,10 +1392,18 @@
     const head = loopFreak.el.querySelector('#lfHead');
     const armL = loopFreak.el.querySelector('#lfArmL');
     const armR = loopFreak.el.querySelector('#lfArmR');
+    const forearmL = loopFreak.el.querySelector('#lfForearmL');
+    const forearmR = loopFreak.el.querySelector('#lfForearmR');
     const legL = loopFreak.el.querySelector('#lfLegL');
     const legR = loopFreak.el.querySelector('#lfLegR');
+    const shinL = loopFreak.el.querySelector('#lfShinL');
+    const shinR = loopFreak.el.querySelector('#lfShinR');
 
-    if (!svg || !robot || !head || !armL || !armR || !legL || !legR) {
+    if (
+      !svg || !robot || !head ||
+      !armL || !armR || !forearmL || !forearmR ||
+      !legL || !legR || !shinL || !shinR
+    ) {
       finishLoopFreakCameo();
       return;
     }
@@ -1321,114 +1411,122 @@
     layoutLoopFreak();
 
     const elapsed = now - loopFreak.startedAt;
-    const beat = elapsed / (60000 / loopFreak.bpm);
-    const phase = beat * Math.PI * 2;
+    const life = Math.max(0, Math.min(1, elapsed / MARC_FEVER_DURATION));
+    const p = marcPoseAt(life);
+    const seconds = elapsed / 1000;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const entry = Math.min(1, elapsed / 2400);
-    const materialise = 1 - Math.pow(1 - entry, 3);
 
     let dissolve = 1;
     if (loopFreak.exitingAt) {
-      const exit = Math.min(1, (now - loopFreak.exitingAt) / 1800);
-      dissolve = 1 - exit * exit;
+      const exit = Math.min(1, (now - loopFreak.exitingAt) / 3200);
+      // very soft final disappearance
+      dissolve = 1 - marcEase(exit);
       if (exit >= 1) {
         finishLoopFreakCameo();
         return;
       }
     }
 
-    // The apparition never simply sits at one opacity. After materialising it
-    // drifts in and out like a fever image: readable, then almost gone, then
-    // back again before the final dissolution.
-    const feverPulse =
-      .60 +
-      Math.sin(phase * .075) * .18 +
-      Math.sin(phase * .021 + 1.7) * .12;
-
-    const dreamOpacity =
-      (.10 + materialise * .58) *
-      Math.max(.22, Math.min(1, feverPulse)) *
-      dissolve;
-
-    svg.style.opacity = dreamOpacity.toFixed(3);
-
     if (reduced) {
-      robot.setAttribute('transform', 'translate(0 0)');
-      if (ghostA) ghostA.setAttribute('transform', 'translate(-4 2)');
-      if (ghostB) ghostB.setAttribute('transform', 'translate(5 -2)');
+      svg.style.opacity = (p.opacity * dissolve).toFixed(3);
+      robot.removeAttribute('transform');
+      forearmL.removeAttribute('transform');
+      forearmR.removeAttribute('transform');
+      shinL.removeAttribute('transform');
+      shinR.removeAttribute('transform');
     } else {
-      // Slow weightless drift plus impossible beat-driven body movement.
-      // M.A.R.C. is intentionally not aligned to the pavement anymore.
-      const floatX =
-        Math.sin(phase * .11) * 10 +
-        Math.sin(phase * .047) * 7;
-      const floatY =
-        Math.cos(phase * .085) * 8 -
-        Math.abs(Math.sin(phase * .50)) * 3;
-      const lean =
-        Math.sin(phase * .16) * 6 +
-        Math.sin(phase * .51) * 2.5;
-      const breathe = 1 + Math.sin(phase * .083) * .026;
+      // Tiny continuous motion is deliberately independent from the main poses.
+      // It gives him breath and weight without making him flap to every beat.
+      const breath = Math.sin(seconds * .55);
+      const driftX = Math.sin(seconds * .29) * 2.4;
+      const driftY = Math.cos(seconds * .24) * 2.0;
+      const microLean = Math.sin(seconds * .31) * .75;
+      const microHead = Math.sin(seconds * .42 + .8) * 1.2;
 
       robot.setAttribute(
         'transform',
-        `translate(${floatX.toFixed(2)} ${floatY.toFixed(2)}) ` +
-        `translate(82 150) scale(${breathe.toFixed(4)}) translate(-82 -150) ` +
-        `rotate(${lean.toFixed(2)} 82 150)`
+        `translate(${(p.x + driftX).toFixed(2)} ${(p.y + driftY).toFixed(2)}) ` +
+        `translate(82 150) scale(${(p.scale + breath * .004).toFixed(4)}) ` +
+        `translate(-82 -150) rotate(${(p.body + microLean).toFixed(2)} 82 150)`
       );
 
-      // His dance is still rhythmically deranged, just dreamlike instead of
-      // reading as a second physical performer standing on A.R.I.'s feet.
+      // Shoulder + elbow animation gives each arm a proper arc.
       armL.setAttribute(
         'transform',
-        `rotate(${(-43 + Math.sin(phase * .96) * 68).toFixed(1)} 59 82)`
+        `rotate(${p.armL.toFixed(2)} 59 82)`
       );
-      armR.setAttribute(
+      forearmL.setAttribute(
         'transform',
-        `rotate(${(39 - Math.cos(phase * 1.03) * 73).toFixed(1)} 104 82)`
-      );
-      legL.setAttribute(
-        'transform',
-        `rotate(${(Math.sin(phase * .79) * 13).toFixed(1)} 67 157)`
-      );
-      legR.setAttribute(
-        'transform',
-        `rotate(${(-Math.sin(phase * .83) * 13).toFixed(1)} 98 157)`
-      );
-      head.setAttribute(
-        'transform',
-        `rotate(${(Math.sin(phase * .54) * 12).toFixed(1)} 82 54) ` +
-        `translate(${(Math.sin(phase * .17) * 2.4).toFixed(1)} ` +
-        `${(Math.sin(phase * 1.31) * 2.3).toFixed(1)})`
+        `rotate(${p.elbowL.toFixed(2)} 39 113)`
       );
 
-      // Chromatic nabeelden drift out of phase, giving the apparition that
-      // cheap-analogue / LSD registration-error feeling.
+      armR.setAttribute(
+        'transform',
+        `rotate(${p.armR.toFixed(2)} 104 82)`
+      );
+      forearmR.setAttribute(
+        'transform',
+        `rotate(${p.elbowR.toFixed(2)} 125 111)`
+      );
+
+      // Same principle for hips and knees: relaxed weight shifts rather than
+      // two whole legs swinging like pendulums.
+      legL.setAttribute(
+        'transform',
+        `rotate(${p.legL.toFixed(2)} 67 157)`
+      );
+      shinL.setAttribute(
+        'transform',
+        `rotate(${p.kneeL.toFixed(2)} 61 203)`
+      );
+
+      legR.setAttribute(
+        'transform',
+        `rotate(${p.legR.toFixed(2)} 98 157)`
+      );
+      shinR.setAttribute(
+        'transform',
+        `rotate(${p.kneeR.toFixed(2)} 104 203)`
+      );
+
+      head.setAttribute(
+        'transform',
+        `translate(${p.hx.toFixed(2)} ${p.hy.toFixed(2)}) ` +
+        `rotate(${(p.head + microHead).toFixed(2)} 82 54)`
+      );
+
+      // The hallucination fades in/out as part of the authored choreography;
+      // a tiny 14-second luminance drift keeps it organic.
+      const spectralBreath = .91 + Math.sin(seconds * .45 + .3) * .09;
+      svg.style.opacity =
+        (Math.max(.025, p.opacity * spectralBreath) * dissolve).toFixed(3);
+
+      // Chromatic ghosts lag behind very slowly, like analogue registration
+      // rather than frantic RGB jitter.
       if (ghostA) {
         ghostA.setAttribute(
           'x',
-          (-7 + Math.sin(phase * .23) * 7).toFixed(2)
+          (-4.2 + Math.sin(seconds * .34) * 2.2).toFixed(2)
         );
         ghostA.setAttribute(
           'y',
-          (3 + Math.cos(phase * .19) * 5).toFixed(2)
+          (1.8 + Math.cos(seconds * .27) * 1.5).toFixed(2)
         );
         ghostA.style.opacity =
-          (.07 + Math.abs(Math.sin(phase * .13)) * .11).toFixed(3);
+          (.055 + (Math.sin(seconds * .23) + 1) * .022).toFixed(3);
       }
 
       if (ghostB) {
         ghostB.setAttribute(
           'x',
-          (8 + Math.cos(phase * .21) * 8).toFixed(2)
+          (4.8 + Math.cos(seconds * .30) * 2.5).toFixed(2)
         );
         ghostB.setAttribute(
           'y',
-          (-2 + Math.sin(phase * .17) * 6).toFixed(2)
+          (-1.6 + Math.sin(seconds * .25) * 1.7).toFixed(2)
         );
         ghostB.style.opacity =
-          (.06 + Math.abs(Math.cos(phase * .15)) * .12).toFixed(3);
+          (.05 + (Math.cos(seconds * .21) + 1) * .024).toFixed(3);
       }
     }
 
