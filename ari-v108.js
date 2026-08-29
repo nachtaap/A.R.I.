@@ -1376,8 +1376,9 @@
     };
 
     if (title) {
-      // Capture phase prevents the legacy pointerdown long-press timer in
-      // index.html from starting. A normal click/tap now opens the drawer.
+      // Track name is a normal button now: one click/tap opens immediately.
+      // Capture pointerdown only neutralizes the obsolete handler still present
+      // in the base page; there is no hold/gesture behavior in v108.
       title.addEventListener('pointerdown', e => {
         e.stopImmediatePropagation();
       }, true);
@@ -1410,11 +1411,11 @@
 
 
   // ---------------------------------------------------------------------------
-  // Real ARI signal — standalone public check.
+  // Real ARI signal — full takeover.
   //
-  // DecAPI's Twitch uptime endpoint returns the current uptime while live and
-  // our explicit OFFLINE marker otherwise. No Twitch credentials or backend
-  // are required in A.R.I. itself.
+  // A.R.I. is the stand-in while ARIatHOME is unavailable. When DecAPI reports
+  // the real stream as live, the local performance stops and the interface
+  // becomes an intentionally loud 80s comic alert until the stream is offline.
   // ---------------------------------------------------------------------------
   (() => {
     const STATUS_URL =
@@ -1423,6 +1424,7 @@
     const POLL_MS = 60 * 1000;
 
     const footer = document.querySelector('footer');
+    const stage = document.getElementById('stage');
     if (!footer) return;
 
     const label =
@@ -1440,6 +1442,29 @@
     const style = document.createElement('style');
     style.id = 'ariRealSignalStyle';
     style.textContent = `
+      body.real-ari-live {
+        --real-green: #b8ff00;
+        --real-pink: #ff2bd6;
+      }
+
+      body.real-ari-live #stage {
+        cursor: default !important;
+      }
+
+      body.real-ari-live #scene {
+        opacity: .34;
+        filter:
+          grayscale(.35)
+          drop-shadow(0 0 4px rgba(184,255,0,.18))
+          drop-shadow(0 0 18px rgba(255,43,214,.12));
+        transition: opacity 260ms ease, filter 260ms ease;
+      }
+
+      body.real-ari-live #gAri {
+        opacity: .28 !important;
+        cursor: default !important;
+      }
+
       footer.real-ari-signal {
         pointer-events: auto;
       }
@@ -1449,7 +1474,7 @@
         box-shadow:
           0 0 5px rgba(255,43,214,.95),
           0 0 13px rgba(184,255,0,.58);
-        animation: realAriPulse 1.3s ease-in-out infinite;
+        animation: realAriPulse 1.05s steps(2,end) infinite;
       }
 
       #realAriSignalLink {
@@ -1457,8 +1482,8 @@
         text-decoration: none;
         cursor: pointer;
         text-shadow:
-          0 0 4px rgba(184,255,0,.72),
-          0 0 10px rgba(255,43,214,.30);
+          0 0 4px rgba(184,255,0,.75),
+          0 0 11px rgba(255,43,214,.34);
       }
 
       #realAriSignalLink::after {
@@ -1468,21 +1493,301 @@
         height: 1px;
         margin-top: 2px;
         background: linear-gradient(90deg, #b8ff00, #ff2bd6);
-        opacity: .74;
+        opacity: .82;
+      }
+
+      #realAriTakeover {
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        display: grid;
+        place-items: center;
+        padding:
+          max(26px, env(safe-area-inset-top))
+          max(22px, env(safe-area-inset-right))
+          max(26px, env(safe-area-inset-bottom))
+          max(22px, env(safe-area-inset-left));
+        overflow: hidden;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        background:
+          radial-gradient(circle at 20% 18%, rgba(184,255,0,.09), transparent 25%),
+          radial-gradient(circle at 82% 78%, rgba(255,43,214,.12), transparent 28%),
+          rgba(3,4,9,.70);
+        transition: opacity 220ms ease, visibility 0s linear 240ms;
+      }
+
+      #realAriTakeover.on {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition-delay: 0s;
+      }
+
+      #realAriTakeover::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: .28;
+        pointer-events: none;
+        background-image:
+          radial-gradient(circle, #b8ff00 0 1px, transparent 1.35px),
+          linear-gradient(
+            118deg,
+            transparent 0 47%,
+            rgba(255,43,214,.12) 48% 52%,
+            transparent 53% 100%
+          );
+        background-size: 8px 8px, 100% 100%;
+        mix-blend-mode: screen;
+      }
+
+      #realAriTakeover::after {
+        content: "";
+        position: absolute;
+        inset: -15%;
+        pointer-events: none;
+        border: clamp(18px, 3vw, 42px) solid rgba(255,43,214,.16);
+        transform: rotate(-4deg);
+        box-shadow:
+          inset 0 0 0 3px rgba(184,255,0,.22),
+          0 0 70px rgba(255,43,214,.18);
+      }
+
+      #realAriComic {
+        position: relative;
+        width: min(900px, 94vw);
+        min-height: min(610px, 78svh);
+        display: grid;
+        place-items: center;
+        text-align: center;
+        isolation: isolate;
+        transform: rotate(-1.4deg);
+      }
+
+      #realAriBurst {
+        position: absolute;
+        inset: 2% 0;
+        z-index: -2;
+        background: #ff2bd6;
+        clip-path: polygon(
+          50% 0%, 58% 15%, 70% 3%, 74% 20%, 91% 12%,
+          87% 31%, 100% 34%, 87% 46%, 98% 57%, 81% 61%,
+          88% 79%, 69% 75%, 63% 97%, 51% 82%, 39% 100%,
+          34% 80%, 15% 90%, 20% 69%, 1% 63%, 17% 50%,
+          0% 38%, 20% 32%, 10% 15%, 31% 21%, 38% 2%
+        );
+        filter: drop-shadow(0 0 18px rgba(255,43,214,.70));
+        animation: realAriBurstBlink .92s steps(2,end) infinite;
+      }
+
+      #realAriBurst::after {
+        content: "";
+        position: absolute;
+        inset: 4.5%;
+        background: #b8ff00;
+        clip-path: inherit;
+        opacity: .96;
+      }
+
+      #realAriCopy {
+        position: relative;
+        width: min(730px, 83vw);
+        padding: clamp(34px, 7vw, 76px) clamp(22px, 6vw, 66px);
+        color: #030409;
+        font-family: "Space Grotesk", sans-serif;
+        text-transform: uppercase;
+      }
+
+      .real-alert-kicker {
+        display: inline-block;
+        padding: 7px 13px 6px;
+        margin-bottom: 14px;
+        background: #030409;
+        color: #ff2bd6;
+        font: 600 clamp(11px, 2vw, 16px)/1 "IBM Plex Mono", monospace;
+        letter-spacing: .18em;
+        transform: rotate(1.5deg);
+        box-shadow: 5px 5px 0 rgba(255,43,214,.42);
+        animation: realAriKickerBlink .7s steps(1,end) infinite;
+      }
+
+      .real-alert-main {
+        margin: 0;
+        font-size: clamp(38px, 8.5vw, 92px);
+        font-weight: 600;
+        line-height: .86;
+        letter-spacing: -.055em;
+        text-wrap: balance;
+        text-shadow:
+          3px 3px 0 #ff2bd6,
+          6px 6px 0 rgba(3,4,9,.20);
+      }
+
+      .real-alert-stamp {
+        display: inline-block;
+        margin: 24px 0 17px;
+        padding: 8px 14px 6px;
+        border: 4px solid #030409;
+        background: #ff2bd6;
+        color: #030409;
+        font-size: clamp(21px, 4vw, 42px);
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: .04em;
+        transform: rotate(-4deg);
+        box-shadow: 7px 7px 0 rgba(3,4,9,.22);
+      }
+
+      .real-alert-sub {
+        max-width: 570px;
+        margin: 0 auto;
+        font: 500 clamp(11px, 2vw, 16px)/1.45 "IBM Plex Mono", monospace;
+        letter-spacing: .08em;
+      }
+
+      #realAriWatch {
+        display: inline-block;
+        margin-top: 25px;
+        padding: 13px 18px 11px;
+        background: #030409;
+        border: 2px solid #030409;
+        color: #b8ff00;
+        text-decoration: none;
+        font: 600 clamp(13px, 2.4vw, 18px)/1 "IBM Plex Mono", monospace;
+        letter-spacing: .08em;
+        box-shadow: 7px 7px 0 #ff2bd6;
+        transform: rotate(1deg);
+        cursor: pointer;
+      }
+
+      #realAriWatch:hover,
+      #realAriWatch:focus-visible {
+        background: #ff2bd6;
+        color: #030409;
+        outline: 3px solid #030409;
+        outline-offset: 3px;
       }
 
       @keyframes realAriPulse {
-        0%,100% { opacity:.55; transform:scale(.88); }
-        50% { opacity:1; transform:scale(1.12); }
+        0%,100% { opacity:.46; transform:scale(.86); }
+        50% { opacity:1; transform:scale(1.16); }
+      }
+
+      @keyframes realAriBurstBlink {
+        0%, 46% {
+          filter: drop-shadow(0 0 20px rgba(255,43,214,.78));
+          transform: scale(1) rotate(0deg);
+        }
+        47%, 100% {
+          filter: drop-shadow(0 0 28px rgba(184,255,0,.68));
+          transform: scale(1.015) rotate(.45deg);
+        }
+      }
+
+      @keyframes realAriKickerBlink {
+        0%, 49% { color:#ff2bd6; background:#030409; }
+        50%,100% { color:#030409; background:#ff2bd6; }
+      }
+
+      @media (max-width: 640px) {
+        #realAriComic {
+          width: 98vw;
+          min-height: 72svh;
+        }
+
+        #realAriCopy {
+          width: 88vw;
+          padding: 34px 18px;
+        }
+
+        .real-alert-main {
+          font-size: clamp(36px, 13vw, 58px);
+        }
+
+        .real-alert-stamp {
+          margin-top: 19px;
+        }
       }
 
       @media (prefers-reduced-motion: reduce) {
-        footer.real-ari-signal .liveDot {
+        footer.real-ari-signal .liveDot,
+        #realAriBurst,
+        .real-alert-kicker {
           animation: none !important;
         }
       }
     `;
     document.head.appendChild(style);
+
+    const takeover = document.createElement('div');
+    takeover.id = 'realAriTakeover';
+    takeover.setAttribute('aria-live', 'assertive');
+    takeover.setAttribute('aria-hidden', 'true');
+    takeover.innerHTML = `
+      <div id="realAriComic">
+        <div id="realAriBurst" aria-hidden="true"></div>
+        <div id="realAriCopy">
+          <div class="real-alert-kicker">!!! EXTERNAL SIGNAL !!!</div>
+          <h2 class="real-alert-main">REAL ARI<br>SIGNAL DETECTED!</h2>
+          <div class="real-alert-stamp">A.R.I. OUT OF ORDER</div>
+          <p class="real-alert-sub">
+            PRIMARY ARTIST ONLINE // STAND-IN UNIT SUSPENDED
+          </p>
+          <a id="realAriWatch" href="${TWITCH_URL}" target="_blank"
+             rel="noopener noreferrer">WATCH ARIatHOME LIVE ↗</a>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(takeover);
+
+    function suspendLocalAri() {
+      // The base app exposes playing + stop(). Guard both so this can never
+      // accidentally call the browser's unrelated window.stop().
+      try {
+        if (
+          typeof playing !== 'undefined' &&
+          playing &&
+          typeof stop === 'function'
+        ) {
+          stop();
+        }
+      } catch (_) {}
+
+      try {
+        if (typeof retireLoopFreakCameo === 'function')
+          retireLoopFreakCameo(true);
+      } catch (_) {}
+
+      document.body.classList.add('real-ari-live');
+      if (stage) {
+        try { stage.inert = true; } catch (_) {}
+        stage.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    function resumeLocalAri() {
+      document.body.classList.remove('real-ari-live');
+      if (stage) {
+        try { stage.inert = false; } catch (_) {}
+        stage.removeAttribute('aria-hidden');
+      }
+    }
+
+    function showTakeover() {
+      takeover.hidden = false;
+      takeover.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => takeover.classList.add('on'));
+    }
+
+    function hideTakeover() {
+      takeover.classList.remove('on');
+      takeover.setAttribute('aria-hidden', 'true');
+      setTimeout(() => {
+        if (!lastConfirmedLive) takeover.hidden = true;
+      }, 260);
+    }
 
     function setOffline() {
       footer.classList.remove('real-ari-signal');
@@ -1492,7 +1797,10 @@
 
       label.textContent = originalText;
       label.removeAttribute('title');
+
       lastConfirmedLive = false;
+      hideTakeover();
+      resumeLocalAri();
     }
 
     function setLive(uptimeText) {
@@ -1512,6 +1820,8 @@
 
       footer.classList.add('real-ari-signal');
       lastConfirmedLive = true;
+      suspendLocalAri();
+      showTakeover();
     }
 
     async function pollRealAriSignal() {
@@ -1533,9 +1843,9 @@
         if (!text || /^offline$/i.test(text)) setOffline();
         else setLive(text);
       } catch (_) {
-        // A third-party status failure must never break or visually disturb A.R.I.
-        // Keep a confirmed live state until a successful check says otherwise;
-        // otherwise use the ordinary fictional grid status.
+        // A failed status request never creates a false takeover. If the last
+        // confirmed state was live, retain it until a successful check says
+        // otherwise.
         if (!lastConfirmedLive) setOffline();
       } finally {
         clearTimeout(pollTimer);
@@ -1555,7 +1865,8 @@
     window.ARI108RealSignal = Object.freeze({
       refresh: pollRealAriSignal,
       source: 'DecAPI Twitch uptime',
-      channel: 'ariathome'
+      channel: 'ariathome',
+      get live() { return lastConfirmedLive; }
     });
   })();
 

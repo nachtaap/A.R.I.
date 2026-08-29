@@ -151,7 +151,7 @@ The technical track view lives in a right-side drawer.
 - Close it with the existing **×** button.
 - Desktop users can also press **Escape**.
 
-The old long-press interaction has been removed. Vertical scrolling inside the track details remains available.
+The track name is a direct action: one tap/click opens the details immediately. Vertical scrolling inside the track details remains available.
 
 ## The street
 
