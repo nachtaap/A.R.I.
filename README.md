@@ -214,3 +214,5 @@ Earlier releases introduced deterministic track seeds, Guest DNA, Echoes, expand
 Code: MIT. See `LICENSE`.
 
 - Tightened the real-ARI takeover composition: symmetric comic burst with a clear top spike, black keyline, reduced copy, and a cleaner hover state on the live button.
+
+- Reworked the ultra-rare M.A.R.C. cameo into a fever-dream apparition: large translucent spectral presence, chromatic afterimages, drifting aura and subtle scene colour warping instead of a second physical robot standing on A.R.I.'s street plane. Debug trigger: `ARI108.specialEvents.forceMARC()`.

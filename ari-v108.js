@@ -685,19 +685,172 @@
         overflow: hidden;
         pointer-events: none;
         opacity: 0;
-        transition: opacity 420ms ease;
+        transition: opacity 900ms ease;
+        mix-blend-mode: screen;
       }
 
       #ariLoopFreak.on {
         opacity: 1;
       }
 
+      /* The apparition has no ground plane. It is a hallucination, not a visitor. */
+      #ariLoopFreak::before {
+        content: "";
+        position: absolute;
+        inset: -18%;
+        opacity: 0;
+        background:
+          radial-gradient(circle at 39% 48%, rgba(184,255,0,.10), transparent 22%),
+          radial-gradient(circle at 64% 42%, rgba(255,43,214,.13), transparent 25%),
+          radial-gradient(circle at 52% 67%, rgba(62,232,222,.08), transparent 30%);
+        filter: blur(26px) saturate(1.45);
+        mix-blend-mode: screen;
+        transform: scale(.94) rotate(0deg);
+      }
+
+      #ariLoopFreak.on::before {
+        opacity: 1;
+        animation: marcAuraDrift 8.5s ease-in-out infinite alternate;
+      }
+
+      #ariLoopFreak::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        background:
+          repeating-linear-gradient(
+            to bottom,
+            transparent 0 7px,
+            rgba(255,43,214,.018) 7px 8px,
+            transparent 8px 15px,
+            rgba(184,255,0,.014) 15px 16px
+          );
+        mix-blend-mode: screen;
+      }
+
+      #ariLoopFreak.on::after {
+        opacity: .75;
+        animation: marcScanDrift 5.8s linear infinite;
+      }
+
       #ariLoopFreak svg {
         position: fixed;
         overflow: visible;
+        opacity: .58;
+        mix-blend-mode: screen;
+        transform-origin: 50% 50%;
         filter:
-          drop-shadow(0 0 5px var(--glow1))
-          drop-shadow(0 0 18px var(--glow2));
+          drop-shadow(-8px 1px 1px rgba(255,43,214,.34))
+          drop-shadow(8px -1px 1px rgba(184,255,0,.28))
+          drop-shadow(0 0 8px rgba(62,232,222,.55))
+          drop-shadow(0 0 28px rgba(167,139,255,.22));
+        animation: marcSpectralShift 3.6s ease-in-out infinite alternate;
+      }
+
+      #ariLoopFreak .lf-shadow {
+        display: none;
+      }
+
+      #lfGhostA,
+      #lfGhostB {
+        opacity: .14;
+        mix-blend-mode: screen;
+      }
+
+      #lfGhostA {
+        filter:
+          hue-rotate(82deg)
+          saturate(1.7)
+          drop-shadow(0 0 6px rgba(184,255,0,.75));
+      }
+
+      #lfGhostB {
+        filter:
+          hue-rotate(-52deg)
+          saturate(1.85)
+          drop-shadow(0 0 7px rgba(255,43,214,.78));
+      }
+
+      body.marc-fever #scene {
+        animation: marcSceneFever 6.2s ease-in-out infinite alternate;
+      }
+
+      @keyframes marcAuraDrift {
+        0% {
+          transform: scale(.93) rotate(-2deg) translate(-2%, 1%);
+          filter: blur(30px) hue-rotate(-8deg) saturate(1.35);
+        }
+        38% {
+          transform: scale(1.04) rotate(2deg) translate(2%, -1%);
+          filter: blur(22px) hue-rotate(16deg) saturate(1.7);
+        }
+        72% {
+          transform: scale(.98) rotate(-1deg) translate(0, 2%);
+          filter: blur(35px) hue-rotate(-18deg) saturate(1.5);
+        }
+        100% {
+          transform: scale(1.08) rotate(1.5deg) translate(-1%, -2%);
+          filter: blur(24px) hue-rotate(12deg) saturate(1.8);
+        }
+      }
+
+      @keyframes marcScanDrift {
+        from { transform: translateY(-18px); }
+        to   { transform: translateY(18px); }
+      }
+
+      @keyframes marcSpectralShift {
+        0% {
+          opacity: .46;
+          filter:
+            drop-shadow(-10px 0 1px rgba(255,43,214,.42))
+            drop-shadow(7px 1px 1px rgba(184,255,0,.28))
+            drop-shadow(0 0 8px rgba(62,232,222,.48))
+            drop-shadow(0 0 25px rgba(167,139,255,.18));
+        }
+        48% {
+          opacity: .68;
+          filter:
+            drop-shadow(6px 2px 1px rgba(255,43,214,.40))
+            drop-shadow(-9px -2px 1px rgba(184,255,0,.34))
+            drop-shadow(0 0 13px rgba(62,232,222,.58))
+            drop-shadow(0 0 34px rgba(167,139,255,.24));
+        }
+        100% {
+          opacity: .52;
+          filter:
+            drop-shadow(-5px -2px 1px rgba(255,43,214,.38))
+            drop-shadow(11px 2px 1px rgba(184,255,0,.30))
+            drop-shadow(0 0 9px rgba(62,232,222,.54))
+            drop-shadow(0 0 29px rgba(167,139,255,.22));
+        }
+      }
+
+      @keyframes marcSceneFever {
+        0% {
+          filter:
+            hue-rotate(-5deg)
+            saturate(1.05)
+            drop-shadow(0 0 6px var(--glow1))
+            drop-shadow(0 0 26px var(--glow2));
+        }
+        42% {
+          filter:
+            hue-rotate(11deg)
+            saturate(1.28)
+            drop-shadow(-2px 0 7px rgba(255,43,214,.28))
+            drop-shadow(2px 0 7px rgba(184,255,0,.20))
+            drop-shadow(0 0 26px var(--glow2));
+        }
+        100% {
+          filter:
+            hue-rotate(-13deg)
+            saturate(1.18)
+            drop-shadow(2px 1px 7px rgba(255,43,214,.22))
+            drop-shadow(-2px -1px 7px rgba(184,255,0,.22))
+            drop-shadow(0 0 30px var(--glow2));
+        }
       }
 
       #ariLoopFreak .lf-main,
@@ -762,8 +915,7 @@
       }
 
       #ariLoopFreak .lf-shadow {
-        fill: rgba(0,0,0,.24);
-        stroke: none;
+        display: none;
       }
 
       /* M.A.R.C. character introduction — deliberately loud 80s arcade/VHS. */
@@ -902,6 +1054,13 @@
         #ariLoopFreak {
           transition-duration: 1ms;
         }
+
+        #ariLoopFreak::before,
+        #ariLoopFreak::after,
+        #ariLoopFreak svg,
+        body.marc-fever #scene {
+          animation: none !important;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -981,6 +1140,10 @@
             <path class="lf-accent" d="M75 56 Q83 60 92 55"/>
           </g>
         </g>
+
+        <!-- chromatic afterimages; they reference the live animated robot -->
+        <use id="lfGhostA" href="#lfRobot" x="-7" y="3"/>
+        <use id="lfGhostB" href="#lfRobot" x="8" y="-2"/>
       </svg>
     `;
     document.body.appendChild(wrap);
@@ -995,14 +1158,18 @@
     if (!svg || !scene) return;
 
     const r = scene.getBoundingClientRect();
-    const w = Math.max(125, Math.min(245, r.width * 0.30));
+
+    // M.A.R.C. no longer occupies the street plane. He materialises as a large
+    // translucent apparition across the upper/central scene.
+    const maxW = innerWidth < 700 ? 330 : 520;
+    const minW = innerWidth < 700 ? 220 : 310;
+    const w = Math.max(minW, Math.min(maxW, r.width * .58));
     const h = w * (270 / 170);
 
-    // Park him just to A.R.I.'s right, standing on roughly the same street plane.
     svg.style.width = `${w}px`;
     svg.style.height = `${h}px`;
-    svg.style.left = `${r.left + r.width * 0.61}px`;
-    svg.style.top = `${r.top + r.height * 0.39}px`;
+    svg.style.left = `${r.left + r.width * .50 - w * .50}px`;
+    svg.style.top = `${r.top + r.height * .12}px`;
   }
 
   function queueLoopFreakCameo(t, force = false) {
@@ -1060,7 +1227,8 @@
     loopFreak.forced = forced;
     loopFreak.lastAt = Date.now();
 
-    t.specialEvent = 'wild-loop-cameo';
+    t.specialEvent = 'M.A.R.C. — fever-dream cameo';
+    document.body.classList.add('marc-fever');
     wrap.classList.add('on');
 
     const titleCard = wrap.querySelector('#lfTitleCard');
@@ -1112,6 +1280,8 @@
     loopFreak.titleTimer = 0;
     loopFreak.glitchTimer = 0;
 
+    document.body.classList.remove('marc-fever');
+
     if (loopFreak.el) {
       loopFreak.el.classList.remove('on');
       const titleCard = loopFreak.el.querySelector('#lfTitleCard');
@@ -1124,13 +1294,17 @@
   function animateLoopFreak(now) {
     if (!loopFreak.active || !loopFreak.el) return;
 
+    const svg = loopFreak.el.querySelector('svg');
     const robot = loopFreak.el.querySelector('#lfRobot');
+    const ghostA = loopFreak.el.querySelector('#lfGhostA');
+    const ghostB = loopFreak.el.querySelector('#lfGhostB');
     const head = loopFreak.el.querySelector('#lfHead');
     const armL = loopFreak.el.querySelector('#lfArmL');
     const armR = loopFreak.el.querySelector('#lfArmR');
     const legL = loopFreak.el.querySelector('#lfLegL');
     const legR = loopFreak.el.querySelector('#lfLegR');
-    if (!robot || !head || !armL || !armR || !legL || !legR) {
+
+    if (!svg || !robot || !head || !armL || !armR || !legL || !legR) {
       finishLoopFreakCameo();
       return;
     }
@@ -1142,37 +1316,99 @@
     const phase = beat * Math.PI * 2;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    let entryX = 0;
-    const entry = Math.min(1, elapsed / 1800);
-    entryX = (1 - (1 - Math.pow(1 - entry, 3))) * 185;
+    const entry = Math.min(1, elapsed / 2400);
+    const materialise = 1 - Math.pow(1 - entry, 3);
 
-    let exitX = 0;
+    let dissolve = 1;
     if (loopFreak.exitingAt) {
-      const exit = Math.min(1, (now - loopFreak.exitingAt) / 1100);
-      exitX = exit * exit * 220;
+      const exit = Math.min(1, (now - loopFreak.exitingAt) / 1800);
+      dissolve = 1 - exit * exit;
       if (exit >= 1) {
         finishLoopFreakCameo();
         return;
       }
     }
 
+    const dreamOpacity = (.18 + materialise * .50) * dissolve;
+    svg.style.opacity = dreamOpacity.toFixed(3);
+
     if (reduced) {
-      robot.setAttribute('transform', `translate(${entryX + exitX} 0)`);
+      robot.setAttribute('transform', 'translate(0 0)');
+      if (ghostA) ghostA.setAttribute('transform', 'translate(-4 2)');
+      if (ghostB) ghostB.setAttribute('transform', 'translate(5 -2)');
     } else {
-      const bounce = -Math.abs(Math.sin(phase)) * 10 - Math.abs(Math.sin(phase * .5)) * 4;
-      const sway = Math.sin(phase * .5) * 9 + Math.sin(phase * 1.5) * 4;
-      const side = Math.sin(phase * .25) * 8;
+      // Slow weightless drift plus impossible beat-driven body movement.
+      // M.A.R.C. is intentionally not aligned to the pavement anymore.
+      const floatX =
+        Math.sin(phase * .11) * 10 +
+        Math.sin(phase * .047) * 7;
+      const floatY =
+        Math.cos(phase * .085) * 8 -
+        Math.abs(Math.sin(phase * .50)) * 3;
+      const lean =
+        Math.sin(phase * .16) * 6 +
+        Math.sin(phase * .51) * 2.5;
+      const breathe = 1 + Math.sin(phase * .083) * .026;
+
       robot.setAttribute(
         'transform',
-        `translate(${(entryX + exitX + side).toFixed(2)} ${bounce.toFixed(2)}) rotate(${sway.toFixed(2)} 82 150)`
+        `translate(${floatX.toFixed(2)} ${floatY.toFixed(2)}) ` +
+        `translate(82 150) scale(${breathe.toFixed(4)}) translate(-82 -150) ` +
+        `rotate(${lean.toFixed(2)} 82 150)`
       );
 
-      // Intentionally ridiculous, beat-driven limbs.
-      armL.setAttribute('transform', `rotate(${(-58 + Math.sin(phase) * 75).toFixed(1)} 59 82)`);
-      armR.setAttribute('transform', `rotate(${(48 - Math.cos(phase * 1.05) * 82).toFixed(1)} 104 82)`);
-      legL.setAttribute('transform', `rotate(${(Math.sin(phase) * 16).toFixed(1)} 67 157)`);
-      legR.setAttribute('transform', `rotate(${(-Math.sin(phase) * 16).toFixed(1)} 98 157)`);
-      head.setAttribute('transform', `rotate(${(Math.sin(phase * .75) * 11).toFixed(1)} 82 54) translate(0 ${(Math.sin(phase * 2) * 1.8).toFixed(1)})`);
+      // His dance is still rhythmically deranged, just dreamlike instead of
+      // reading as a second physical performer standing on A.R.I.'s feet.
+      armL.setAttribute(
+        'transform',
+        `rotate(${(-43 + Math.sin(phase * .96) * 68).toFixed(1)} 59 82)`
+      );
+      armR.setAttribute(
+        'transform',
+        `rotate(${(39 - Math.cos(phase * 1.03) * 73).toFixed(1)} 104 82)`
+      );
+      legL.setAttribute(
+        'transform',
+        `rotate(${(Math.sin(phase * .79) * 13).toFixed(1)} 67 157)`
+      );
+      legR.setAttribute(
+        'transform',
+        `rotate(${(-Math.sin(phase * .83) * 13).toFixed(1)} 98 157)`
+      );
+      head.setAttribute(
+        'transform',
+        `rotate(${(Math.sin(phase * .54) * 12).toFixed(1)} 82 54) ` +
+        `translate(${(Math.sin(phase * .17) * 2.4).toFixed(1)} ` +
+        `${(Math.sin(phase * 1.31) * 2.3).toFixed(1)})`
+      );
+
+      // Chromatic nabeelden drift out of phase, giving the apparition that
+      // cheap-analogue / LSD registration-error feeling.
+      if (ghostA) {
+        ghostA.setAttribute(
+          'x',
+          (-7 + Math.sin(phase * .23) * 7).toFixed(2)
+        );
+        ghostA.setAttribute(
+          'y',
+          (3 + Math.cos(phase * .19) * 5).toFixed(2)
+        );
+        ghostA.style.opacity =
+          (.07 + Math.abs(Math.sin(phase * .13)) * .11).toFixed(3);
+      }
+
+      if (ghostB) {
+        ghostB.setAttribute(
+          'x',
+          (8 + Math.cos(phase * .21) * 8).toFixed(2)
+        );
+        ghostB.setAttribute(
+          'y',
+          (-2 + Math.sin(phase * .17) * 6).toFixed(2)
+        );
+        ghostB.style.opacity =
+          (.06 + Math.abs(Math.cos(phase * .15)) * .12).toFixed(3);
+      }
     }
 
     loopFreak.raf = requestAnimationFrame(animateLoopFreak);
@@ -1904,7 +2140,14 @@
     styleMeta:META,
     resolveRequest,
     specialEvents:Object.freeze({
+      marcChance:LOOP_FREAK_CHANCE,
       loopFreakChance:LOOP_FREAK_CHANCE,
+      forceMARC(){
+        if(typeof track==='undefined'||!track)return false;
+        retireLoopFreakCameo(true);
+        return queueLoopFreakCameo(track,true);
+      },
+      // legacy debug alias
       forceLoopFreak(){
         if(typeof track==='undefined'||!track)return false;
         retireLoopFreakCameo(true);
