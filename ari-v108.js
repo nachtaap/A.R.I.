@@ -1466,7 +1466,9 @@
       }
 
       footer.real-ari-signal {
-        pointer-events: auto;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
       }
 
       footer.real-ari-signal .liveDot {
@@ -1641,10 +1643,18 @@
       }
 
       .real-alert-sub {
+        display: inline-block;
         max-width: 570px;
         margin: 0 auto;
+        padding: 8px 12px 7px;
+        background: #030409;
+        color: #ff2bd6;
+        border: 2px solid #030409;
         font: 500 clamp(11px, 2vw, 16px)/1.45 "IBM Plex Mono", monospace;
         letter-spacing: .08em;
+        text-shadow: 0 0 7px rgba(255,43,214,.52);
+        box-shadow: 5px 5px 0 rgba(184,255,0,.34);
+        transform: rotate(.7deg);
       }
 
       #realAriWatch {
