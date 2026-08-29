@@ -13,6 +13,32 @@
   'use strict';
 
   const VERSION = 108;
+
+  // Pointer affordance: the scene itself is not a giant button.
+  // Only A.R.I. and genuinely interactive UI should show the hand cursor.
+  (() => {
+    const style = document.createElement('style');
+    style.id = 'ariPointerAffordance';
+    style.textContent = `
+      #stage {
+        cursor: default !important;
+      }
+
+      #gAri {
+        cursor: pointer;
+      }
+
+      #trackname {
+        cursor: pointer;
+      }
+
+      header h1 a[href*="github.com"] {
+        cursor: pointer;
+      }
+    `;
+    document.head.appendChild(style);
+  })();
+
   const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
   const clone = x => x == null ? x : JSON.parse(JSON.stringify(x));
 
