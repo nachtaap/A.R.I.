@@ -1,20 +1,25 @@
-A.R.I. v108 — upload instructions
-================================
+A.R.I. v112 - compleet GitHub-uploadpakket
 
-1. Upload/replace README.md
-2. Upload/replace sw.js
-3. Add ari-v108.js to the repository root
-4. Edit index.html and add this ONE line just before </body>, after the existing application script:
+1. Pak A.R.I.-v112-GitHub-pakket.zip uit.
+2. Open de repository nachtaap/A.R.I. op GitHub.
+3. Maak bij voorkeur eerst een aparte branch om deze versie te beoordelen.
+4. Upload de uitgepakte bestanden naar de hoofdmap van die branch.
+   index.html moet direct in de hoofdmap staan, niet in een extra submap.
+   Upload dus de bestanden, niet het zipbestand zelf.
+5. Bevestig de wijzigingen op die branch.
 
-   <script src="./ari-v108.js"></script>
+Let op: uploaden naar de branch die GitHub Pages gebruikt, kan de live-app
+bijwerken. Een aparte branch laat de huidige live-versie ongemoeid zolang
+je de Pages-instellingen niet verandert en de branch niet samenvoegt.
 
-5. Commit the changes.
-6. After GitHub Pages updates, hard-refresh once or close/reopen the installed PWA.
+Het pakket bevat de volledige actuele app, iconen, manifest, service worker,
+documentatie en optionele ontwikkelbestanden. De oude v108-archiefzip is
+weggelaten. Voor GitHub Pages is geen npm-installatie of build nodig.
 
-Why no replacement index.html?
-------------------------------
-The current index.html is a ~438 KB monolith. The v108 engine is deliberately isolated in a new file so the stable v107 application does not need to be rewritten wholesale. It also makes future Music Engine II work much cleaner.
+Nieuw in deze versie: ari-discoveries.js. Deze file moet naast index.html
+staan. De bestaande ari-v108.js blijft ook nodig: die bevat de muziek-engine.
 
-Expected desktop test
----------------------
-Hold the left mouse button on the track title for roughly 0.6 seconds. The hidden details/operator panel should open, matching long-touch behavior on mobile.
+Browserchecks en resterende testbeperkingen staan in TESTING-v112.md.
+De PWA gebruikt service-worker-cache ari-v112. Wanneer een eerder bezochte
+app nog oud lijkt, sluit de app/tab en open hem opnieuw zodra de nieuwe
+Pages-versie is gepubliceerd.

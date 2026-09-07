@@ -182,6 +182,30 @@ GitHub Pages can host the PWA directly.
 
 ## Current version
 
+### Version 112 — Street memory
+
+The visible experience stays minimal: the original robot, rig, street, guests,
+track text, heart and hidden inspector. No player bar, onboarding panel, genre
+picker or explanatory overlay has been added.
+
+The rig can now be discovered through play. Its keys make scale-compatible
+notes, the pads add live percussion and the record produces a synthesized
+scratch. These gestures do not pause the performance. A short phrase can be
+answered by A.R.I. at a later bar boundary, leaving room for guests and endings.
+Remembering the track can carry that small phrase into its existing Echo DNA.
+
+Keyboard access uses Enter/Space and roving arrow-key focus on the instruments.
+The track drawer now keeps hidden controls out of the tab order and restores
+focus when closed. Space on a control no longer also toggles playback.
+
+The extension is isolated in `ari-discoveries.js`; Music Engine II, the SVG
+scene, guest system, original themes and PWA identity remain in place. The
+service worker includes the extension and only cleans up A.R.I. version caches.
+The optional Vite development setup is for browser QA; GitHub Pages still serves
+the root files directly, without a build step.
+
+See `TESTING-v112.md` for verified behavior and testing limits.
+
 ### Version 108 — Street Improv Engine
 
 - Rebuilt genre handling around reusable **musical grammars** rather than isolated presets.

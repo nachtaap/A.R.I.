@@ -6965,6 +6965,9 @@
             guestDNA: dna,
             gear,
             echoOrigin: echo ? echo.seed : null,
+            streetMotif: Array.isArray(echo?.streetMotif)
+              ? echo.streetMotif.slice(0, 6).filter(n => Number.isInteger(n) && n >= 0 && n <= 8)
+              : [],
             ariSings: Math.random() < 0.22,
             leadWave: gear.leadSynth,
             scale: SCALES[scaleName],
@@ -8994,6 +8997,7 @@
           hatSteps: Array.isArray(t.hatSteps) ? t.hatSteps.slice() : null,
           bassP: Array.isArray(t.bassP) ? t.bassP.slice() : null,
           echoOrigin: t.echoOrigin || null,
+          streetMotif: Array.isArray(t.streetMotif) ? t.streetMotif.slice(0, 6) : [],
           ariSings: !!t.ariSings,
           tickHats: !!t.tickHats,
           lateSnare: !!t.lateSnare,
@@ -11037,6 +11041,7 @@
         playing ? stop() : resume();
       });
       document.addEventListener("keydown", (e) => {
+        if (e.repeat || e.target.closest('input, textarea, select, button, [role="button"], [contenteditable="true"], dialog[open]')) return;
         if (e.code === "Space") {
           e.preventDefault();
           started ? (playing ? stop() : resume()) : start();
@@ -11310,6 +11315,7 @@
         trackNameEl.addEventListener("pointercancel", cancelPress);
         trackNameEl.addEventListener("contextmenu", (e) => e.preventDefault());
         document.addEventListener("keydown", (e) => {
+          if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
           if (e.key.toLowerCase() === "d" && e.shiftKey) openDev();
         });
         if (/[?&]dev=1/.test(location.search)) openDev();
@@ -11775,5 +11781,6 @@
       }
     </script>
     <script src="./ari-v108.js"></script>
+    <script src="./ari-discoveries.js"></script>
   </body>
 </html>
