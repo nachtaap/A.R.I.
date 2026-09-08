@@ -8657,8 +8657,9 @@
           D.bass > 0
         ) {
           const bm = bassMidiForEvent(track, bar, bassEvent),
-            btt = tt + (bassEvent.micro || 0) * s16 +
-              (bassEvent.linked && g.kick808 ? 0.012 : 0),
+            btt = bassEvent.linked && kickNow
+              ? ktt + 0.012
+              : tt + (bassEvent.micro || 0) * s16,
             bdur = s16 * bassEvent.durSteps,
             bassType = activeBassType;
           if (bassType === "808")
@@ -11782,5 +11783,9 @@
     </script>
     <script src="./ari-v108.js"></script>
     <script src="./ari-discoveries.js"></script>
+    <script src="./ari-creature-synth.js"></script>
+    <script src="./ari-sound-worlds.js"></script>
+    <script src="./ari-beat-foundation.js"></script>
   </body>
 </html>
+

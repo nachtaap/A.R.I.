@@ -1,11 +1,14 @@
 /* A.R.I. service worker — app shell, cache-first, relative to its scope */
-const CACHE = 'ari-v112';
+const CACHE = 'ari-v113';
 const BASE = new URL('./', self.location.href).pathname;
 const SHELL = [
   BASE,
   BASE + 'index.html',
   BASE + 'ari-v108.js',
   BASE + 'ari-discoveries.js',
+  BASE + 'ari-creature-synth.js',
+  BASE + 'ari-sound-worlds.js',
+  BASE + 'ari-beat-foundation.js',
   BASE + 'manifest.webmanifest',
   BASE + 'apple-touch-icon.png',
   BASE + 'icon-192.png',
@@ -82,3 +85,4 @@ self.addEventListener('fetch', e => {
     cachedOrNetwork(e.request).catch(() => caches.match(e.request))
   );
 });
+

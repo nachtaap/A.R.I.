@@ -590,6 +590,7 @@
     scheduleStep=function(sIdx,t0){
       original(sIdx,t0);
       if(typeof track==='undefined'||!track||typeof bar==='undefined')return;
+      if(!playing || track.cutBar===bar || ['break','outro'].includes(sectionAt(bar)))return;
       const d=ensureDNA(track);
       if(!d||![3,6,10,14,15].includes(sIdx))return;
       if(unit(track,`overdub:${bar}:${sIdx}`)>.025+d.overdub*.055)return;
@@ -1313,3 +1314,4 @@
 
   console.info(`[A.R.I.] Street Improv Engine v108 loaded · ${new Set(CANONICAL).size} canonical styles · ${REQUEST_CATALOG.length}+ request identities`);
 })();
+
