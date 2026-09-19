@@ -218,4 +218,4 @@ The hidden Live Signal operator view includes **EXPORT → ABLETON**. It downloa
 
 ### Live Signal radar
 
-The operator radar is now backed by A.R.I.'s **Audience Brain** rather than decorative listener positions. Each blip represents a simulated audience archetype. Its angular position is stable for the current track, radial distance reflects engagement, base brightness follows activity, and the matching listener row lights when the 360° sweep detects it. The panel explicitly labels this as **simulated audience activity**.
+The operator radar is backed by A.R.I.'s **Audience Brain** rather than decorative listener positions. A real center-origin radar arm makes one full 360° sweep every **5.2 seconds**. Each blip represents a simulated audience archetype. Its angular position is stable for the current track, radial distance reflects engagement, base brightness follows activity, and the matching listener row lights when the sweep detects it. The panel explicitly labels this as **simulated audience activity**.
