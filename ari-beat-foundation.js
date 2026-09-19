@@ -253,393 +253,96 @@
 
 })();
 
-
-/* Hidden operator console polish — Shift+D only. Keeps the existing inspector data,
-   but presents it as a centered A.R.I. console and exposes direct test hooks for
-   existing runtime events. Public UI is untouched. */
+/* A.R.I. Track Signal Overlay — minimal neon readout, public-facing rather than the dev inspector. */
 (() => {
   'use strict';
-  const panel = document.getElementById('devPanel');
-  if (!panel) return;
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const hash=value=>{let h=2166136261>>>0;for(const ch of String(value)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;};
+  const css=document.createElement('style');
+  css.textContent=`
+  #ariSignalOverlay{position:fixed;inset:0;z-index:80;display:none;place-items:center;padding:24px;background:rgba(5,8,15,.74);backdrop-filter:blur(10px);font-family:"IBM Plex Mono",monospace;color:#dffcff}
+  #ariSignalOverlay.open{display:grid} .ariSigPanel{width:min(900px,94vw);max-height:none;overflow:hidden;background:linear-gradient(180deg,rgba(10,16,28,.97),rgba(5,9,18,.97));border:1px solid rgba(82,200,192,.42);box-shadow:0 0 0 1px rgba(255,95,210,.08),0 0 42px rgba(82,200,192,.14);padding:18px}
+  .ariSigTop{display:flex;align-items:flex-start;gap:18px}.ariSigTitle{flex:1}.ariSigKicker{font-size:9px;letter-spacing:.28em;color:#52c8c0;text-transform:uppercase}.ariSigName{font-family:"Space Grotesk",sans-serif;font-size:clamp(22px,4vw,36px);letter-spacing:.03em;margin-top:4px}.ariSigMeta{font-size:10px;letter-spacing:.12em;color:#8995a8;text-transform:uppercase;margin-top:5px}
+  .ariSigClose{appearance:none;border:1px solid rgba(255,95,210,.45);background:transparent;color:#ff5fd2;width:34px;height:34px;cursor:pointer;font:18px/1 monospace}.ariSigClose:hover{box-shadow:0 0 14px rgba(255,95,210,.28)}
+  .ariSigBlock{margin-top:14px;border-top:1px solid rgba(82,200,192,.18);padding-top:13px}.ariSigHead{display:flex;justify-content:space-between;gap:12px;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#a795e0;margin-bottom:10px}.ariSigDim{color:#687589;letter-spacing:.08em}
+  .ariBars{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}.ariBar{min-height:76px;border:1px solid rgba(82,200,192,.14);padding:7px 5px;position:relative;background:rgba(82,200,192,.018)}.ariBar.now{border-color:rgba(255,95,210,.62);box-shadow:inset 0 0 18px rgba(255,95,210,.07)}.ariBarN{font-size:8px;color:#667385;margin-bottom:7px}.ariLayer{height:3px;margin:4px 0;background:#1d2734}.ariLayer.on.c{background:#52c8c0;box-shadow:0 0 6px rgba(82,200,192,.55)}.ariLayer.on.p{background:#a795e0;box-shadow:0 0 6px rgba(167,149,224,.45)}.ariLayer.on.m{background:#ff5fd2;box-shadow:0 0 6px rgba(255,95,210,.5)}.ariLayer.on.o{background:#ffad66;box-shadow:0 0 6px rgba(255,173,102,.42)}
+  .ariRadarWrap{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center}.ariRadar{width:142px;height:142px;border:1px solid rgba(82,200,192,.34);border-radius:50%;position:relative;background:radial-gradient(circle,transparent 0 24%,rgba(82,200,192,.07) 25% 26%,transparent 27% 49%,rgba(82,200,192,.06) 50% 51%,transparent 52%),linear-gradient(90deg,transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%),linear-gradient(transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%)}.ariRadar:after{content:"";position:absolute;inset:9%;border-radius:50%;background:conic-gradient(from 18deg,rgba(82,200,192,.18),transparent 22%,transparent);animation:ariSweep 7s linear infinite}@keyframes ariSweep{to{transform:rotate(360deg)}}
+  .ariDot{position:absolute;width:5px;height:5px;border-radius:50%;background:#ff5fd2;box-shadow:0 0 8px #ff5fd2;z-index:2}.ariListeners{display:grid;grid-template-columns:1fr 1fr;gap:7px 13px;font-size:9px;color:#9aa6b8}.ariListeners b{color:#dffcff;font-weight:500}.ariPulse{color:#52c8c0}
+  .ariDna{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ariCard{border:1px solid rgba(167,149,224,.16);padding:9px;min-height:72px}.ariCard span{display:block;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#6f7b8d}.ariCard b{display:block;margin-top:7px;font-size:11px;font-weight:500;color:#e7f8fb;line-height:1.45}.ariCard em{display:block;margin-top:4px;font-size:8px;font-style:normal;color:#8995a8;line-height:1.45}
+  #trackname{cursor:default;pointer-events:auto}@media(max-width:620px){.ariSigPanel{padding:14px}.ariBars{grid-template-columns:repeat(4,1fr)}.ariRadarWrap{grid-template-columns:1fr}.ariRadar{margin:auto}.ariDna{grid-template-columns:1fr}.ariListeners{grid-template-columns:1fr 1fr}}@media(prefers-reduced-motion:reduce){.ariRadar:after{animation:none}}
 
-  const style = document.createElement('style');
-  style.id = 'ari-operator-console-v17';
-  style.textContent = `
-    .devpanel{
-      top:50%!important;left:50%!important;right:auto!important;
-      width:min(1000px,calc(100vw - 56px))!important;max-width:none!important;
-      height:min(64svh,600px)!important;max-height:none!important;
-      padding:18px 20px 20px!important;
-      border:1px solid rgba(62,232,222,.42)!important;
-      border-radius:14px!important;
-      background:
-        linear-gradient(180deg,rgba(7,9,18,.975),rgba(3,5,11,.985))!important;
-      box-shadow:
-        0 0 0 1px rgba(255,95,210,.08),
-        0 0 28px rgba(62,232,222,.11),
-        0 0 64px rgba(255,95,210,.07),
-        0 24px 70px rgba(0,0,0,.68)!important;
-      font-family:"IBM Plex Mono",monospace!important;
-      font-size:11px!important;line-height:1.55!important;
-      letter-spacing:.02em!important;
-      transform:translate(-50%,-50%) scale(.985)!important;
-    }
-    .devpanel::before{
-      content:"";position:absolute;inset:7px;pointer-events:none;border-radius:10px;
-      border:1px solid rgba(167,139,255,.10);
-      box-shadow:inset 0 0 26px rgba(62,232,222,.025);
-    }
-    .devpanel.show{transform:translate(-50%,-50%) scale(1)!important}
-    .devsticky{position:sticky!important;top:-18px!important;z-index:3!important;
-      margin:-2px -2px 10px!important;padding:2px 2px 10px!important;
-      background:linear-gradient(180deg,rgba(7,9,18,.995) 72%,rgba(7,9,18,.88))!important;
-      border-bottom:1px solid rgba(62,232,222,.22)!important;
-      backdrop-filter:blur(10px);
-    }
-    .devhead{font-size:11px!important;color:#3ee8de!important;letter-spacing:.17em!important}
-    .devname{font-size:11px!important;line-height:1.55!important}
-    .devh{font-size:11px!important;color:#ff5fd2!important;letter-spacing:.13em!important;margin-bottom:6px!important}
-    .devh2,.krow,.prow,.arrow,.dnarow,.dflags,.devChatMsg,.devnone{font-size:11px!important}
-    .devsec{padding:10px 0!important;border-color:rgba(62,232,222,.12)!important}
-    #devClose{
-      width:28px!important;height:28px!important;padding:0!important;margin:0!important;
-      display:grid!important;place-items:center!important;border:0!important;border-radius:50%!important;
-      background:transparent!important;color:#dfeef0!important;font-size:20px!important;
-      line-height:1!important;box-shadow:none!important;outline:none!important;
-    }
-    #devClose:hover{color:#ff5fd2!important;text-shadow:0 0 10px rgba(255,95,210,.6)!important}
-    #devClose:focus-visible{outline:none!important;box-shadow:0 0 0 1px rgba(62,232,222,.75),0 0 12px rgba(62,232,222,.24)!important}
-    .ariDevControls{
-      display:flex;flex-wrap:wrap;gap:7px;margin:9px 0 2px;padding:10px 0 2px;
-      border-top:1px solid rgba(167,139,255,.16);
-    }
-    .ariDevControls::before{
-      content:"EVENT TEST";flex-basis:100%;margin-bottom:2px;color:#ffe66d;
-      font-size:11px;letter-spacing:.15em;
-    }
-    .ariDevBtn{
-      appearance:none;border:1px solid rgba(62,232,222,.34);border-radius:999px;
-      background:rgba(62,232,222,.035);color:#dfeef0;padding:6px 10px;
-      font:500 11px/1.2 "IBM Plex Mono",monospace;letter-spacing:.04em;cursor:pointer;
-      transition:border-color .16s ease,color .16s ease,background .16s ease,box-shadow .16s ease;
-    }
-    .ariDevBtn:hover{border-color:#ff5fd2;color:#fff;background:rgba(255,95,210,.07);box-shadow:0 0 12px rgba(255,95,210,.12)}
-    .ariDevBtn:focus-visible{outline:none;box-shadow:0 0 0 1px #3ee8de,0 0 12px rgba(62,232,222,.2)}
-    .ariDevBtn[data-action="battery"]{border-color:rgba(255,230,109,.42);color:#ffe66d}
-    .ariDevBtn[data-action="reverse"]{border-color:rgba(255,95,210,.42);color:#ff8bde}
-    body.light .devpanel{
-      background:linear-gradient(180deg,rgba(249,251,253,.985),rgba(241,245,248,.99))!important;
-      border-color:rgba(11,156,147,.38)!important;
-      box-shadow:0 0 0 1px rgba(116,82,232,.07),0 18px 56px rgba(38,52,68,.18)!important;
-    }
-    body.light .devpanel::before{border-color:rgba(116,82,232,.10)}
-    body.light .devsticky{background:linear-gradient(180deg,rgba(249,251,253,.995) 72%,rgba(249,251,253,.9))!important;border-color:rgba(11,156,147,.18)!important}
-    body.light #devClose{color:#16202a!important}
-    body.light .ariDevControls::before{color:#8a6a00}
-    body.light .ariDevBtn{background:rgba(11,156,147,.035);border-color:rgba(11,156,147,.28);color:#16202a}
-    body.light .ariDevBtn[data-action="battery"]{color:#8a6a00;border-color:rgba(138,106,0,.28)}
-    body.light .ariDevBtn[data-action="reverse"]{color:#a1267d;border-color:rgba(161,38,125,.28)}
-
-    /* Keep the street-chat label attached to the visible message stack instead of
-       floating at the top of the full-height desktop chat column. */
-    #chat{justify-content:flex-end!important;gap:6px!important}
-    #chatLog{
-      flex:0 1 auto!important;
-      min-height:0!important;
-      max-height:calc(100% - 22px)!important;
-    }
-
-    @media(max-width:640px){
-      .devpanel{
-        top:10px!important;left:10px!important;right:10px!important;width:auto!important;
-        height:auto!important;max-height:calc(100svh - 20px)!important;padding:14px 14px 16px!important;
-        transform:translateY(-5px) scale(.99)!important;font-size:10.5px!important;
-      }
-      .devpanel.show{transform:none!important}
-      .devsticky{top:-14px!important}
-      .devhead,.devname,.devh,.devh2,.krow,.prow,.arrow,.dnarow,.dflags,.devChatMsg,.devnone,.ariDevBtn,.ariDevControls::before{font-size:10.5px!important}
-      .ariDevBtn{padding:6px 9px}
-    }
+  .ariEventRow{display:flex;flex-wrap:wrap;gap:7px}.ariEventBtn{appearance:none;border:1px solid rgba(82,200,192,.28);background:rgba(82,200,192,.025);color:#9fded9;padding:7px 10px;font:500 9px/1.2 "IBM Plex Mono",monospace;letter-spacing:.10em;text-transform:uppercase;cursor:pointer}
+  .ariEventBtn:hover{border-color:rgba(255,95,210,.5);color:#ff5fd2;box-shadow:0 0 12px rgba(255,95,210,.10)}
+  body.light .ariEventBtn{color:#0a7a72;border-color:rgba(10,122,114,.25);background:rgba(10,122,114,.025)}body.light .ariEventBtn:hover{color:#a1267d;border-color:rgba(161,38,125,.35)}
+  body.light #ariSignalOverlay{background:rgba(235,241,245,.72);color:#16202a}body.light .ariSigPanel{background:rgba(247,250,252,.98);border-color:rgba(11,156,147,.34);box-shadow:0 8px 40px rgba(25,40,55,.16)}body.light .ariSigName,body.light .ariListeners b,body.light .ariCard b{color:#16202a}
   `;
-  document.head.appendChild(style);
-
-  function injectControls() {
-    if (!panel.classList.contains('show')) return;
-    if (panel.querySelector('.ariDevControls')) return;
-    const anchor = panel.querySelector('.devsticky') || panel.firstElementChild;
-    if (!anchor) return;
-    const controls = document.createElement('div');
-    controls.className = 'ariDevControls';
-    controls.innerHTML = `
-      <button class="ariDevBtn" type="button" data-action="newtrack">new track</button>
-      <button class="ariDevBtn" type="button" data-action="location">new location</button>
-      <button class="ariDevBtn" type="button" data-action="mic">A.R.I. mic</button>
-      <button class="ariDevBtn" type="button" data-action="reverse">reverse camera</button>
-      <button class="ariDevBtn" type="button" data-action="battery">battery swap</button>`;
-    anchor.appendChild(controls);
+  css.textContent += '#devPanel{display:none!important}';
+  document.head.appendChild(css);
+  const root=document.createElement('div');root.id='ariSignalOverlay';root.setAttribute('aria-hidden','true');
+  root.innerHTML='<section class="ariSigPanel" role="dialog" aria-modal="true" aria-label="Track signal"><div id="ariSigBody"></div></section>';
+  document.body.appendChild(root);
+  let lastSeed=null,open=false;
+  const curTrack=()=>typeof track!=='undefined'?track:null;
+  function sectionFor(offset){try{return typeof sectionAt==='function'?sectionAt(bar+offset):'main';}catch(_){return'main';}}
+  function instrumentText(t){
+    const gear=t?.gear||{};return [gear.drumMachine||t?.drumFamily?.name||'drums',t?.foundationBassVoice||t?.bassType||gear.bassSynth||'bass',t?.leadWave||gear.leadSynth||'lead'].filter(Boolean).join(' · ');
   }
-
-  const observer = new MutationObserver(() => requestAnimationFrame(injectControls));
-  observer.observe(panel, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
-  requestAnimationFrame(injectControls);
-
-  panel.addEventListener('click', (event) => {
-    const button = event.target.closest('.ariDevBtn');
-    if (!button) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const action = button.dataset.action;
-    try {
-      if (action === 'newtrack' && typeof newTrack === 'function') {
-        newTrack();
-      } else if (action === 'location' && typeof nextLocation === 'function') {
-        nextLocation();
-      } else if (action === 'mic' && typeof startAriSing === 'function') {
-        if (typeof ctx !== 'undefined' && ctx) startAriSing(ctx.currentTime);
-        setTimeout(() => { if (typeof stopAriSing === 'function') stopAriSing(); }, 4200);
-      } else if (action === 'reverse' && typeof doReverse === 'function') {
-        doReverse();
-      } else if (action === 'battery' && typeof runBatterySwap === 'function') {
-        runBatterySwap();
-      }
-    } catch (error) {
-      console.warn('[A.R.I. operator console]', action, error);
-    }
-  });
-})();
-
-
-/* ---------- v19: simple Shift+D operator overlay ----------
-   Replaces the legacy scrollable dev inspector with one fixed landscape card.
-   Shift+D toggles it; × closes it. Public UI is untouched. */
-(() => {
-  'use strict';
-
-  const LEGACY = () => document.getElementById('devPanel');
-
-  function suppressLegacyInspector() {
-    const legacy = LEGACY();
-    if (!legacy) return;
+  function listenerData(t){
+    const seed=String(t?.seed||t?.trackId||t?.genre||'ari'); const names=['nightbus_04','mara.exe','lowbattery','gridwalker','tapeghost','sublevel9','windowseat','oxidekid'];
+    return names.slice(0,6).map((name,i)=>{const n=hash(seed+':listener:'+i);return{name,react:['locked in','rewound it','headphones on','still listening','caught the switch','saved the moment'][n%6],x:10+(n%80),y:10+((n>>>8)%80)};});
+  }
+  function render(){
+    const t=curTrack();if(!t)return;
+    const p=window.ARICreatures?.status, sig=window.ARIMusicEvolution?.signature; const listeners=listenerData(t);
+    const effects=p?.effects; const current=((typeof bar==='number'?bar:0)%8+8)%8;
+    let bars='';for(let i=0;i<8;i++){const sec=sectionFor(i-current);const intro=sec==='intro',br=sec==='break',out=sec==='outro';const effect=effects?.bars?.some(b=>((b%8)+8)%8===i);
+      bars+=`<div class="ariBar ${i===current?'now':''}"><div class="ariBarN">${String(i+1).padStart(2,'0')}</div><div class="ariLayer c ${!out?'on':''}" title="drums"></div><div class="ariLayer p ${(!intro&&!out)?'on':''}" title="bass"></div><div class="ariLayer m ${(!intro&&!out&&[2,6].includes(i))?'on':''}" title="lead"></div><div class="ariLayer o ${effect?'on':''}" title="accent"></div></div>`;}
+    const listenerHtml=listeners.map(x=>`<div><b>${esc(x.name)}</b><br><span class="ariPulse">●</span> ${esc(x.react)}</div>`).join('');
+    const dots=listeners.map(x=>`<i class="ariDot" style="left:${x.x}%;top:${x.y}%"></i>`).join('');
+    $('ariSigBody').innerHTML=`<div class="ariSigTop"><div class="ariSigTitle"><div class="ariSigKicker">A.R.I. / live signal</div><div class="ariSigName">${esc(t.name||t.title||$('trackname')?.textContent||'untitled')}</div><div class="ariSigMeta">${esc(t.genre)} · ${esc(t.bpm)} bpm · ${esc(t.scaleName||'live scale')}</div></div><button class="ariSigClose" aria-label="close">×</button></div>
+    <div class="ariSigBlock"><div class="ariSigHead"><span>signal grid / next eight bars</span><span class="ariSigDim">drums · bass · lead · accent</span></div><div class="ariBars">${bars}</div></div>
+    <div class="ariSigBlock"><div class="ariSigHead"><span>street radar</span><span class="ariSigDim">fictional live listeners</span></div><div class="ariRadarWrap"><div class="ariRadar">${dots}</div><div class="ariListeners">${listenerHtml}</div></div></div>
+    <div class="ariSigBlock"><div class="ariSigHead"><span>track character</span><span class="ariSigDim">what is shaping this take</span></div><div class="ariDna"><div class="ariCard"><span>character</span><b>${esc(p?.character?.type||'clean signal')}</b><em>${effects?.enabled?`${effects.used||0}/${effects.max||0} accents used`:'effect stem sleeping'}</em></div><div class="ariCard"><span>instruments</span><b>${esc(instrumentText(t))}</b><em>bass voice: ${esc(t.foundationBassVoice||window.ARIBeatFoundation?.voice||'round')}</em></div><div class="ariCard"><span>interaction</span><b>${esc(sig?.contour||t.signatureMotif?.contour||'evolving')} motif</b><em>${Array.isArray(t.streetMotif)&&t.streetMotif.length?`${t.streetMotif.length} street notes remembered`:'listening for a street phrase'}</em></div></div></div>
+    <div class="ariSigBlock"><div class="ariSigHead"><span>event test</span><span class="ariSigDim">existing runtime events</span></div><div class="ariEventRow"><button class="ariEventBtn" data-ari-event="newtrack">new track</button><button class="ariEventBtn" data-ari-event="location">new location</button><button class="ariEventBtn" data-ari-event="mic">A.R.I. mic</button><button class="ariEventBtn" data-ari-event="reverse">reverse camera</button><button class="ariEventBtn" data-ari-event="battery">battery swap</button></div></div>`;
+    $('ariSigBody').querySelector('.ariSigClose')?.addEventListener('click',close);
+    $('ariSigBody').querySelectorAll('.ariEventBtn').forEach(btn=>btn.addEventListener('click',()=>{
+      const action=btn.dataset.ariEvent;
+      try{
+        if(action==='newtrack'&&typeof newTrack==='function')newTrack();
+        else if(action==='location'&&typeof nextLocation==='function')nextLocation();
+        else if(action==='mic'&&typeof startAriSing==='function'){
+          startAriSing(typeof ctx!=='undefined'&&ctx?ctx.currentTime:0);
+          setTimeout(()=>{if(typeof stopAriSing==='function')stopAriSing();},4200);
+        }
+        else if(action==='reverse'&&typeof doReverse==='function')doReverse();
+        else if(action==='battery'&&typeof runBatterySwap==='function')runBatterySwap();
+      }catch(err){console.warn('[A.R.I. live signal test]',action,err);}
+    }));
+  }
+  function show(){if(!curTrack())return;render();open=true;root.classList.add('open');root.setAttribute('aria-hidden','false');root.querySelector('.ariSigClose')?.focus();}
+  function close(){open=false;root.classList.remove('open');root.setAttribute('aria-hidden','true');$('trackname')?.focus?.();}
+  // Operator-only access. The legacy index.html inspector is suppressed.
+  const legacy=document.getElementById('devPanel');
+  if(legacy){
     legacy.classList.remove('show');
-    legacy.setAttribute('aria-hidden', 'true');
-    legacy.style.setProperty('display', 'none', 'important');
+    legacy.setAttribute('aria-hidden','true');
+    legacy.style.setProperty('display','none','important');
   }
-
-  suppressLegacyInspector();
-  new MutationObserver(suppressLegacyInspector).observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['class', 'style', 'aria-hidden']
-  });
-
-  const style = document.createElement('style');
-  style.id = 'ariSimpleOperatorStyle';
-  style.textContent = `
-    #ariSimpleOperator {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      width: min(860px, calc(100vw - 56px));
-      height: 330px;
-      transform: translate(-50%, -50%);
-      z-index: 1000;
-      box-sizing: border-box;
-      padding: 24px 26px 22px;
-      border: 1px solid rgba(62,232,222,.58);
-      border-radius: 12px;
-      background:
-        linear-gradient(180deg, rgba(6,9,16,.97), rgba(3,4,9,.985)),
-        radial-gradient(circle at 85% 12%, rgba(255,95,210,.10), transparent 34%);
-      box-shadow:
-        0 0 0 1px rgba(255,95,210,.08),
-        0 0 42px rgba(62,232,222,.12),
-        0 26px 80px rgba(0,0,0,.62);
-      -webkit-backdrop-filter: blur(14px);
-      backdrop-filter: blur(14px);
-      color: #dfeef0;
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 11px;
-      line-height: 1.55;
-      letter-spacing: .04em;
-      overflow: hidden;
-      display: none;
+  function toggle(){open?close():show();}
+  document.addEventListener('keydown',e=>{
+    if(e.target.closest('input, textarea, select, [contenteditable="true"]'))return;
+    if(e.key.toLowerCase()==='d'&&e.shiftKey){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      toggle();
+    } else if(open&&e.key==='Escape'){
+      e.preventDefault();
+      close();
     }
-    #ariSimpleOperator.show { display: block; }
-    #ariSimpleOperatorHead {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      padding-bottom: 14px;
-      margin-bottom: 18px;
-      border-bottom: 1px solid rgba(62,232,222,.18);
-    }
-    #ariSimpleOperatorTitle {
-      color: #3ee8de;
-      letter-spacing: .20em;
-      text-transform: uppercase;
-      font-weight: 500;
-    }
-    #ariSimpleOperatorClose {
-      appearance: none;
-      border: 0;
-      background: transparent;
-      color: #dfeef0;
-      width: 28px;
-      height: 28px;
-      padding: 0;
-      font: 400 22px/1 "IBM Plex Mono", monospace;
-      cursor: pointer;
-      opacity: .78;
-    }
-    #ariSimpleOperatorClose:hover { color: #ff5fd2; opacity: 1; }
-    #ariSimpleOperatorClose:focus-visible {
-      outline: 1px solid #3ee8de;
-      outline-offset: 3px;
-      border-radius: 4px;
-    }
-    #ariSimpleOperatorGrid {
-      display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 18px 34px;
-    }
-    .ariOpBlock {
-      min-width: 0;
-    }
-    .ariOpLabel {
-      color: #7e9496;
-      text-transform: uppercase;
-      letter-spacing: .16em;
-      margin-bottom: 5px;
-    }
-    .ariOpValue {
-      color: #eef6f6;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .ariOpAccent { color: #ff5fd2; }
-    .ariOpCyan { color: #3ee8de; }
-    #ariSimpleOperatorHint {
-      position: absolute;
-      left: 26px;
-      bottom: 20px;
-      color: #65757b;
-      letter-spacing: .08em;
-    }
-    body.light #ariSimpleOperator {
-      background:
-        linear-gradient(180deg, rgba(250,252,254,.985), rgba(242,245,248,.985)),
-        radial-gradient(circle at 85% 12%, rgba(180,48,142,.06), transparent 34%);
-      border-color: rgba(10,122,114,.46);
-      color: #16202a;
-      box-shadow: 0 18px 55px rgba(28,36,44,.18);
-    }
-    body.light #ariSimpleOperatorTitle,
-    body.light .ariOpCyan { color: #0a7a72; }
-    body.light .ariOpValue,
-    body.light #ariSimpleOperatorClose { color: #16202a; }
-    body.light .ariOpLabel { color: #68727d; }
-    body.light .ariOpAccent { color: #a1267d; }
-    body.light #ariSimpleOperatorHint { color: #7b858f; }
-    @media (max-width: 640px) {
-      #ariSimpleOperator {
-        width: calc(100vw - 28px);
-        height: 300px;
-        padding: 18px 18px 16px;
-      }
-      #ariSimpleOperatorGrid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-      #ariSimpleOperator .ariOpOptional { display: none; }
-      #ariSimpleOperatorHint { left: 18px; bottom: 15px; }
-    }
-  `;
-  document.head.appendChild(style);
-
-  const panel = document.createElement('section');
-  panel.id = 'ariSimpleOperator';
-  panel.setAttribute('aria-hidden', 'true');
-  panel.innerHTML = `
-    <div id="ariSimpleOperatorHead">
-      <div id="ariSimpleOperatorTitle">A.R.I. / OPERATOR VIEW</div>
-      <button id="ariSimpleOperatorClose" type="button" aria-label="Close operator view">×</button>
-    </div>
-    <div id="ariSimpleOperatorGrid">
-      <div class="ariOpBlock">
-        <div class="ariOpLabel">track</div>
-        <div class="ariOpValue ariOpAccent" id="ariOpTrack">—</div>
-      </div>
-      <div class="ariOpBlock">
-        <div class="ariOpLabel">signal</div>
-        <div class="ariOpValue ariOpCyan" id="ariOpMeta">—</div>
-      </div>
-      <div class="ariOpBlock">
-        <div class="ariOpLabel">engine</div>
-        <div class="ariOpValue" id="ariOpEngine">Street Improv Engine</div>
-      </div>
-      <div class="ariOpBlock">
-        <div class="ariOpLabel">state</div>
-        <div class="ariOpValue" id="ariOpState">—</div>
-      </div>
-      <div class="ariOpBlock ariOpOptional">
-        <div class="ariOpLabel">location</div>
-        <div class="ariOpValue" id="ariOpLocation">NYC street grid</div>
-      </div>
-      <div class="ariOpBlock ariOpOptional">
-        <div class="ariOpLabel">operator</div>
-        <div class="ariOpValue">Shift+D</div>
-      </div>
-    </div>
-    <div id="ariSimpleOperatorHint">SHIFT+D TOGGLE · READ-ONLY</div>
-  `;
-  document.body.appendChild(panel);
-
-  const $ = (id) => document.getElementById(id);
-
-  function refresh() {
-    $('ariOpTrack').textContent = $('trackname')?.textContent?.trim() || 'waiting for track';
-    $('ariOpMeta').textContent = $('trackmeta')?.textContent?.trim() || 'no active signal';
-    const started = !!document.querySelector('#trackinfo.show');
-    const sleeping = !!document.querySelector('.note.sleepz.go');
-    $('ariOpState').textContent = sleeping ? 'paused' : started ? 'live' : 'idle';
-  }
-
-  let open = false;
-  function setOpen(next) {
-    open = !!next;
-    suppressLegacyInspector();
-    refresh();
-    panel.classList.toggle('show', open);
-    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
-  }
-  function toggle() { setOpen(!open); }
-
-  $('ariSimpleOperatorClose').addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOpen(false);
-  });
-
-  /* Capture Shift+D before the legacy index.html handler can open devPanel. */
-  document.addEventListener('keydown', (e) => {
-    if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
-    if (e.key.toLowerCase() !== 'd' || !e.shiftKey) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    toggle();
-  }, true);
-
-  /* Keep the simple card fresh while visible. */
-  setInterval(() => { if (open) refresh(); }, 800);
-
-  /* If ?dev=1 opened the legacy inspector earlier, replace it with this one. */
-  if (/[?&]dev=1/.test(location.search)) {
-    setTimeout(() => setOpen(true), 0);
-  }
-
-  window.toggleDevPanel = toggle;
+  },true);
+  root.addEventListener('click',e=>{if(e.target===root)close();});
+  if(/[?&]dev=1/.test(location.search))setTimeout(show,0);
+  setInterval(()=>{const t=curTrack();if(!t)return;const seed=t.seed||t.trackId;if(seed!==lastSeed){lastSeed=seed;if(open)render();}else if(open)render();},900);
+  window.ARITrackOverlay=Object.freeze({open:show,close,get visible(){return open;}});
 })();
-
