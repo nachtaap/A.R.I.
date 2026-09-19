@@ -291,15 +291,6 @@
   .ariEventRow{display:flex;flex-wrap:wrap;gap:7px}.ariEventBtn{appearance:none;border:1px solid rgba(82,200,192,.28);background:rgba(82,200,192,.025);color:#9fded9;padding:7px 10px;font:500 14px/1.35 "IBM Plex Mono",monospace;letter-spacing:.10em;text-transform:uppercase;cursor:pointer}
   .ariEventBtn:hover{border-color:rgba(255,95,210,.5);color:#ff5fd2;box-shadow:0 0 12px rgba(255,95,210,.10)}
   body.light .ariEventBtn{color:#0a7a72;border-color:rgba(10,122,114,.25);background:rgba(10,122,114,.025)}body.light .ariEventBtn:hover{color:#a1267d;border-color:rgba(161,38,125,.35)}
-  #ariStartTrackHint{
-    position:fixed;left:50%;top:34%;z-index:80;transform:translate(-50%,-6px);
-    pointer-events:none;opacity:0;transition:opacity .18s ease,transform .18s ease;
-    font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:1.2;
-    letter-spacing:.18em;text-transform:uppercase;color:#3ee8de;
-    text-shadow:0 0 12px rgba(62,232,222,.28);white-space:nowrap
-  }
-  #ariStartTrackHint.show{opacity:1;transform:translate(-50%,0)}
-  body.light #ariStartTrackHint{color:#0a7a72;text-shadow:none}
   body.light #ariSignalOverlay{background:rgba(235,241,245,.72);color:#16202a}body.light .ariSigPanel{background:rgba(247,250,252,.98);border-color:rgba(11,156,147,.34);box-shadow:0 8px 40px rgba(25,40,55,.16)}body.light .ariSigName,body.light .ariListeners b,body.light .ariCard b{color:#16202a}
   `;
   css.textContent += '#devPanel{display:none!important}';
@@ -307,16 +298,6 @@
   const root=document.createElement('div');root.id='ariSignalOverlay';root.setAttribute('aria-hidden','true');
   root.innerHTML='<section class="ariSigPanel" role="dialog" aria-modal="true" aria-label="Track signal"><div id="ariSigBody"></div></section>';
   document.body.appendChild(root);
-  const startHint=document.createElement('div');
-  startHint.id='ariStartTrackHint';
-  startHint.textContent='start a track first';
-  document.body.appendChild(startHint);
-  let hintTimer=0;
-  function showStartHint(){
-    clearTimeout(hintTimer);
-    startHint.classList.add('show');
-    hintTimer=setTimeout(()=>startHint.classList.remove('show'),1800);
-  }
   let lastSeed=null,open=false;
   const curTrack=()=>typeof track!=='undefined'?track:null;
   function sectionFor(offset){try{return typeof sectionAt==='function'?sectionAt(bar+offset):'main';}catch(_){return'main';}}
@@ -381,7 +362,32 @@
       }catch(err){console.warn('[A.R.I. live signal test]',action,err);}
     }));
   }
-  function show(){if(!curTrack()){showStartHint();return;}render();open=true;root.classList.add('open');root.setAttribute('aria-hidden','false');root.querySelector('.ariSigClose')?.focus();}
+  function show(){
+    if(!curTrack()){
+      if(typeof start==='function'){
+        try{ start(); }catch(err){ console.warn('[A.R.I. live signal] could not start session',err); return; }
+        let tries=0;
+        const waitForTrack=setInterval(()=>{
+          if(curTrack()){
+            clearInterval(waitForTrack);
+            render();
+            open=true;
+            root.classList.add('open');
+            root.setAttribute('aria-hidden','false');
+            root.querySelector('.ariSigClose')?.focus();
+          }else if(++tries>40){
+            clearInterval(waitForTrack);
+          }
+        },50);
+      }
+      return;
+    }
+    render();
+    open=true;
+    root.classList.add('open');
+    root.setAttribute('aria-hidden','false');
+    root.querySelector('.ariSigClose')?.focus();
+  }
   function close(){open=false;root.classList.remove('open');root.setAttribute('aria-hidden','true');$('trackname')?.focus?.();}
   // Operator-only access. The legacy index.html inspector is suppressed.
   const legacy=document.getElementById('devPanel');
