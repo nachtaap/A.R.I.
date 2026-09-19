@@ -1,5 +1,5 @@
 /* A.R.I. service worker — app shell, cache-first, relative to its scope */
-const CACHE = 'ari-v122';
+const CACHE = 'ari-v123';
 const BASE = new URL('./', self.location.href).pathname;
 const SHELL = [
   BASE,

@@ -153,6 +153,13 @@ Additional modules deepen the live synthesis without replacing the core engine:
 - `ari-sound-worlds.js` supplies generated character voices and unusual timbral material while keeping effects restrained;
 - all sound remains generated in-browser.
 
+
+### Interface cleanup — current
+
+The public track readout now uses a simple hierarchy: **track title first**, then track number/time/section, then genre/key/BPM. The track title is display-only.
+
+The top-right live status keeps **live from the grid** and the theme toggle on one horizontal line. Rig battery state is shown directly below as a battery bar only, without a text label or percentage.
+
 ## Running it
 
 There is no build step.
