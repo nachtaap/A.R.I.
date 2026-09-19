@@ -407,3 +407,239 @@
     }
   });
 })();
+
+
+/* ---------- v19: simple Shift+D operator overlay ----------
+   Replaces the legacy scrollable dev inspector with one fixed landscape card.
+   Shift+D toggles it; × closes it. Public UI is untouched. */
+(() => {
+  'use strict';
+
+  const LEGACY = () => document.getElementById('devPanel');
+
+  function suppressLegacyInspector() {
+    const legacy = LEGACY();
+    if (!legacy) return;
+    legacy.classList.remove('show');
+    legacy.setAttribute('aria-hidden', 'true');
+    legacy.style.setProperty('display', 'none', 'important');
+  }
+
+  suppressLegacyInspector();
+  new MutationObserver(suppressLegacyInspector).observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'style', 'aria-hidden']
+  });
+
+  const style = document.createElement('style');
+  style.id = 'ariSimpleOperatorStyle';
+  style.textContent = `
+    #ariSimpleOperator {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      width: min(860px, calc(100vw - 56px));
+      height: 330px;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      box-sizing: border-box;
+      padding: 24px 26px 22px;
+      border: 1px solid rgba(62,232,222,.58);
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(6,9,16,.97), rgba(3,4,9,.985)),
+        radial-gradient(circle at 85% 12%, rgba(255,95,210,.10), transparent 34%);
+      box-shadow:
+        0 0 0 1px rgba(255,95,210,.08),
+        0 0 42px rgba(62,232,222,.12),
+        0 26px 80px rgba(0,0,0,.62);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      color: #dfeef0;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      line-height: 1.55;
+      letter-spacing: .04em;
+      overflow: hidden;
+      display: none;
+    }
+    #ariSimpleOperator.show { display: block; }
+    #ariSimpleOperatorHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid rgba(62,232,222,.18);
+    }
+    #ariSimpleOperatorTitle {
+      color: #3ee8de;
+      letter-spacing: .20em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    #ariSimpleOperatorClose {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #dfeef0;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      font: 400 22px/1 "IBM Plex Mono", monospace;
+      cursor: pointer;
+      opacity: .78;
+    }
+    #ariSimpleOperatorClose:hover { color: #ff5fd2; opacity: 1; }
+    #ariSimpleOperatorClose:focus-visible {
+      outline: 1px solid #3ee8de;
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+    #ariSimpleOperatorGrid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px 34px;
+    }
+    .ariOpBlock {
+      min-width: 0;
+    }
+    .ariOpLabel {
+      color: #7e9496;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      margin-bottom: 5px;
+    }
+    .ariOpValue {
+      color: #eef6f6;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ariOpAccent { color: #ff5fd2; }
+    .ariOpCyan { color: #3ee8de; }
+    #ariSimpleOperatorHint {
+      position: absolute;
+      left: 26px;
+      bottom: 20px;
+      color: #65757b;
+      letter-spacing: .08em;
+    }
+    body.light #ariSimpleOperator {
+      background:
+        linear-gradient(180deg, rgba(250,252,254,.985), rgba(242,245,248,.985)),
+        radial-gradient(circle at 85% 12%, rgba(180,48,142,.06), transparent 34%);
+      border-color: rgba(10,122,114,.46);
+      color: #16202a;
+      box-shadow: 0 18px 55px rgba(28,36,44,.18);
+    }
+    body.light #ariSimpleOperatorTitle,
+    body.light .ariOpCyan { color: #0a7a72; }
+    body.light .ariOpValue,
+    body.light #ariSimpleOperatorClose { color: #16202a; }
+    body.light .ariOpLabel { color: #68727d; }
+    body.light .ariOpAccent { color: #a1267d; }
+    body.light #ariSimpleOperatorHint { color: #7b858f; }
+    @media (max-width: 640px) {
+      #ariSimpleOperator {
+        width: calc(100vw - 28px);
+        height: 300px;
+        padding: 18px 18px 16px;
+      }
+      #ariSimpleOperatorGrid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      #ariSimpleOperator .ariOpOptional { display: none; }
+      #ariSimpleOperatorHint { left: 18px; bottom: 15px; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  const panel = document.createElement('section');
+  panel.id = 'ariSimpleOperator';
+  panel.setAttribute('aria-hidden', 'true');
+  panel.innerHTML = `
+    <div id="ariSimpleOperatorHead">
+      <div id="ariSimpleOperatorTitle">A.R.I. / OPERATOR VIEW</div>
+      <button id="ariSimpleOperatorClose" type="button" aria-label="Close operator view">×</button>
+    </div>
+    <div id="ariSimpleOperatorGrid">
+      <div class="ariOpBlock">
+        <div class="ariOpLabel">track</div>
+        <div class="ariOpValue ariOpAccent" id="ariOpTrack">—</div>
+      </div>
+      <div class="ariOpBlock">
+        <div class="ariOpLabel">signal</div>
+        <div class="ariOpValue ariOpCyan" id="ariOpMeta">—</div>
+      </div>
+      <div class="ariOpBlock">
+        <div class="ariOpLabel">engine</div>
+        <div class="ariOpValue" id="ariOpEngine">Street Improv Engine</div>
+      </div>
+      <div class="ariOpBlock">
+        <div class="ariOpLabel">state</div>
+        <div class="ariOpValue" id="ariOpState">—</div>
+      </div>
+      <div class="ariOpBlock ariOpOptional">
+        <div class="ariOpLabel">location</div>
+        <div class="ariOpValue" id="ariOpLocation">NYC street grid</div>
+      </div>
+      <div class="ariOpBlock ariOpOptional">
+        <div class="ariOpLabel">operator</div>
+        <div class="ariOpValue">Shift+D</div>
+      </div>
+    </div>
+    <div id="ariSimpleOperatorHint">SHIFT+D TOGGLE · READ-ONLY</div>
+  `;
+  document.body.appendChild(panel);
+
+  const $ = (id) => document.getElementById(id);
+
+  function refresh() {
+    $('ariOpTrack').textContent = $('trackname')?.textContent?.trim() || 'waiting for track';
+    $('ariOpMeta').textContent = $('trackmeta')?.textContent?.trim() || 'no active signal';
+    const started = !!document.querySelector('#trackinfo.show');
+    const sleeping = !!document.querySelector('.note.sleepz.go');
+    $('ariOpState').textContent = sleeping ? 'paused' : started ? 'live' : 'idle';
+  }
+
+  let open = false;
+  function setOpen(next) {
+    open = !!next;
+    suppressLegacyInspector();
+    refresh();
+    panel.classList.toggle('show', open);
+    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+  }
+  function toggle() { setOpen(!open); }
+
+  $('ariSimpleOperatorClose').addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpen(false);
+  });
+
+  /* Capture Shift+D before the legacy index.html handler can open devPanel. */
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+    if (e.key.toLowerCase() !== 'd' || !e.shiftKey) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    toggle();
+  }, true);
+
+  /* Keep the simple card fresh while visible. */
+  setInterval(() => { if (open) refresh(); }, 800);
+
+  /* If ?dev=1 opened the legacy inspector earlier, replace it with this one. */
+  if (/[?&]dev=1/.test(location.search)) {
+    setTimeout(() => setOpen(true), 0);
+  }
+
+  window.toggleDevPanel = toggle;
+})();
+
