@@ -154,10 +154,38 @@
   }
   function show(){if(!curTrack())return;render();open=true;root.classList.add('open');root.setAttribute('aria-hidden','false');root.querySelector('.ariSigClose')?.focus();}
   function close(){open=false;root.classList.remove('open');root.setAttribute('aria-hidden','true');$('trackname')?.focus?.();}
-  $('trackname')?.addEventListener('click',e=>{e.stopPropagation();show();});
+  const trackName=$('trackname');
+  // Public track-name interaction belongs to the LIVE SIGNAL overlay.
+  // Capture pointerdown before the legacy long-press dev-inspector listener in index.html,
+  // while keeping Shift+D and ?dev=1 available for operator access.
+  trackName?.addEventListener('pointerdown',e=>{
+    if(e.button!=null&&e.button!==0)return;
+    e.stopImmediatePropagation();
+  },true);
+  trackName?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();show();},true);
   $('trackname')?.setAttribute('tabindex','0');$('trackname')?.setAttribute('role','button');$('trackname')?.setAttribute('aria-label','open track signal');
   $('trackname')?.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();show();}});
   root.addEventListener('click',e=>{if(e.target===root)close();});document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')close();});
   setInterval(()=>{const t=curTrack();if(!t)return;const seed=t.seed||t.trackId;if(seed!==lastSeed){lastSeed=seed;if(open)render();}else if(open)render();},900);
   window.ARITrackOverlay=Object.freeze({open:show,close,get visible(){return open;}});
+})();
+
+/* Mobile track-meta trim — keep the footer to one calm line on narrow screens. */
+(() => {
+  'use strict';
+  if (typeof updateMeta !== 'function') return;
+  const originalUpdateMeta = updateMeta;
+  const mobile = window.matchMedia('(max-width: 640px)');
+  function compactTrackMeta() {
+    if (!mobile.matches || typeof track === 'undefined' || !track) return;
+    const el = document.getElementById('trackmeta');
+    if (!el) return;
+    const genre = typeof displayGenre === 'function' ? displayGenre(track.genre) : track.genre;
+    el.textContent = `${genre || 'live'} · ${track.keyName || '—'} · ${track.bpm || '—'} bpm`;
+  }
+  updateMeta = function(sec) {
+    originalUpdateMeta(sec);
+    compactTrackMeta();
+  };
+  compactTrackMeta();
 })();
