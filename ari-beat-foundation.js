@@ -149,10 +149,10 @@
   const style = document.createElement('style');
   style.id = 'ari-public-ui-normalization';
   style.textContent = `
-    /* Top-left hierarchy: identity, tribute, then weather. */
+    /* Top-left hierarchy: identity, weather, then neon street-tag tribute. */
     header > p:not(.tribute){font-size:14px!important;letter-spacing:.22em!important;line-height:1.35!important;margin-top:5px!important}
-    header .tribute{display:block!important;margin-top:7px!important;font-size:12px!important;letter-spacing:.08em!important;line-height:1.4!important;color:var(--support)!important}
-    #wxText{margin-top:9px!important;font-size:11.5px!important;line-height:1.5!important;letter-spacing:.11em!important}
+    #wxText{margin-top:8px!important;font-size:11.5px!important;line-height:1.5!important;letter-spacing:.11em!important}
+    header .tribute{display:inline-block!important;margin-top:8px!important;font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive!important;font-size:13px!important;font-weight:600!important;letter-spacing:.015em!important;line-height:1.15!important;color:#ff5fd2!important;text-transform:none!important;transform:rotate(-2deg);transform-origin:left center;text-shadow:0 0 4px rgba(255,95,210,.65),0 0 10px rgba(255,95,210,.36),0 0 18px rgba(255,95,210,.16);opacity:.96}
     #wxBattery,#wxText br{display:none!important}
 
     /* Weather condition remains coloured, never underlined/link-like. */
@@ -168,15 +168,16 @@
     #ariLiveRow .ariLiveLabel{font-size:12px!important;line-height:1.2;letter-spacing:.20em;color:var(--support)}
     #themebtn{align-self:flex-start!important;margin-top:0!important;transform:none!important;height:20px!important;width:20px!important}
     #ariRigBattery{display:flex;align-items:flex-start}
-    #ariBatteryTrack{display:block;width:160px;height:12px;border:1.5px solid var(--cyan-dim);border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--bg) 78%,var(--support) 22%);box-sizing:border-box}
+    #ariBatteryTrack{display:block;width:160px;height:12px;border:1px solid rgba(255,255,255,.72);border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);box-sizing:border-box;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),0 0 0 .5px rgba(0,0,0,.22)}
     #ariBatteryFill{display:block;width:100%;height:100%;background:var(--cyan);transform-origin:left center;transition:width .45s ease,background-color .45s ease,opacity .25s ease}
+    body.light #ariBatteryTrack{border-color:rgba(22,32,42,.5);background:rgba(22,32,42,.08);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.45)}
     #ariRigBattery.swapping #ariBatteryFill{width:30%!important;animation:ariBatterySwap .8s ease-in-out infinite alternate}
     @keyframes ariBatterySwap{from{transform:translateX(0);opacity:.45}to{transform:translateX(230%);opacity:1}}
 
     @media(max-width:640px){
       header > p:not(.tribute){font-size:12.5px!important;letter-spacing:.16em!important}
-      header .tribute{font-size:11px!important}
       #wxText{font-size:10.5px!important}
+      header .tribute{font-size:12px!important}
       #ariLiveRow{height:18px}
       #ariLiveRow .ariLiveLabel{font-size:11px!important}#themebtn{height:18px!important;width:18px!important}
       #ariBatteryTrack{width:132px;height:10px}
@@ -184,9 +185,14 @@
   `;
   document.head.appendChild(style);
 
-  /* Keep the fan-tribute line, remove only the version suffix written by older modules. */
+  /* Keep the fan-tribute line, remove only the version suffix written by older modules.
+     Weather sits above it; the tribute becomes the small neon street signature. */
   const tribute = document.querySelector('header .tribute');
+  const weather = document.getElementById('wxText');
   if (tribute) tribute.textContent = 'inspired by ARIatHOME';
+  if (tribute && weather && tribute.parentElement === weather.parentElement) {
+    tribute.parentElement.insertBefore(weather, tribute);
+  }
 
   /* Track metadata: compact on narrow screens and progressively warmer/redder as BPM rises. */
   if (typeof updateMeta === 'function') {

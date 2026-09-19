@@ -160,6 +160,12 @@ The public track readout now uses a simple hierarchy: **track title first**, the
 
 The top-right live status keeps **live from the grid** and the theme toggle on one horizontal line. Rig battery state is shown directly below as a battery bar only, without a text label or percentage.
 
+## Interface polish
+
+The visible interface keeps the hierarchy deliberately sparse: A.R.I. and the expanded “Audiological Roaming Intelligence” identity sit top-left, followed by the live NYC weather line. The fan tribute, “inspired by ARIatHOME”, now sits directly beneath the weather as a small magenta neon street-tag signature.
+
+Track titles lead the lower-left metadata stack, followed by track/time/section and tempo-coloured genre/key/BPM metadata. The right-side live status uses a compact outlined battery meter without a percentage label.
+
 ## Running it
 
 There is no build step.
