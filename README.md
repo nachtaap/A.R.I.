@@ -146,9 +146,13 @@ The metadata colour follows tempo: slower tracks stay cooler, while higher BPM v
 
 The track title is display-only and has no click, tap or long-press action.
 
-### Hidden operator view
+### Hidden operator console
 
 The technical inspector is not part of the public interface. It remains available for development/operator use through **Shift+D** or `?dev=1`.
+
+On desktop it opens as a centered A.R.I.-style neon operator console rather than a right-side debug panel. The console keeps the detailed engine readout from the original inspector, but uses the same IBM Plex Mono system and approximately the same base text size as **live from the grid** for easier reading.
+
+A compact **EVENT TEST** row provides direct operator controls for existing runtime events: **new track**, **new location**, **A.R.I. mic**, **reverse camera**, and **battery swap**. These controls call the same runtime paths used by the live experience; they do not create alternate public behaviours.
 
 ## Street memory
 

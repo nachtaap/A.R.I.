@@ -252,3 +252,148 @@
 
 
 })();
+
+
+/* Hidden operator console polish — Shift+D only. Keeps the existing inspector data,
+   but presents it as a centered A.R.I. console and exposes direct test hooks for
+   existing runtime events. Public UI is untouched. */
+(() => {
+  'use strict';
+  const panel = document.getElementById('devPanel');
+  if (!panel) return;
+
+  const style = document.createElement('style');
+  style.id = 'ari-operator-console-v17';
+  style.textContent = `
+    .devpanel{
+      top:50%!important;left:50%!important;right:auto!important;
+      width:min(860px,calc(100vw - 48px))!important;max-width:none!important;
+      max-height:min(82svh,820px)!important;
+      padding:18px 20px 20px!important;
+      border:1px solid rgba(62,232,222,.42)!important;
+      border-radius:14px!important;
+      background:
+        linear-gradient(180deg,rgba(7,9,18,.975),rgba(3,5,11,.985))!important;
+      box-shadow:
+        0 0 0 1px rgba(255,95,210,.08),
+        0 0 28px rgba(62,232,222,.11),
+        0 0 64px rgba(255,95,210,.07),
+        0 24px 70px rgba(0,0,0,.68)!important;
+      font-family:"IBM Plex Mono",monospace!important;
+      font-size:11px!important;line-height:1.55!important;
+      letter-spacing:.02em!important;
+      transform:translate(-50%,-50%) scale(.985)!important;
+    }
+    .devpanel::before{
+      content:"";position:absolute;inset:7px;pointer-events:none;border-radius:10px;
+      border:1px solid rgba(167,139,255,.10);
+      box-shadow:inset 0 0 26px rgba(62,232,222,.025);
+    }
+    .devpanel.show{transform:translate(-50%,-50%) scale(1)!important}
+    .devsticky{position:sticky!important;top:-18px!important;z-index:3!important;
+      margin:-2px -2px 10px!important;padding:2px 2px 10px!important;
+      background:linear-gradient(180deg,rgba(7,9,18,.995) 72%,rgba(7,9,18,.88))!important;
+      border-bottom:1px solid rgba(62,232,222,.22)!important;
+      backdrop-filter:blur(10px);
+    }
+    .devhead{font-size:11px!important;color:#3ee8de!important;letter-spacing:.17em!important}
+    .devname{font-size:11px!important;line-height:1.55!important}
+    .devh{font-size:11px!important;color:#ff5fd2!important;letter-spacing:.13em!important;margin-bottom:6px!important}
+    .devh2,.krow,.prow,.arrow,.dnarow,.dflags,.devChatMsg,.devnone{font-size:11px!important}
+    .devsec{padding:10px 0!important;border-color:rgba(62,232,222,.12)!important}
+    #devClose{
+      width:28px!important;height:28px!important;padding:0!important;margin:0!important;
+      display:grid!important;place-items:center!important;border:0!important;border-radius:50%!important;
+      background:transparent!important;color:#dfeef0!important;font-size:20px!important;
+      line-height:1!important;box-shadow:none!important;outline:none!important;
+    }
+    #devClose:hover{color:#ff5fd2!important;text-shadow:0 0 10px rgba(255,95,210,.6)!important}
+    #devClose:focus-visible{outline:none!important;box-shadow:0 0 0 1px rgba(62,232,222,.75),0 0 12px rgba(62,232,222,.24)!important}
+    .ariDevControls{
+      display:flex;flex-wrap:wrap;gap:7px;margin:9px 0 2px;padding:10px 0 2px;
+      border-top:1px solid rgba(167,139,255,.16);
+    }
+    .ariDevControls::before{
+      content:"EVENT TEST";flex-basis:100%;margin-bottom:2px;color:#ffe66d;
+      font-size:11px;letter-spacing:.15em;
+    }
+    .ariDevBtn{
+      appearance:none;border:1px solid rgba(62,232,222,.34);border-radius:999px;
+      background:rgba(62,232,222,.035);color:#dfeef0;padding:6px 10px;
+      font:500 11px/1.2 "IBM Plex Mono",monospace;letter-spacing:.04em;cursor:pointer;
+      transition:border-color .16s ease,color .16s ease,background .16s ease,box-shadow .16s ease;
+    }
+    .ariDevBtn:hover{border-color:#ff5fd2;color:#fff;background:rgba(255,95,210,.07);box-shadow:0 0 12px rgba(255,95,210,.12)}
+    .ariDevBtn:focus-visible{outline:none;box-shadow:0 0 0 1px #3ee8de,0 0 12px rgba(62,232,222,.2)}
+    .ariDevBtn[data-action="battery"]{border-color:rgba(255,230,109,.42);color:#ffe66d}
+    .ariDevBtn[data-action="reverse"]{border-color:rgba(255,95,210,.42);color:#ff8bde}
+    body.light .devpanel{
+      background:linear-gradient(180deg,rgba(249,251,253,.985),rgba(241,245,248,.99))!important;
+      border-color:rgba(11,156,147,.38)!important;
+      box-shadow:0 0 0 1px rgba(116,82,232,.07),0 18px 56px rgba(38,52,68,.18)!important;
+    }
+    body.light .devpanel::before{border-color:rgba(116,82,232,.10)}
+    body.light .devsticky{background:linear-gradient(180deg,rgba(249,251,253,.995) 72%,rgba(249,251,253,.9))!important;border-color:rgba(11,156,147,.18)!important}
+    body.light #devClose{color:#16202a!important}
+    body.light .ariDevControls::before{color:#8a6a00}
+    body.light .ariDevBtn{background:rgba(11,156,147,.035);border-color:rgba(11,156,147,.28);color:#16202a}
+    body.light .ariDevBtn[data-action="battery"]{color:#8a6a00;border-color:rgba(138,106,0,.28)}
+    body.light .ariDevBtn[data-action="reverse"]{color:#a1267d;border-color:rgba(161,38,125,.28)}
+    @media(max-width:640px){
+      .devpanel{
+        top:10px!important;left:10px!important;right:10px!important;width:auto!important;
+        max-height:calc(100svh - 20px)!important;padding:14px 14px 16px!important;
+        transform:translateY(-5px) scale(.99)!important;font-size:10.5px!important;
+      }
+      .devpanel.show{transform:none!important}
+      .devsticky{top:-14px!important}
+      .devhead,.devname,.devh,.devh2,.krow,.prow,.arrow,.dnarow,.dflags,.devChatMsg,.devnone,.ariDevBtn,.ariDevControls::before{font-size:10.5px!important}
+      .ariDevBtn{padding:6px 9px}
+    }
+  `;
+  document.head.appendChild(style);
+
+  function injectControls() {
+    if (!panel.classList.contains('show')) return;
+    if (panel.querySelector('.ariDevControls')) return;
+    const anchor = panel.querySelector('.devsticky') || panel.firstElementChild;
+    if (!anchor) return;
+    const controls = document.createElement('div');
+    controls.className = 'ariDevControls';
+    controls.innerHTML = `
+      <button class="ariDevBtn" type="button" data-action="newtrack">new track</button>
+      <button class="ariDevBtn" type="button" data-action="location">new location</button>
+      <button class="ariDevBtn" type="button" data-action="mic">A.R.I. mic</button>
+      <button class="ariDevBtn" type="button" data-action="reverse">reverse camera</button>
+      <button class="ariDevBtn" type="button" data-action="battery">battery swap</button>`;
+    anchor.appendChild(controls);
+  }
+
+  const observer = new MutationObserver(() => requestAnimationFrame(injectControls));
+  observer.observe(panel, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
+  requestAnimationFrame(injectControls);
+
+  panel.addEventListener('click', (event) => {
+    const button = event.target.closest('.ariDevBtn');
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const action = button.dataset.action;
+    try {
+      if (action === 'newtrack' && typeof newTrack === 'function') {
+        newTrack();
+      } else if (action === 'location' && typeof nextLocation === 'function') {
+        nextLocation();
+      } else if (action === 'mic' && typeof startAriSing === 'function') {
+        if (typeof ctx !== 'undefined' && ctx) startAriSing(ctx.currentTime);
+        setTimeout(() => { if (typeof stopAriSing === 'function') stopAriSing(); }, 4200);
+      } else if (action === 'reverse' && typeof doReverse === 'function') {
+        doReverse();
+      } else if (action === 'battery' && typeof runBatterySwap === 'function') {
+        runBatterySwap();
+      }
+    } catch (error) {
+      console.warn('[A.R.I. operator console]', action, error);
+    }
+  });
+})();
