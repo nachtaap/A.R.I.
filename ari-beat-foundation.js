@@ -267,8 +267,8 @@
   style.textContent = `
     .devpanel{
       top:50%!important;left:50%!important;right:auto!important;
-      width:min(860px,calc(100vw - 48px))!important;max-width:none!important;
-      max-height:min(82svh,820px)!important;
+      width:min(1000px,calc(100vw - 56px))!important;max-width:none!important;
+      height:min(64svh,600px)!important;max-height:none!important;
       padding:18px 20px 20px!important;
       border:1px solid rgba(62,232,222,.42)!important;
       border-radius:14px!important;
@@ -339,10 +339,20 @@
     body.light .ariDevBtn{background:rgba(11,156,147,.035);border-color:rgba(11,156,147,.28);color:#16202a}
     body.light .ariDevBtn[data-action="battery"]{color:#8a6a00;border-color:rgba(138,106,0,.28)}
     body.light .ariDevBtn[data-action="reverse"]{color:#a1267d;border-color:rgba(161,38,125,.28)}
+
+    /* Keep the street-chat label attached to the visible message stack instead of
+       floating at the top of the full-height desktop chat column. */
+    #chat{justify-content:flex-end!important;gap:6px!important}
+    #chatLog{
+      flex:0 1 auto!important;
+      min-height:0!important;
+      max-height:calc(100% - 22px)!important;
+    }
+
     @media(max-width:640px){
       .devpanel{
         top:10px!important;left:10px!important;right:10px!important;width:auto!important;
-        max-height:calc(100svh - 20px)!important;padding:14px 14px 16px!important;
+        height:auto!important;max-height:calc(100svh - 20px)!important;padding:14px 14px 16px!important;
         transform:translateY(-5px) scale(.99)!important;font-size:10.5px!important;
       }
       .devpanel.show{transform:none!important}
