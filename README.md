@@ -117,14 +117,15 @@ The visible interface is intentionally sparse.
 ### Top left
 
 - **A.R.I.**
-- **Audiological Roaming Intelligence** as the primary identity line;
+- **Audiological Roaming Intelligence** as the larger identity line;
+- **inspired by ARIatHOME** remains visible beneath the identity;
 - NYC clock and live weather beneath it;
 - no visible version label;
 - no rig-battery percentage in this area.
 
 ### Top right
 
-The live-status block shows **live from the grid** and, directly below it, the rig battery as a small visual battery bar rather than a percentage.
+The live-status block shows **live from the grid** and, directly below it, a clearly readable **rig battery** label with a larger visual battery bar rather than a percentage.
 
 ### Track information
 
@@ -134,7 +135,7 @@ The metadata colour follows tempo: slower tracks stay cooler/cyan, while higher 
 
 ### Hidden operator view
 
-The technical inspector is not part of the public interface. It remains available for development/operator use through **Shift+D**, `?dev=1`, or the existing long-press track-name gesture. A normal track-name click does not open a public details overlay.
+The technical inspector is not part of the public interface. It remains available for development/operator use through **Shift+D** or `?dev=1`. The track name is display-only: it has no click, tap or long-press action.
 
 ## Street memory
 
@@ -175,7 +176,7 @@ The current experience is layered rather than monolithic:
 - `ari-discoveries.js` — interactive rig and street memory;
 - `ari-creature-synth.js` — generated creature/character synthesis;
 - `ari-sound-worlds.js` — character casting, sound worlds and restrained effects;
-- `ari-beat-foundation.js` — procedural beat/bass foundation plus small interface refinements;
+- `ari-beat-foundation.js` — procedural beat/bass foundation plus the final lightweight public-interface normalization;
 - `sw.js` — PWA shell cache and update lifecycle.
 
 ## License
