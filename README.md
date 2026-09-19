@@ -141,7 +141,7 @@ The older tall scrollable developer inspector is suppressed. `?dev=1` opens the 
 
 The event-test controls call A.R.I.'s existing runtime events directly: new track, new location, A.R.I. mic, reverse camera and battery swap.
 
-All regular Live Signal text uses at least the same 11 px IBM Plex Mono base size as **live from the grid**; only headings/titles scale upward.
+Live Signal uses a more generous readable scale than the public status text: regular operator text is 13 px, secondary labels are 12 px, and headings/titles scale upward.
 
 ## Street memory
 
