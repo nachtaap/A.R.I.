@@ -104,73 +104,7 @@
   if (typeof track !== 'undefined' && track) prepare();
 })();
 
-/* A.R.I. Track Signal Overlay — minimal neon readout, public-facing rather than the dev inspector. */
-(() => {
-  'use strict';
-  const $=id=>document.getElementById(id);
-  const esc=s=>String(s??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const hash=value=>{let h=2166136261>>>0;for(const ch of String(value)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;};
-  const css=document.createElement('style');
-  css.textContent=`
-  #ariSignalOverlay{position:fixed;inset:0;z-index:80;display:none;place-items:center;padding:24px;background:rgba(5,8,15,.74);backdrop-filter:blur(10px);font-family:"IBM Plex Mono",monospace;color:#dffcff}
-  #ariSignalOverlay.open{display:grid} .ariSigPanel{width:min(760px,94vw);max-height:min(780px,90vh);overflow:auto;background:linear-gradient(180deg,rgba(10,16,28,.97),rgba(5,9,18,.97));border:1px solid rgba(82,200,192,.42);box-shadow:0 0 0 1px rgba(255,95,210,.08),0 0 42px rgba(82,200,192,.14);padding:18px}
-  .ariSigTop{display:flex;align-items:flex-start;gap:18px}.ariSigTitle{flex:1}.ariSigKicker{font-size:9px;letter-spacing:.28em;color:#52c8c0;text-transform:uppercase}.ariSigName{font-family:"Space Grotesk",sans-serif;font-size:clamp(22px,4vw,36px);letter-spacing:.03em;margin-top:4px}.ariSigMeta{font-size:10px;letter-spacing:.12em;color:#8995a8;text-transform:uppercase;margin-top:5px}
-  .ariSigClose{appearance:none;border:1px solid rgba(255,95,210,.45);background:transparent;color:#ff5fd2;width:34px;height:34px;cursor:pointer;font:18px/1 monospace}.ariSigClose:hover{box-shadow:0 0 14px rgba(255,95,210,.28)}
-  .ariSigBlock{margin-top:14px;border-top:1px solid rgba(82,200,192,.18);padding-top:13px}.ariSigHead{display:flex;justify-content:space-between;gap:12px;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#a795e0;margin-bottom:10px}.ariSigDim{color:#687589;letter-spacing:.08em}
-  .ariBars{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}.ariBar{min-height:76px;border:1px solid rgba(82,200,192,.14);padding:7px 5px;position:relative;background:rgba(82,200,192,.018)}.ariBar.now{border-color:rgba(255,95,210,.62);box-shadow:inset 0 0 18px rgba(255,95,210,.07)}.ariBarN{font-size:8px;color:#667385;margin-bottom:7px}.ariLayer{height:3px;margin:4px 0;background:#1d2734}.ariLayer.on.c{background:#52c8c0;box-shadow:0 0 6px rgba(82,200,192,.55)}.ariLayer.on.p{background:#a795e0;box-shadow:0 0 6px rgba(167,149,224,.45)}.ariLayer.on.m{background:#ff5fd2;box-shadow:0 0 6px rgba(255,95,210,.5)}.ariLayer.on.o{background:#ffad66;box-shadow:0 0 6px rgba(255,173,102,.42)}
-  .ariRadarWrap{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center}.ariRadar{width:142px;height:142px;border:1px solid rgba(82,200,192,.34);border-radius:50%;position:relative;background:radial-gradient(circle,transparent 0 24%,rgba(82,200,192,.07) 25% 26%,transparent 27% 49%,rgba(82,200,192,.06) 50% 51%,transparent 52%),linear-gradient(90deg,transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%),linear-gradient(transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%)}.ariRadar:after{content:"";position:absolute;inset:9%;border-radius:50%;background:conic-gradient(from 18deg,rgba(82,200,192,.18),transparent 22%,transparent);animation:ariSweep 7s linear infinite}@keyframes ariSweep{to{transform:rotate(360deg)}}
-  .ariDot{position:absolute;width:5px;height:5px;border-radius:50%;background:#ff5fd2;box-shadow:0 0 8px #ff5fd2;z-index:2}.ariListeners{display:grid;grid-template-columns:1fr 1fr;gap:7px 13px;font-size:9px;color:#9aa6b8}.ariListeners b{color:#dffcff;font-weight:500}.ariPulse{color:#52c8c0}
-  .ariDna{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ariCard{border:1px solid rgba(167,149,224,.16);padding:9px;min-height:72px}.ariCard span{display:block;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#6f7b8d}.ariCard b{display:block;margin-top:7px;font-size:11px;font-weight:500;color:#e7f8fb;line-height:1.45}.ariCard em{display:block;margin-top:4px;font-size:8px;font-style:normal;color:#8995a8;line-height:1.45}
-  #trackname{cursor:pointer;pointer-events:auto}@media(max-width:620px){.ariSigPanel{padding:14px}.ariBars{grid-template-columns:repeat(4,1fr)}.ariRadarWrap{grid-template-columns:1fr}.ariRadar{margin:auto}.ariDna{grid-template-columns:1fr}.ariListeners{grid-template-columns:1fr 1fr}}@media(prefers-reduced-motion:reduce){.ariRadar:after{animation:none}}
-  body.light #ariSignalOverlay{background:rgba(235,241,245,.72);color:#16202a}body.light .ariSigPanel{background:rgba(247,250,252,.98);border-color:rgba(11,156,147,.34);box-shadow:0 8px 40px rgba(25,40,55,.16)}body.light .ariSigName,body.light .ariListeners b,body.light .ariCard b{color:#16202a}
-  `;
-  document.head.appendChild(css);
-  const root=document.createElement('div');root.id='ariSignalOverlay';root.setAttribute('aria-hidden','true');
-  root.innerHTML='<section class="ariSigPanel" role="dialog" aria-modal="true" aria-label="Track signal"><div id="ariSigBody"></div></section>';
-  document.body.appendChild(root);
-  let lastSeed=null,open=false;
-  const curTrack=()=>typeof track!=='undefined'?track:null;
-  function sectionFor(offset){try{return typeof sectionAt==='function'?sectionAt(bar+offset):'main';}catch(_){return'main';}}
-  function instrumentText(t){
-    const gear=t?.gear||{};return [gear.drumMachine||t?.drumFamily?.name||'drums',t?.foundationBassVoice||t?.bassType||gear.bassSynth||'bass',t?.leadWave||gear.leadSynth||'lead'].filter(Boolean).join(' · ');
-  }
-  function listenerData(t){
-    const seed=String(t?.seed||t?.trackId||t?.genre||'ari'); const names=['nightbus_04','mara.exe','lowbattery','gridwalker','tapeghost','sublevel9','windowseat','oxidekid'];
-    return names.slice(0,6).map((name,i)=>{const n=hash(seed+':listener:'+i);return{name,react:['locked in','rewound it','headphones on','still listening','caught the switch','saved the moment'][n%6],x:10+(n%80),y:10+((n>>>8)%80)};});
-  }
-  function render(){
-    const t=curTrack();if(!t)return;
-    const p=window.ARICreatures?.status, sig=window.ARIMusicEvolution?.signature; const listeners=listenerData(t);
-    const effects=p?.effects; const current=((typeof bar==='number'?bar:0)%8+8)%8;
-    let bars='';for(let i=0;i<8;i++){const sec=sectionFor(i-current);const intro=sec==='intro',br=sec==='break',out=sec==='outro';const effect=effects?.bars?.some(b=>((b%8)+8)%8===i);
-      bars+=`<div class="ariBar ${i===current?'now':''}"><div class="ariBarN">${String(i+1).padStart(2,'0')}</div><div class="ariLayer c ${!out?'on':''}" title="drums"></div><div class="ariLayer p ${(!intro&&!out)?'on':''}" title="bass"></div><div class="ariLayer m ${(!intro&&!out&&[2,6].includes(i))?'on':''}" title="lead"></div><div class="ariLayer o ${effect?'on':''}" title="accent"></div></div>`;}
-    const listenerHtml=listeners.map(x=>`<div><b>${esc(x.name)}</b><br><span class="ariPulse">●</span> ${esc(x.react)}</div>`).join('');
-    const dots=listeners.map(x=>`<i class="ariDot" style="left:${x.x}%;top:${x.y}%"></i>`).join('');
-    $('ariSigBody').innerHTML=`<div class="ariSigTop"><div class="ariSigTitle"><div class="ariSigKicker">A.R.I. / live signal</div><div class="ariSigName">${esc(t.name||t.title||$('trackname')?.textContent||'untitled')}</div><div class="ariSigMeta">${esc(t.genre)} · ${esc(t.bpm)} bpm · ${esc(t.scaleName||'live scale')}</div></div><button class="ariSigClose" aria-label="close">×</button></div>
-    <div class="ariSigBlock"><div class="ariSigHead"><span>signal grid / next eight bars</span><span class="ariSigDim">drums · bass · lead · accent</span></div><div class="ariBars">${bars}</div></div>
-    <div class="ariSigBlock"><div class="ariSigHead"><span>street radar</span><span class="ariSigDim">fictional live listeners</span></div><div class="ariRadarWrap"><div class="ariRadar">${dots}</div><div class="ariListeners">${listenerHtml}</div></div></div>
-    <div class="ariSigBlock"><div class="ariSigHead"><span>track character</span><span class="ariSigDim">what is shaping this take</span></div><div class="ariDna"><div class="ariCard"><span>character</span><b>${esc(p?.character?.type||'clean signal')}</b><em>${effects?.enabled?`${effects.used||0}/${effects.max||0} accents used`:'effect stem sleeping'}</em></div><div class="ariCard"><span>instruments</span><b>${esc(instrumentText(t))}</b><em>bass voice: ${esc(t.foundationBassVoice||window.ARIBeatFoundation?.voice||'round')}</em></div><div class="ariCard"><span>interaction</span><b>${esc(sig?.contour||t.signatureMotif?.contour||'evolving')} motif</b><em>${Array.isArray(t.streetMotif)&&t.streetMotif.length?`${t.streetMotif.length} street notes remembered`:'listening for a street phrase'}</em></div></div></div>`;
-    $('ariSigBody').querySelector('.ariSigClose')?.addEventListener('click',close);
-  }
-  function show(){if(!curTrack())return;render();open=true;root.classList.add('open');root.setAttribute('aria-hidden','false');root.querySelector('.ariSigClose')?.focus();}
-  function close(){open=false;root.classList.remove('open');root.setAttribute('aria-hidden','true');$('trackname')?.focus?.();}
-  const trackName=$('trackname');
-  // Public track-name interaction belongs to the LIVE SIGNAL overlay.
-  // Capture pointerdown before the legacy long-press dev-inspector listener in index.html,
-  // while keeping Shift+D and ?dev=1 available for operator access.
-  trackName?.addEventListener('pointerdown',e=>{
-    if(e.button!=null&&e.button!==0)return;
-    e.stopImmediatePropagation();
-  },true);
-  trackName?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();show();},true);
-  $('trackname')?.setAttribute('tabindex','0');$('trackname')?.setAttribute('role','button');$('trackname')?.setAttribute('aria-label','open track signal');
-  $('trackname')?.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();show();}});
-  root.addEventListener('click',e=>{if(e.target===root)close();});document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')close();});
-  setInterval(()=>{const t=curTrack();if(!t)return;const seed=t.seed||t.trackId;if(seed!==lastSeed){lastSeed=seed;if(open)render();}else if(open)render();},900);
-  window.ARITrackOverlay=Object.freeze({open:show,close,get visible(){return open;}});
-})();
-
-/* Mobile track-meta trim — keep the footer to one calm line on narrow screens. */
+/* Track-meta cleanup — compact on mobile, tempo-coloured everywhere. */
 (() => {
   'use strict';
   if (typeof updateMeta !== 'function') return;
@@ -183,9 +117,127 @@
     const genre = typeof displayGenre === 'function' ? displayGenre(track.genre) : track.genre;
     el.textContent = `${genre || 'live'} · ${track.keyName || '—'} · ${track.bpm || '—'} bpm`;
   }
+  function colourTrackMeta() {
+    const el = document.getElementById('trackmeta');
+    if (!el || typeof track === 'undefined' || !track) return;
+    const bpm = Number(track.bpm) || 100;
+    const t = Math.max(0, Math.min(1, (bpm - 70) / 120));
+    // Slow tracks live in cool cyan/blue; faster tracks travel through warmer hues into red.
+    const hue = Math.round(195 * (1 - t));
+    const light = document.body.classList.contains('light') ? 39 : 66;
+    const color = `hsl(${hue} 82% ${light}%)`;
+    el.style.color = color;
+    el.style.textShadow = `0 0 10px hsl(${hue} 82% ${light}% / .16)`;
+  }
   updateMeta = function(sec) {
     originalUpdateMeta(sec);
     compactTrackMeta();
+    colourTrackMeta();
   };
   compactTrackMeta();
+  colourTrackMeta();
+})();
+
+/* Weather readout cleanup — keep condition styling without a link-like underline. */
+(() => {
+  'use strict';
+  const style = document.createElement('style');
+  style.textContent = `.wxCond::before,.wxCond::after{display:none!important}`;
+  document.head.appendChild(style);
+})();
+
+
+/* Rig visual cleanup — align animated fader caps with their isometric slots. */
+(() => {
+  'use strict';
+  const faders = [...Array(8)].map((_, i) => document.getElementById('fader' + i));
+  const translate = /translate\(\s*(-?\d+(?:\.\d+)?)px\s*,\s*(-?\d+(?:\.\d+)?)px\s*\)/;
+  function correctFaderAxes() {
+    for (const el of faders) {
+      if (!el) continue;
+      const raw = el.style.transform || '';
+      const match = raw.match(translate);
+      if (!match) continue;
+      const x = Number(match[1]), y = Number(match[2]);
+      // Fader slots vary along rig-Y: iso(0,+y,0) => (-IA,+IB), not (-IA,-IB).
+      if (x < 0 && y < 0) {
+        el.style.transform = `translate(${match[1]}px,${Math.abs(y).toFixed(1)}px)`;
+      }
+    }
+    requestAnimationFrame(correctFaderAxes);
+  }
+  requestAnimationFrame(correctFaderAxes);
+})();
+
+/* Interface hierarchy — simplify the top-left readout and move rig battery into the live-status block. */
+(() => {
+  'use strict';
+  const style = document.createElement('style');
+  style.textContent = `
+    header > p:not(.tribute){font-size:13px!important;letter-spacing:.22em!important;line-height:1.45!important;margin-top:5px!important}
+    header .tribute{display:none!important}
+    #wxBattery,#wxText br{display:none!important}
+    #wxText{margin-top:8px!important}
+    footer{align-items:flex-start!important;gap:10px!important}
+    #ariLiveStack{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+    #ariLiveRow{display:flex;align-items:center;gap:8px;white-space:nowrap}
+    #ariLiveRow .ariLiveLabel{font-size:11px;letter-spacing:.22em;color:var(--support)}
+    #ariRigBattery{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:8px;letter-spacing:.17em;color:var(--support)}
+    #ariBatteryTrack{width:92px;height:4px;border:1px solid var(--cyan-dim);border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--bg) 82%,var(--support) 18%)}
+    #ariBatteryFill{display:block;width:100%;height:100%;background:var(--cyan);transform-origin:left center;transition:width .45s ease,background-color .45s ease,opacity .25s ease}
+    #ariRigBattery.swapping #ariBatteryFill{width:36%!important;animation:ariBatterySwap .8s ease-in-out infinite alternate}
+    @keyframes ariBatterySwap{from{transform:translateX(0);opacity:.45}to{transform:translateX(175%);opacity:1}}
+    @media(max-width:640px){header > p:not(.tribute){font-size:12px!important;letter-spacing:.18em!important}#ariBatteryTrack{width:76px}}
+  `;
+  document.head.appendChild(style);
+
+  const footer = document.querySelector('footer');
+  if (!footer || document.getElementById('ariLiveStack')) return;
+  const dot = footer.querySelector('.liveDot');
+  const label = [...footer.children].find(el => el.tagName === 'SPAN' && !el.classList.contains('liveDot'));
+  const theme = document.getElementById('themebtn');
+  if (!dot || !label) return;
+
+  const stack = document.createElement('div');
+  stack.id = 'ariLiveStack';
+  const liveRow = document.createElement('div');
+  liveRow.id = 'ariLiveRow';
+  label.classList.add('ariLiveLabel');
+  liveRow.append(dot, label);
+
+  const battery = document.createElement('div');
+  battery.id = 'ariRigBattery';
+  battery.innerHTML = '<span>rig battery</span><span id="ariBatteryTrack"><i id="ariBatteryFill"></i></span>';
+  stack.append(liveRow, battery);
+  footer.insertBefore(stack, theme || null);
+
+  function currentBatteryPct() {
+    try {
+      if (typeof batteryIntermission !== 'undefined' && batteryIntermission) return null;
+      if (typeof track !== 'undefined' && track && typeof tracksUntilBattery !== 'undefined' && typeof batteryTotal !== 'undefined' && typeof bar !== 'undefined') {
+        const remaining = tracksUntilBattery - bar / Math.max(1, track.bars);
+        return Math.max(1, Math.min(100, Math.round((remaining / batteryTotal) * 100)));
+      }
+    } catch (_) {}
+    return 100;
+  }
+  function updateRigBatteryBar() {
+    const fill = document.getElementById('ariBatteryFill');
+    if (!fill) return;
+    const pct = currentBatteryPct();
+    if (pct == null) {
+      battery.classList.add('swapping');
+      fill.style.backgroundColor = 'var(--magenta)';
+      return;
+    }
+    battery.classList.remove('swapping');
+    fill.style.width = `${pct}%`;
+    try {
+      fill.style.backgroundColor = typeof battColor === 'function' ? battColor(pct) : (pct < 25 ? '#ff4d5d' : pct < 55 ? '#ffad66' : 'var(--cyan)');
+    } catch (_) {
+      fill.style.backgroundColor = pct < 25 ? '#ff4d5d' : pct < 55 ? '#ffad66' : 'var(--cyan)';
+    }
+  }
+  updateRigBatteryBar();
+  setInterval(updateRigBatteryBar, 1000);
 })();

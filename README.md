@@ -13,53 +13,19 @@ A minimalist generative street-music web experience. An isometric neon android r
 
 A.R.I. is not a playlist and not a DJ simulation.
 
-Every track starts from nothing. The browser synthesizes drums, bass, harmony, melody, voices and small details in real time. The point is the same creative constraint that makes live improvisation interesting: **make a musical decision, commit to it, layer something onto it, and keep moving.**
+Every track starts from nothing. The browser synthesizes drums, bass, harmony, melody, voices and small details in real time. The central constraint is simple: **make a musical decision, commit to it, layer something onto it, and keep moving.**
 
 A.R.I. can sound polished, but it should never feel pre-rendered.
 
 ## Music Engine II — Street Improv Engine
 
-Version 108 rebuilds the genre system around an origin-first live-improv workflow.
+The v108 Street Improv Engine rebuilt the genre system around an origin-first live-improv workflow.
 
-Instead of treating a genre as a preset containing a BPM and a few sounds, A.R.I. now resolves a musical request into several layers:
+Instead of treating a genre as a preset containing a BPM and a few sounds, A.R.I. resolves a musical request into several layers:
 
 **request → genre family → composition grammar → patch bank → Track DNA → live-loop arrangement**
 
-That makes it possible to expand to hundreds or thousands of musical directions without maintaining hundreds of separate generators.
-
-### Requests, not preset islands
-
-The v108 catalog contains more than 250 canonical genres and subgenres across hip-hop, R&B, soul, funk, house, techno, garage, drum & bass, breaks, bass music, trance, afro styles, reggae and dancehall, Latin styles, jazz, ambient, pop, rock and experimental music.
-
-Those canonical styles combine with production and performance identities such as:
-
-- raw
-- dusty
-- warm
-- dark
-- deep
-- soulful
-- minimal
-- hypnotic
-- spacious
-- street
-- late-night
-- futuristic
-- polished
-
-The result is already more than 2,000 resolvable style identities, while the resolver itself is designed to accept new requests without requiring a new music engine for every label.
-
-A.R.I. therefore understands the difference between, for example:
-
-- golden-age hip-hop and modern drill;
-- G-funk and Memphis rap;
-- neo-soul and new jack swing;
-- Detroit, hypnotic, industrial, acid and dub techno;
-- jungle, liquid DnB, techstep and neurofunk;
-- 2-step, speed garage and UK funky;
-- amapiano, gqom and afrobeats;
-- roots reggae, dub and dancehall;
-- trip-hop, IDM and dark ambient.
+The current runtime contains **450 canonical styles** and **3600+ request identities**. These span hip-hop, R&B, soul, funk, house, techno, garage, drum & bass, breaks, bass music, trance, afro styles, reggae and dancehall, Latin styles, jazz, ambient, pop, rock and experimental music.
 
 The goal is not to claim that a short procedural performance can reproduce every historical nuance of every genre. The goal is for the **musical rules themselves** to move in the right direction instead of only changing the label.
 
@@ -69,7 +35,7 @@ Music Engine II deliberately works more like a musician operating a compact live
 
 ### Patch bank
 
-A genre request chooses a compatible sound world quickly. Warm styles lean toward rounded drums, tape keys and softer basses. Dark electronic styles can pull harder drums, reese-like basses, shadow pads and darker leads. Digital and high-energy styles reach for cleaner or more synthetic patches.
+A genre request chooses a compatible sound world quickly. Warm styles lean toward rounded drums, tape-like keys and softer basses. Dark electronic styles can pull harder drums, reese-like basses, shadow pads and darker leads. Digital and high-energy styles reach for cleaner or more synthetic patches.
 
 This builds on the existing Guest DNA and gear system instead of replacing it.
 
@@ -79,42 +45,30 @@ Tracks are arranged as if a loop is being constructed and developed in real time
 
 Hip-hop, R&B, soul, funk and jazz tend to build around compact four- and eight-bar ideas. House, techno, trance and ambient styles can hold musical material longer and develop through density, timbre and pressure. Breakbeat families have their own shorter, more active phrase behavior.
 
-The same motif can return several bars later with a changed ending instead of the melody generator constantly inventing unrelated notes.
+Motifs can return several bars later with changed endings or contour instead of the melody generator constantly inventing unrelated notes.
 
-### Small overdubs
+### Small overdubs and effects
 
-A.R.I. now adds sparse synthesized micro-overdubs: tiny percussive, tonal, dusty, airy or metallic details that appear around an established loop.
-
-They are deliberately quiet and infrequent. Complexity should feel accumulated rather than switched on all at once.
+A.R.I. adds sparse synthesized micro-overdubs: tiny percussive, tonal, dusty, airy or metallic details that appear around an established loop. Effects are deliberately constrained so they add character without turning the track into a gimmick.
 
 There are still **no prerecorded loops or sample packs**.
 
 ## Track DNA
 
-Every v108 track receives a persistent musical identity.
+Each track receives a persistent musical identity. Track DNA includes characteristics such as:
 
-Track DNA includes characteristics such as:
+- family and era;
+- flavour and density;
+- loop length and repetition;
+- machine versus human feel;
+- syncopation and melodic activity;
+- space, grit and overdub activity.
 
-- family
-- era
-- flavour
-- loop length
-- machine versus human feel
-- syncopation
-- density
-- repetition
-- melodic activity
-- space
-- grit
-- overdub activity
-
-These values influence multiple brains at the same time.
-
-Two tracks can therefore both be Dark Techno while one is sparse, hypnotic and spacious and the other is harder, metallic and dense. Two old-school hip-hop tracks can share the same broad grammar while differing in swing, dust, melody, patch choice and phrase repetition.
+These values influence multiple musical systems at once. Two tracks can therefore share a genre while differing in swing, dust, melody, patch choice, repetition and arrangement pressure.
 
 ## Ensemble brains
 
-The v107 ensemble remains the musical core:
+The ensemble core coordinates several musical roles:
 
 - **Drum Brain** — pocket, ghost notes, fills, velocity and memory;
 - **Bass Brain** — low-end arrangement, harmony and kick relationship;
@@ -140,33 +94,63 @@ Remembered tracks become **Echoes**. A later track in the same genre can inherit
 
 Nothing is uploaded and no account is required.
 
-## Hidden operator view
-
-The visible player remains deliberately minimal.
-
-The technical track view lives in a right-side drawer.
-
-- Tap or click the **track name** once to open it.
-- On mobile the details view is fully screen-filling, without an outer border or floating-card shadow.
-- Close it with the existing **×** button.
-- Desktop users can also press **Escape**.
-
-The track name is a direct action: one tap/click opens the details immediately. Vertical scrolling inside the track details remains available.
-
 ## The street
 
 The music lives inside a reactive procedural SVG scene:
 
 - A.R.I. carries a wearable rig with synth controls, speakers and batteries;
+- rig keys, pads and controls react as part of the performance;
 - guests walk in and perform;
 - NYC-inspired street signs change as the stream moves;
-- live weather appears quietly beneath the header;
+- live NYC time and weather appear quietly beneath the header;
 - the rig occasionally needs a battery swap;
 - wide desktop layouts include a fictional reactive street chat;
 - a rare reverse-camera shot reveals cameraman robot **Dill-2000 (model Z)**;
 - generated Media Session artwork appears on browser and lock-screen players while the on-page player stays minimal.
 
-A.R.I. itself is the play/pause control. Tap or click the robot to start, pause or resume. The Space key does the same thing.
+A.R.I. itself is the play/pause control. Tap or click the robot to start, pause or resume. The Space key does the same thing when focus is not on another control.
+
+## Current interface
+
+The visible interface is intentionally sparse.
+
+### Top left
+
+- **A.R.I.**
+- **Audiological Roaming Intelligence** as the primary identity line;
+- NYC clock and live weather beneath it;
+- no visible version label;
+- no rig-battery percentage in this area.
+
+### Top right
+
+The live-status block shows **live from the grid** and, directly below it, the rig battery as a small visual battery bar rather than a percentage.
+
+### Track information
+
+The track line shows genre/style, key and BPM. On narrow mobile screens it is deliberately reduced to **genre · key · BPM** so it stays on one line.
+
+The metadata colour follows tempo: slower tracks stay cooler/cyan, while higher BPM values move progressively through warmer hues toward red.
+
+### Hidden operator view
+
+The technical inspector is not part of the public interface. It remains available for development/operator use through **Shift+D**, `?dev=1`, or the existing long-press track-name gesture. A normal track-name click does not open a public details overlay.
+
+## Street memory
+
+The `ari-discoveries.js` extension adds interactive rig behaviour and short-term musical memory. Keys make scale-compatible notes, pads add live percussion and the record produces a synthesized scratch. These gestures do not pause the performance. A short phrase can be answered by A.R.I. at a later bar boundary, leaving room for guests and endings.
+
+Remembering the track can carry that small phrase into its existing Echo DNA.
+
+Keyboard access uses Enter/Space and roving arrow-key focus on the instruments. Space on a focused control does not also toggle playback.
+
+## Beat foundation and sound worlds
+
+Additional modules deepen the live synthesis without replacing the core engine:
+
+- `ari-beat-foundation.js` reinforces kick, hats and low-end foundation with synthesized local voices;
+- `ari-sound-worlds.js` supplies generated character voices and unusual timbral material while keeping effects restrained;
+- all sound remains generated in-browser.
 
 ## Running it
 
@@ -180,63 +164,20 @@ npx serve .
 
 GitHub Pages can host the PWA directly.
 
-## Current version
+The service worker caches the application shell for PWA use. When deploying changed JavaScript, bumping the A.R.I. cache version ensures existing installations pick up the new files.
 
-### Version 112 — Street memory
+## Architecture notes
 
-The visible experience stays minimal: the original robot, rig, street, guests,
-track text, heart and hidden inspector. No player bar, onboarding panel, genre
-picker or explanatory overlay has been added.
+The current experience is layered rather than monolithic:
 
-The rig can now be discovered through play. Its keys make scale-compatible
-notes, the pads add live percussion and the record produces a synthesized
-scratch. These gestures do not pause the performance. A short phrase can be
-answered by A.R.I. at a later bar boundary, leaving room for guests and endings.
-Remembering the track can carry that small phrase into its existing Echo DNA.
-
-Keyboard access uses Enter/Space and roving arrow-key focus on the instruments.
-The track drawer now keeps hidden controls out of the tab order and restores
-focus when closed. Space on a control no longer also toggles playback.
-
-The extension is isolated in `ari-discoveries.js`; Music Engine II, the SVG
-scene, guest system, original themes and PWA identity remain in place. The
-service worker includes the extension and only cleans up A.R.I. version caches.
-The optional Vite development setup is for browser QA; GitHub Pages still serves
-the root files directly, without a build step.
-
-See `TESTING-v112.md` for verified behavior and testing limits.
-
-### Version 108 — Street Improv Engine
-
-- Rebuilt genre handling around reusable **musical grammars** rather than isolated presets.
-- Expanded the canonical style catalog to more than 250 genres and subgenres.
-- Added a request resolver with more than 2,000 current style identities and room for arbitrary future requests.
-- Added family-specific behavior for pocket, repetition, melody density, harmonic pace and arrangement length.
-- Added rapid patch-bank selection using the existing v107 gear system.
-- Added persistent Track DNA for era, flavour, loop length, human/machine feel, syncopation, density, repetition, melody, space, grit and overdub activity.
-- Reworked melodic behavior toward loop recall and small phrase transformations.
-- Added sparse synthesized micro-overdubs so detail accumulates around a loop instead of every layer starting at once.
-- Added extra low-frequency depth to appropriate techno material without samples.
-- Weighted random style selection toward the rap, singer, soul/R&B and flexible electronic territory at the center of the street-improv concept while keeping the long tail available.
-- Replaced the hidden track-title long press with a right-side details drawer opened by a normal tap/click on the track name; the close button or Escape closes it.
-
-### Version 107 — Ensemble composition
-
-- Rebuilt the musical core around coordinated drum, bass, melody, vocal and composer brains.
-- Added section-aware energy, harmonic context, phrase roles and call-and-response.
-- Expanded rhythm, bass and arrangement behavior.
-- Reworked guest voices into persistent chest, velvet, grit and airy families.
-- Separated rap delivery from sung hooks.
-- Improved weather typography and street-sign alignment.
-
-### Earlier versions
-
-Earlier releases introduced deterministic track seeds, Guest DNA, Echoes, expanded genre substyles, synthesized guest instruments, Media Session artwork, reactive street chat, battery swaps, live weather and the evolving procedural street scene.
+- `index.html` — core scene, transport, synthesis and UI;
+- `ari-v108.js` — Street Improv Engine and request/style resolver;
+- `ari-discoveries.js` — interactive rig and street memory;
+- `ari-creature-synth.js` — generated creature/character synthesis;
+- `ari-sound-worlds.js` — character casting, sound worlds and restrained effects;
+- `ari-beat-foundation.js` — procedural beat/bass foundation plus small interface refinements;
+- `sw.js` — PWA shell cache and update lifecycle.
 
 ## License
 
 Code: MIT. See `LICENSE`.
-
-- Tightened the real-ARI takeover composition: symmetric comic burst with a clear top spike, black keyline, reduced copy, and a cleaner hover state on the live button.
-
-- Track details now use a direct toggle interaction: click/tap the track name to open or close, or click/tap outside the drawer to dismiss it.
