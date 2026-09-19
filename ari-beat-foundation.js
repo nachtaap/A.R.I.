@@ -267,10 +267,39 @@
   .ariSigClose{appearance:none;border:1px solid rgba(255,95,210,.45);background:transparent;color:#ff5fd2;width:34px;height:34px;cursor:pointer;font:18px/1 monospace}.ariSigClose:hover{box-shadow:0 0 14px rgba(255,95,210,.28)}
   .ariSigBlock{margin-top:13px;border-top:1px solid rgba(82,200,192,.18);padding-top:12px}.ariSigHead{display:flex;justify-content:space-between;gap:12px;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#a795e0;margin-bottom:10px}.ariSigDim{color:#687589;letter-spacing:.08em}
   .ariBars{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}.ariBar{min-height:76px;border:1px solid rgba(82,200,192,.14);padding:7px 5px;position:relative;background:rgba(82,200,192,.018)}.ariBar.now{border-color:rgba(255,95,210,.62);box-shadow:inset 0 0 18px rgba(255,95,210,.07)}.ariBarN{font-size:13px;color:#667385;margin-bottom:7px}.ariLayer{height:3px;margin:4px 0;background:#1d2734}.ariLayer.on.c{background:#52c8c0;box-shadow:0 0 6px rgba(82,200,192,.55)}.ariLayer.on.p{background:#a795e0;box-shadow:0 0 6px rgba(167,149,224,.45)}.ariLayer.on.m{background:#ff5fd2;box-shadow:0 0 6px rgba(255,95,210,.5)}.ariLayer.on.o{background:#ffad66;box-shadow:0 0 6px rgba(255,173,102,.42)}
-  .ariRadarWrap{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center}.ariRadar{width:142px;height:142px;border:1px solid rgba(82,200,192,.34);border-radius:50%;position:relative;background:radial-gradient(circle,transparent 0 24%,rgba(82,200,192,.07) 25% 26%,transparent 27% 49%,rgba(82,200,192,.06) 50% 51%,transparent 52%),linear-gradient(90deg,transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%),linear-gradient(transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%)}.ariRadar:after{content:"";position:absolute;inset:9%;border-radius:50%;background:conic-gradient(from 18deg,rgba(82,200,192,.18),transparent 22%,transparent);animation:ariSweep 7s linear infinite}@keyframes ariSweep{to{transform:rotate(360deg)}}
-  .ariDot{position:absolute;width:5px;height:5px;border-radius:50%;background:#ff5fd2;box-shadow:0 0 8px #ff5fd2;z-index:2}.ariListeners{display:grid;grid-template-columns:1fr 1fr;gap:7px 13px;font-size:15px;color:#9aa6b8}.ariListeners b{color:#dffcff;font-weight:500}.ariPulse{color:#52c8c0}
+  .ariRadarWrap{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center}
+  .ariRadar{
+    width:142px;height:142px;border:1px solid rgba(82,200,192,.34);border-radius:50%;
+    position:relative;overflow:hidden;
+    background:
+      radial-gradient(circle,transparent 0 24%,rgba(82,200,192,.07) 25% 26%,transparent 27% 49%,rgba(82,200,192,.06) 50% 51%,transparent 52%),
+      linear-gradient(90deg,transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%),
+      linear-gradient(transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%);
+    box-shadow:inset 0 0 20px rgba(82,200,192,.04)
+  }
+  .ariRadar:after{
+    content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+    background:conic-gradient(from 0deg,transparent 0deg 326deg,rgba(82,200,192,.025) 334deg,rgba(82,200,192,.12) 346deg,rgba(82,200,192,.62) 359deg,rgba(82,200,192,.95) 360deg);
+    animation:ariSweep 4.2s linear infinite;
+    filter:drop-shadow(0 0 4px rgba(82,200,192,.24))
+  }
+  .ariDot{
+    position:absolute;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;
+    background:#52c8c0;opacity:var(--ari-dot-base,.10);z-index:2;
+    box-shadow:0 0 0 rgba(82,200,192,0);
+    transition:opacity .12s ease,transform .12s ease,box-shadow .12s ease
+  }
+  .ariDot.hit{opacity:1;transform:scale(1.5);box-shadow:0 0 5px rgba(82,200,192,.95),0 0 13px rgba(82,200,192,.48)}
+  .ariDot.echo{opacity:.38;transform:scale(1.1);box-shadow:0 0 6px rgba(82,200,192,.34)}
+  @keyframes ariSweep{to{transform:rotate(360deg)}}
+  .ariDot{position:absolute;width:5px;height:5px;border-radius:50%;background:#ff5fd2;box-shadow:0 0 8px #ff5fd2;z-index:2}  .ariListenerRow{position:relative;padding-right:54px;transition:opacity .16s ease,transform .16s ease}
+  .ariListenerRow em{position:absolute;right:0;top:1px;font-style:normal;font-size:11px;color:#607681;letter-spacing:.06em}
+  .ariListenerRow.scan{transform:translateX(2px)}
+  .ariListenerRow.scan b,.ariListenerRow.scan .ariPulse{color:#52c8c0;text-shadow:0 0 8px rgba(82,200,192,.35)}
+  body.light .ariListenerRow em{color:#78858d}
+.ariListeners{display:grid;grid-template-columns:1fr 1fr;gap:7px 13px;font-size:15px;color:#9aa6b8}.ariListeners b{color:#dffcff;font-weight:500}.ariPulse{color:#52c8c0}
   .ariDna{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ariCard{border:1px solid rgba(167,149,224,.16);padding:9px;min-height:72px}.ariCard span{display:block;font-size:13px;letter-spacing:.15em;text-transform:uppercase;color:#6f7b8d}.ariCard b{display:block;margin-top:7px;font-size:15px;font-weight:500;color:#e7f8fb;line-height:1.45}.ariCard em{display:block;margin-top:4px;font-size:13px;font-style:normal;color:#8995a8;line-height:1.45}
-  #trackname{cursor:default;pointer-events:auto}@media(max-width:620px){.ariSigPanel{padding:14px}.ariBars{grid-template-columns:repeat(4,1fr)}.ariRadarWrap{grid-template-columns:1fr}.ariRadar{margin:auto}.ariDna{grid-template-columns:1fr}.ariListeners{grid-template-columns:1fr 1fr}}@media(prefers-reduced-motion:reduce){.ariRadar:after{animation:none}}
+  #trackname{cursor:default;pointer-events:auto}@media(max-width:620px){.ariSigPanel{padding:14px}.ariBars{grid-template-columns:repeat(4,1fr)}.ariRadarWrap{grid-template-columns:1fr}.ariRadar{margin:auto}.ariDna{grid-template-columns:1fr}.ariListeners{grid-template-columns:1fr 1fr}}@media(prefers-reduced-motion:reduce){.ariRadar:after{animation:none}.ariDot{opacity:.35}}
 
   .ariInfoGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
   .ariInfoCell{border:1px solid rgba(82,200,192,.14);padding:9px 10px;min-width:0}
@@ -288,7 +317,7 @@
   body.light .ariIdle strong{color:#a1267d}
   body.light .ariIdle p{color:#5f6b75}
   @media(max-width:760px){.ariInfoGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  .ariEventRow{display:flex;flex-wrap:wrap;gap:7px}.ariEventBtn{appearance:none;border:1px solid rgba(82,200,192,.28);background:rgba(82,200,192,.025);color:#9fded9;padding:7px 10px;font:500 14px/1.35 "IBM Plex Mono",monospace;letter-spacing:.10em;text-transform:uppercase;cursor:pointer}
+  .ariEventRow{display:flex;flex-wrap:wrap;gap:7px}.ariExportBtn{border-color:rgba(255,95,210,.40)!important;color:#ff93dc!important;background:rgba(255,95,210,.045)!important}.ariExportBtn:hover{border-color:rgba(255,95,210,.72)!important;box-shadow:0 0 15px rgba(255,95,210,.10)}.ariEventBtn{appearance:none;border:1px solid rgba(82,200,192,.28);background:rgba(82,200,192,.025);color:#9fded9;padding:7px 10px;font:500 14px/1.35 "IBM Plex Mono",monospace;letter-spacing:.10em;text-transform:uppercase;cursor:pointer}
   .ariEventBtn:hover{border-color:rgba(255,95,210,.5);color:#ff5fd2;box-shadow:0 0 12px rgba(255,95,210,.10)}
   body.light .ariEventBtn{color:#0a7a72;border-color:rgba(10,122,114,.25);background:rgba(10,122,114,.025)}body.light .ariEventBtn:hover{color:#a1267d;border-color:rgba(161,38,125,.35)}
   body.light #ariSignalOverlay{background:rgba(235,241,245,.72);color:#16202a}body.light .ariSigPanel{background:rgba(247,250,252,.98);border-color:rgba(11,156,147,.34);box-shadow:0 8px 40px rgba(25,40,55,.16)}body.light .ariSigName,body.light .ariListeners b,body.light .ariCard b{color:#16202a}
@@ -305,9 +334,237 @@
     const gear=t?.gear||{};return [gear.drumMachine||t?.drumFamily?.name||'drums',t?.foundationBassVoice||t?.bassType||gear.bassSynth||'bass',t?.leadWave||gear.leadSynth||'lead'].filter(Boolean).join(' · ');
   }
   function listenerData(t){
-    const seed=String(t?.seed||t?.trackId||t?.genre||'ari'); const names=['nightbus_04','mara.exe','lowbattery','gridwalker','tapeghost','sublevel9','windowseat','oxidekid'];
-    return names.slice(0,6).map((name,i)=>{const n=hash(seed+':listener:'+i);return{name,react:['locked in','rewound it','headphones on','still listening','caught the switch','saved the moment'][n%6],x:10+(n%80),y:10+((n>>>8)%80)};});
+    const audience=t?.audienceBrain||null;
+    const archetypes=Array.isArray(audience?.archetypes)&&audience.archetypes.length
+      ? audience.archetypes
+      : [
+          {kind:'basshead',likes:['bass']},
+          {kind:'drummer',likes:['drums']},
+          {kind:'melody fan',likes:['melody']},
+          {kind:'producer',likes:['arrangement']},
+          {kind:'guest fan',likes:['guest']},
+          {kind:'casual',likes:['hype']},
+        ];
+    const scores=audience?.scores||{};
+    const reactions=Array.isArray(audience?.reactions)?audience.reactions:[];
+    const seed=String(t?.seed||'ari');
+
+    const hash01=(value)=>{
+      let h=2166136261>>>0;
+      for(const ch of String(value)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}
+      h+=h<<13;h^=h>>>7;h+=h<<3;h^=h>>>17;h+=h<<5;
+      return (h>>>0)/4294967296;
+    };
+    const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+
+    const scoreFor=(kind,likes)=>{
+      const k=String(kind||'').toLowerCase();
+      const keys=[];
+      if(k.includes('bass'))keys.push('bass');
+      if(k.includes('drum'))keys.push('drums');
+      if(k.includes('melody'))keys.push('melody');
+      if(k.includes('producer'))keys.push('arrangement');
+      if(k.includes('guest'))keys.push('guest');
+      (likes||[]).forEach(x=>{
+        const s=String(x).toLowerCase();
+        if(/bass|drop/.test(s))keys.push('bass');
+        if(/drum|fill|groove|timing/.test(s))keys.push('drums');
+        if(/melody|hook|chord/.test(s))keys.push('melody');
+        if(/guest|vocal|solo/.test(s))keys.push('guest');
+        if(/transition|mix|arrangement|clutter/.test(s))keys.push('arrangement');
+      });
+      const vals=[...new Set(keys)].map(x=>Number(scores[x])).filter(Number.isFinite);
+      return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:.5;
+    };
+
+    const latestReactionFor=(kind)=>{
+      const low=String(kind||'').toLowerCase();
+      const hit=[...reactions].reverse().find(r=>{
+        const txt=String(r?.kind||r?.type||r?.source||r?.who||'').toLowerCase();
+        return txt&&low.includes(txt);
+      }) || reactions[reactions.length-1];
+      const text=hit?.text||hit?.message||hit?.label||hit?.reaction||'';
+      return String(text||'').trim();
+    };
+
+    return archetypes.slice(0,6).map((a,i)=>{
+      const kind=String(a.kind||`listener ${i+1}`);
+      const score=scoreFor(kind,a.likes);
+      const retention=clamp(Number(audience?.retention??.88));
+      const activity=clamp(Number(audience?.active??.5));
+      const positivity=clamp(Number(audience?.traits?.positivity??.6));
+      const engagement=clamp(score*.48+retention*.32+activity*.20);
+
+      // Stable angle per track/archetype; radial distance carries engagement.
+      const angle=hash01(`${seed}|audience-angle|${kind}`)*Math.PI*2;
+      const radius=18+(1-engagement)*26; // highly engaged = closer to center
+      const x=50+Math.cos(angle)*radius;
+      const y=50+Math.sin(angle)*radius;
+      const recent=latestReactionFor(kind);
+      const reaction=recent || (
+        score>.68 ? `locked on ${a.likes?.[0]||'the groove'}` :
+        score<.38 ? `not fully convinced` :
+        activity>.58 ? `active in the signal` :
+        `listening`
+      );
+      return {
+        name:kind,
+        react:reaction,
+        x:+x.toFixed(2),
+        y:+y.toFixed(2),
+        engagement,
+        score,
+        activity,
+        retention,
+        positivity,
+      };
+    });
   }
+
+  // ---------- Ableton export ----------
+  // Standard MIDI File writer + tiny ZIP "store" writer; no external libraries.
+  const MIDI_PPQ=480;
+  const te=new TextEncoder();
+  const u16=n=>[(n>>>8)&255,n&255],u32=n=>[(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255];
+  const vlen=n=>{let b=n&127,out=[];while((n>>>=7)){b<<=8;b|=(n&127)|128;}for(;;){out.push(b&255);if(b&128)b>>>=8;else break;}return out;};
+  const ascii=s=>Array.from(te.encode(String(s)));
+  function midiChunk(tag,data){return [...ascii(tag),...u32(data.length),...data];}
+  function metaText(type,text){const a=ascii(text);return [0xff,type,...vlen(a.length),...a];}
+  function midiTrack(name,events){
+    const all=[{tick:0,ord:-5,bytes:metaText(0x03,name)},...events].sort((a,b)=>a.tick-b.tick||(a.ord||0)-(b.ord||0));
+    let last=0,data=[];
+    all.forEach(e=>{const tick=Math.max(0,Math.round(e.tick));data.push(...vlen(tick-last),...e.bytes);last=tick;});
+    data.push(0,0xff,0x2f,0);
+    return midiChunk('MTrk',data);
+  }
+  function noteEvents(note,start,dur,vel=96,ch=0){
+    const n=Math.max(0,Math.min(127,Math.round(note))),v=Math.max(1,Math.min(127,Math.round(vel)));
+    const s=Math.max(0,Math.round(start)),e=Math.max(s+1,Math.round(start+dur));
+    return [
+      {tick:s,ord:1,bytes:[0x90|(ch&15),n,v]},
+      {tick:e,ord:0,bytes:[0x80|(ch&15),n,0]}
+    ];
+  }
+  function conductorEvents(t){
+    const mpqn=Math.round(60000000/Math.max(1,t.bpm||120)),ev=[
+      {tick:0,ord:-4,bytes:[0xff,0x51,0x03,(mpqn>>>16)&255,(mpqn>>>8)&255,mpqn&255]},
+      {tick:0,ord:-3,bytes:[0xff,0x58,0x04,4,2,24,8]},
+      {tick:0,ord:-2,bytes:metaText(0x01,`A.R.I. · ${t.name||'untitled'} · ${t.keyName||''}`)}
+    ];
+    (t.sections||[]).forEach(s=>ev.push({tick:(s.start||0)*MIDI_PPQ*4,ord:-1,bytes:metaText(0x06,String(s.name||'section').toUpperCase())}));
+    if(t.special?.bar!=null)ev.push({tick:t.special.bar*MIDI_PPQ*4,ord:-1,bytes:metaText(0x06,`SPECIAL: ${t.special.type}`)});
+    if(t.cutBar!=null)ev.push({tick:t.cutBar*MIDI_PPQ*4,ord:-1,bytes:metaText(0x06,'DJ CUT')});
+    return ev;
+  }
+  function microTicks(sec,t){return Math.round((Number(sec)||0)*(t.bpm||120)/60*MIDI_PPQ);}
+  function degreeMidi(t,ev,base=t.root+24){
+    const n=t.scale?.length||7,idx=Number(ev.degree)||0,oct=Math.floor(idx/n),cls=((idx%n)+n)%n;
+    return base+oct*12+(t.scale?.[cls]||0)+(ev.chromatic||0);
+  }
+  function exportTrackData(t){
+    const drums=[],bass=[],chords=[],lead=[],vocal=[];
+    const stepTicks=MIDI_PPQ/4,barTicks=MIDI_PPQ*4;
+    for(let b=0;b<t.bars;b++){
+      const base=b*barTicks,d=t.drumBrain?.plan?.[b];
+      if(d){
+        const drumDefs=[
+          ['kick',36,108],['snare',38,104],['ghost',38,55],['hats',42,76]
+        ];
+        drumDefs.forEach(([key,note,defVel])=>{
+          const patt=d[key]||[];
+          for(let s=0;s<16;s++)if(patt[s]){
+            const velMap=d.velocity?.[key],vel=Math.round(127*Math.min(1,velMap?.[s]||defVel/127));
+            const mt=microTicks(d.micro?.[key]?.[s]||0,t);
+            drums.push(...noteEvents(note,base+s*stepTicks+mt,Math.max(35,stepTicks*.48),vel,9));
+          }
+        });
+        const cow=d.aux?.cowbell||[];
+        for(let s=0;s<16;s++)if(cow[s])drums.push(...noteEvents(56,base+s*stepTicks,stepTicks*.5,82,9));
+        const fs=d.fillSnare||[],fh=d.fillHat||[];
+        for(let s=0;s<16;s++)if(fs[s])drums.push(...noteEvents(38,base+s*stepTicks,stepTicks*.42,82,9));
+        for(let s=0;s<16;s++)if(fh[s])drums.push(...noteEvents(42,base+s*stepTicks,stepTicks*.34,66,9));
+      }
+      const bp=t.bassBrain?.plan?.[b]||[];
+      bp.forEach(e=>{
+        const midi=typeof bassMidiForEvent==='function'?bassMidiForEvent(t,b,e):degreeMidi(t,e,t.root-12);
+        const start=base+e.step*stepTicks+microTicks(e.micro||0,t),dur=Math.max(stepTicks*.65,(e.durSteps||1)*stepTicks*.92);
+        bass.push(...noteEvents(midi,start,dur,Math.round(127*Math.min(1,e.velocity||.8)),1));
+      });
+      // Harmony guide: the same harmonic context the scheduler reads.
+      if(b%(Math.max(1,t.chordBars||2))===0){
+        const h=typeof harmonicContextAt==='function'?harmonicContextAt(t,b):null;
+        if(h?.tones){
+          const span=Math.min(t.chordBars||2,t.bars-b)*barTicks;
+          h.tones.forEach((iv,i)=>chords.push(...noteEvents(t.root+12+iv,base,span*.92,72-i*4,2)));
+        }
+      }
+      const personality=(typeof melodyPersonalityFor==='function')?melodyPersonalityFor(t.leadWave||t.gear?.leadSynth||'synth',false):'synth';
+      const lp=t.melodyBrain?.plans?.[personality]||t.melodyBrain?.plans?.synth;
+      (lp?.plan?.[b]||[]).forEach(e=>{
+        const midi=typeof melodyMidi==='function'?melodyMidi(t,e,personality,false):degreeMidi(t,e,t.root+24);
+        lead.push(...noteEvents(midi,base+e.step*stepTicks,Math.max(stepTicks*.7,(e.dur||2)*stepTicks*.88),Math.round(127*Math.min(1,e.velocity||.8)),3));
+      });
+      (t.vocalBrain?.plan?.[b]||[]).forEach(e=>{
+        const midi=degreeMidi(t,e,t.root+18);
+        vocal.push(...noteEvents(midi,base+e.step*stepTicks+microTicks((e.micro||0)*(60/(t.bpm||120))/4,t),Math.max(stepTicks*.5,(e.dur||1)*stepTicks*.82),Math.round(127*Math.min(1,e.velocity||.7)),4));
+      });
+    }
+    return {drums,bass,chords,lead,vocal};
+  }
+  function buildMidi(t,selected=['drums','bass','chords','lead','vocal']){
+    const data=exportTrackData(t),tracks=[midiTrack('A.R.I. CONDUCTOR',conductorEvents(t))];
+    const names={drums:'DRUMS',bass:'BASS',chords:'CHORDS / PAD GUIDE',lead:'LEAD',vocal:'A.R.I. VOCAL GUIDE'};
+    selected.forEach(k=>tracks.push(midiTrack(names[k],data[k]||[])));
+    return new Uint8Array([...midiChunk('MThd',[0,1,...u16(tracks.length),...u16(MIDI_PPQ)]),...tracks.flat()]);
+  }
+  function crc32(bytes){
+    let c=0xffffffff;
+    for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0);}
+    return (c^0xffffffff)>>>0;
+  }
+  function zipStore(files){
+    let local=[],central=[],offset=0;
+    files.forEach(f=>{
+      const name=ascii(f.name),data=f.data instanceof Uint8Array?f.data:new Uint8Array(f.data),crc=crc32(data);
+      const lh=[0x50,0x4b,0x03,0x04,20,0,0,0,0,0,0,0,0,0,...u32(crc).reverse(),...u32(data.length).reverse(),...u32(data.length).reverse(),...u16(name.length).reverse(),0,0,...name];
+      // rewrite little-endian fields explicitly
+      const le16=n=>[n&255,(n>>>8)&255],le32=n=>[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
+      const localHdr=[0x50,0x4b,0x03,0x04,...le16(20),...le16(0),...le16(0),...le16(0),...le16(0),...le32(crc),...le32(data.length),...le32(data.length),...le16(name.length),...le16(0),...name];
+      const cent=[0x50,0x4b,0x01,0x02,...le16(20),...le16(20),...le16(0),...le16(0),...le16(0),...le16(0),...le32(crc),...le32(data.length),...le32(data.length),...le16(name.length),...le16(0),...le16(0),...le16(0),...le16(0),...le32(0),...le32(offset),...name];
+      local.push(...localHdr,...data);central.push(...cent);offset+=localHdr.length+data.length;
+    });
+    const le16=n=>[n&255,(n>>>8)&255],le32=n=>[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
+    const end=[0x50,0x4b,0x05,0x06,...le16(0),...le16(0),...le16(files.length),...le16(files.length),...le32(central.length),...le32(local.length),...le16(0)];
+    return new Uint8Array([...local,...central,...end]);
+  }
+  function safeFileName(s){return String(s||'ari-track').toLowerCase().replace(/[“”"'`]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,72)||'ari-track';}
+  function downloadBlob(data,name,type='application/octet-stream'){
+    const blob=new Blob([data],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2500);
+  }
+  function exportAbleton(t){
+    if(!t)return;
+    const base=safeFileName(t.name),full=buildMidi(t),parts=['drums','bass','chords','lead','vocal'];
+    const info={
+      app:'A.R.I. — Audiological Roaming Intelligence',
+      exportVersion:1,
+      title:t.name,genre:t.genre,subStyle:t.subStyle||null,bpm:t.bpm,key:t.keyName,scale:t.scaleName,
+      seed:t.seed,trackId:t.trackId,generatorVersion:t.generatorVersion,bars:t.bars,chordBars:t.chordBars,
+      progression:t.prog,sections:t.sections,special:t.special||null,djCutBar:t.cutBar,
+      gear:t.gear,bassType:t.bassType,leadWave:t.leadWave,
+      note:'MIDI is exported directly from A.R.I.’s pre-composed drum, bass, melody and harmonic plans. Audio synthesis/effects are not rendered in this version.'
+    };
+    const readme=`A.R.I. → Ableton export\n\n${t.name}\n${t.genre}${t.subStyle?' · '+t.subStyle:''}\n${t.keyName} · ${t.bpm} BPM · ${t.bars} bars\nseed: ${t.seed}\n\nFiles\n- ${base}.mid — multitrack Standard MIDI File (conductor, drums, bass, chords, lead, A.R.I. vocal guide)\n- drums.mid / bass.mid / chords.mid / lead.mid / ari-vocal.mid — isolated MIDI parts\n- track-info.json — A.R.I. composition metadata and arrangement\n\nImport ${base}.mid into Ableton Live. The tempo and section markers are embedded in the MIDI. Assign your own instruments/drum rack after import.\n\nThis first exporter transfers the composition, not A.R.I.’s browser synth sound. WAV stems can be added later.\n`;
+    const files=[
+      {name:`${base}.mid`,data:full},
+      ...parts.map(k=>({name:k==='vocal'?'ari-vocal.mid':`${k}.mid`,data:buildMidi(t,[k])})),
+      {name:'track-info.json',data:te.encode(JSON.stringify(info,null,2))},
+      {name:'README.txt',data:te.encode(readme)}
+    ];
+    downloadBlob(zipStore(files),`${base}-ari-ableton.zip`,'application/zip');
+    console.info('[A.R.I.] Ableton export created',{title:t.name,bpm:t.bpm,bars:t.bars,files:files.map(x=>x.name)});
+  }
+
   function runtimeInfo(t){
     const audioState=(typeof ctx!=='undefined'&&ctx)?ctx.state:'not started';
     const section=(t&&typeof sectionAt==='function'&&typeof bar==='number')?sectionAt(bar):'—';
@@ -325,8 +582,12 @@
     const effects=p?.effects; const current=((typeof bar==='number'?bar:0)%8+8)%8;
     let bars='';for(let i=0;i<8;i++){const sec=sectionFor(i-current);const intro=sec==='intro',br=sec==='break',out=sec==='outro';const effect=effects?.bars?.some(b=>((b%8)+8)%8===i);
       bars+=`<div class="ariBar ${i===current?'now':''}"><div class="ariBarN">${String(i+1).padStart(2,'0')}</div><div class="ariLayer c ${!out?'on':''}" title="drums"></div><div class="ariLayer p ${(!intro&&!out)?'on':''}" title="bass"></div><div class="ariLayer m ${(!intro&&!out&&[2,6].includes(i))?'on':''}" title="lead"></div><div class="ariLayer o ${effect?'on':''}" title="accent"></div></div>`;}
-    const listenerHtml=listeners.map(x=>`<div><b>${esc(x.name)}</b><br><span class="ariPulse">●</span> ${esc(x.react)}</div>`).join('');
-    const dots=listeners.map(x=>`<i class="ariDot" style="left:${x.x}%;top:${x.y}%"></i>`).join('');
+    const listenerHtml=listeners.map((x,i)=>`<div class="ariListenerRow" data-listener="${i}"><b>${esc(x.name)}</b><br><span class="ariPulse">●</span> <span class="ariListenerReaction">${esc(x.react)}</span><em>${Math.round(x.engagement*100)}% engaged</em></div>`).join('');
+    const dots=listeners.map((x,i)=>{
+      const dx=x.x-50,dy=x.y-50;
+      const angle=(Math.atan2(dx,-dy)*180/Math.PI+360)%360;
+      return `<i class="ariDot" data-index="${i}" data-angle="${angle.toFixed(2)}" data-engagement="${x.engagement.toFixed(3)}" data-activity="${x.activity.toFixed(3)}" style="left:${x.x}%;top:${x.y}%;--ari-dot-base:${(.07+x.activity*.10).toFixed(3)}"></i>`;
+    }).join('');
     const keyText=t.scaleName||t.keyName||((typeof KEYS!=='undefined'&&typeof t.root==='number')?KEYS[t.root]:'live scale');
     const seedText=String(t.seed||t.trackId||'—');
     const barText=(typeof bar==='number')?`${bar+1}`:'—';
@@ -340,12 +601,12 @@
       <div class="ariInfoCell"><span>seed / id</span><b>${esc(seedText)}</b></div>
       <div class="ariInfoCell"><span>engine</span><b>${esc(info.engine)}</b></div>
       <div class="ariInfoCell"><span>effects</span><b>${effects?.enabled?`${effects.used||0}/${effects.max||0} accents`:'sleeping'}</b></div>
-      <div class="ariInfoCell"><span>street motif</span><b>${Array.isArray(t.streetMotif)?`${t.streetMotif.length} notes`:'listening'}</b></div>
+      <div class="ariInfoCell"><span>audience</span><b>${t.audienceBrain?`${Math.round((t.audienceBrain.active||0)*100)}% active · ${Math.round((t.audienceBrain.retention||0)*100)}% retention`:'warming up'}</b></div>
     </div></div>
     <div class="ariSigBlock"><div class="ariSigHead"><span>signal grid / next eight bars</span><span class="ariSigDim">drums · bass · lead · accent</span></div><div class="ariBars">${bars}</div></div>
-    <div class="ariSigBlock"><div class="ariSigHead"><span>street radar</span><span class="ariSigDim">fictional live listeners</span></div><div class="ariRadarWrap"><div class="ariRadar">${dots}</div><div class="ariListeners">${listenerHtml}</div></div></div>
+    <div class="ariSigBlock"><div class="ariSigHead"><span>audience signal</span><span class="ariSigDim">simulated audience activity</span></div><div class="ariRadarWrap"><div class="ariRadar">${dots}</div><div class="ariListeners">${listenerHtml}</div></div></div>
     <div class="ariSigBlock"><div class="ariSigHead"><span>track character</span><span class="ariSigDim">what is shaping this take</span></div><div class="ariDna"><div class="ariCard"><span>character</span><b>${esc(p?.character?.type||'clean signal')}</b><em>${effects?.enabled?`${effects.used||0}/${effects.max||0} accents used`:'effect stem sleeping'}</em></div><div class="ariCard"><span>instruments</span><b>${esc(instrumentText(t))}</b><em>bass voice: ${esc(t.foundationBassVoice||window.ARIBeatFoundation?.voice||'round')}</em></div><div class="ariCard"><span>interaction</span><b>${esc(sig?.contour||t.signatureMotif?.contour||'evolving')} motif</b><em>${Array.isArray(t.streetMotif)&&t.streetMotif.length?`${t.streetMotif.length} street notes remembered`:'listening for a street phrase'}</em></div></div></div>
-    <div class="ariSigBlock"><div class="ariSigHead"><span>event test</span><span class="ariSigDim">existing runtime events</span></div><div class="ariEventRow"><button class="ariEventBtn" data-ari-event="newtrack">new track</button><button class="ariEventBtn" data-ari-event="location">new location</button><button class="ariEventBtn" data-ari-event="mic">A.R.I. mic</button><button class="ariEventBtn" data-ari-event="reverse">reverse camera</button><button class="ariEventBtn" data-ari-event="battery">battery swap</button></div></div>`;
+    <div class="ariSigBlock"><div class="ariSigHead"><span>event test</span><span class="ariSigDim">existing runtime events</span></div><div class="ariEventRow"><button class="ariEventBtn" data-ari-event="newtrack">new track</button><button class="ariEventBtn" data-ari-event="location">new location</button><button class="ariEventBtn" data-ari-event="mic">A.R.I. mic</button><button class="ariEventBtn" data-ari-event="reverse">reverse camera</button><button class="ariEventBtn" data-ari-event="battery">battery swap</button><button class="ariEventBtn ariExportBtn" data-ari-event="export">export → ableton</button></div></div>`;
     $('ariSigBody').querySelector('.ariSigClose')?.addEventListener('click',close);
     $('ariSigBody').querySelectorAll('.ariEventBtn').forEach(btn=>btn.addEventListener('click',()=>{
       const action=btn.dataset.ariEvent;
@@ -358,9 +619,26 @@
         }
         else if(action==='reverse'&&typeof doReverse==='function')doReverse();
         else if(action==='battery'&&typeof runBatterySwap==='function')runBatterySwap();
+        else if(action==='export')exportAbleton(t);
         setTimeout(()=>{if(open)render();},80);
       }catch(err){console.warn('[A.R.I. live signal test]',action,err);}
     }));
+    if(window.__ariRadarFrame){cancelAnimationFrame(window.__ariRadarFrame);window.__ariRadarFrame=0;}
+    const radarDots=[...$('ariSigBody').querySelectorAll('.ariDot')],radarEpoch=performance.now(),radarPeriod=4200;
+    const animateRadar=(now)=>{
+      if(!open){window.__ariRadarFrame=0;return;}
+      const sweep=((now-radarEpoch)%radarPeriod)/radarPeriod*360;
+      radarDots.forEach(dot=>{
+        const a=parseFloat(dot.dataset.angle||'0'),delta=(sweep-a+360)%360;
+        const hit=delta<7||delta>354,echo=delta>=7&&delta<26;
+        dot.classList.toggle('hit',hit);
+        dot.classList.toggle('echo',echo);
+        const row=$('ariSigBody').querySelector(`.ariListenerRow[data-listener="${dot.dataset.index}"]`);
+        if(row)row.classList.toggle('scan',hit||echo);
+      });
+      window.__ariRadarFrame=requestAnimationFrame(animateRadar);
+    };
+    window.__ariRadarFrame=requestAnimationFrame(animateRadar);
   }
   function show(){
     if(!curTrack()){
@@ -388,7 +666,7 @@
     root.setAttribute('aria-hidden','false');
     root.querySelector('.ariSigClose')?.focus();
   }
-  function close(){open=false;root.classList.remove('open');root.setAttribute('aria-hidden','true');$('trackname')?.focus?.();}
+  function close(){open=false;if(window.__ariRadarFrame){cancelAnimationFrame(window.__ariRadarFrame);window.__ariRadarFrame=0;}root.classList.remove('open');root.setAttribute('aria-hidden','true');$('trackname')?.focus?.();}
   // Operator-only access. The legacy index.html inspector is suppressed.
   const legacy=document.getElementById('devPanel');
   if(legacy){

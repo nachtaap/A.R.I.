@@ -210,3 +210,12 @@ The current experience is layered rather than monolithic:
 ## License
 
 Code: MIT. See `LICENSE`.
+
+
+### Ableton export
+
+The hidden Live Signal operator view includes **EXPORT → ABLETON**. It downloads a ZIP containing a multitrack Standard MIDI File plus isolated drums, bass, chords, lead and A.R.I. vocal-guide MIDI files, together with `track-info.json`. The MIDI is generated directly from A.R.I.'s deterministic composition brains rather than reconstructed from recorded audio. This first version transfers the composition; browser-synth WAV stems are a later step.
+
+### Live Signal radar
+
+The operator radar is now backed by A.R.I.'s **Audience Brain** rather than decorative listener positions. Each blip represents a simulated audience archetype. Its angular position is stable for the current track, radial distance reflects engagement, base brightness follows activity, and the matching listener row lights when the 360° sweep detects it. The panel explicitly labels this as **simulated audience activity**.
