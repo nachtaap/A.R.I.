@@ -112,36 +112,49 @@ A.R.I. itself is the play/pause control. Tap or click the robot to start, pause 
 
 ## Current interface
 
-The visible interface is intentionally sparse.
+The visible interface is intentionally sparse and avoids persistent technical status information that is not useful to the listener.
 
 ### Top left
 
+The identity block contains:
+
 - **A.R.I.**
-- **Audiological Roaming Intelligence** as the larger identity line;
-- **inspired by ARIatHOME** remains visible beneath the identity;
-- NYC clock and live weather beneath it;
-- no visible version label;
-- no rig-battery percentage in this area.
+- **Audiological Roaming Intelligence**
+- live NYC clock and weather
+- **inspired by ARIatHOME**
+
+The tribute uses the same IBM Plex Mono typography and scale as the weather. It receives a restrained neon-yellow accent in dark mode and a darker, higher-contrast yellow in light mode.
+
+No public version number or persistent battery status is shown here.
 
 ### Top right
 
-The live-status block shows **live from the grid** and, directly below it, a clearly readable **rig battery** label with a substantial visual battery bar rather than a percentage (160×12 px on desktop; 132×10 px on narrow mobile layouts). The light/dark theme control is vertically centered against the **live from the grid** row rather than sitting low beside it.
+The top-right status area contains **live from the grid** and the light/dark theme control.
+
+Battery level is no longer shown as a permanent UI element. Battery changes remain part of A.R.I.'s runtime behaviour and battery-swap event, but the interface itself stays deliberately minimal.
 
 ### Track information
 
-The track line shows genre/style, key and BPM. On narrow mobile screens it is deliberately reduced to **genre · key · BPM** so it stays on one line.
+The public track readout is reduced to two lines:
 
-The metadata colour follows tempo: slower tracks stay cooler/cyan, while higher BPM values move progressively through warmer hues toward red.
+**track title**  
+**genre · key · BPM**
+
+Track number, section labels such as `MAIN`, and elapsed track time are omitted. The title and metadata use the same basic text scale; hierarchy comes from weight and colour rather than multiple competing font sizes.
+
+The metadata colour follows tempo: slower tracks stay cooler, while higher BPM values move progressively through warmer hues toward red.
+
+The track title is display-only and has no click, tap or long-press action.
 
 ### Hidden operator view
 
-The technical inspector is not part of the public interface. It remains available for development/operator use through **Shift+D** or `?dev=1`. The track name is strictly display-only: pointer/click events are intercepted before legacy handlers can run, so it has no click, tap or long-press action.
+The technical inspector is not part of the public interface. It remains available for development/operator use through **Shift+D** or `?dev=1`.
 
 ## Street memory
 
-The `ari-discoveries.js` extension adds interactive rig behaviour and short-term musical memory. Keys make scale-compatible notes, pads add live percussion and the record produces a synthesized scratch. These gestures do not pause the performance. A short phrase can be answered by A.R.I. at a later bar boundary, leaving room for guests and endings.
+The `ari-discoveries.js` extension adds interactive rig behaviour and short-term musical memory. Keys make scale-compatible notes, pads add live percussion and the record produces a synthesized scratch. These gestures do not pause the performance.
 
-Remembering the track can carry that small phrase into its existing Echo DNA.
+A short phrase can be answered by A.R.I. at a later bar boundary, leaving room for guests and endings. Remembering the track can carry that small phrase into its existing Echo DNA.
 
 Keyboard access uses Enter/Space and roving arrow-key focus on the instruments. Space on a focused control does not also toggle playback.
 
@@ -149,29 +162,10 @@ Keyboard access uses Enter/Space and roving arrow-key focus on the instruments. 
 
 Additional modules deepen the live synthesis without replacing the core engine:
 
-- `ari-beat-foundation.js` reinforces kick, hats and low-end foundation with synthesized local voices;
+- `ari-beat-foundation.js` reinforces kick, hats and low-end foundation with synthesized local voices and applies the final lightweight public-interface normalization;
 - `ari-sound-worlds.js` supplies generated character voices and unusual timbral material while keeping effects restrained;
+- `ari-creature-synth.js` provides additional generated character/creature synthesis;
 - all sound remains generated in-browser.
-
-
-### Interface cleanup — current
-
-The public track readout now uses a simple hierarchy: **track title first**, then track number/time/section, then genre/key/BPM. The track title is display-only.
-
-The top-right live status keeps **live from the grid** and the theme toggle on one horizontal line. Rig battery state is shown directly below as a battery bar only, without a text label or percentage.
-
-## Interface polish
-
-The visible interface keeps the hierarchy deliberately sparse: A.R.I. and the expanded “Audiological Roaming Intelligence” identity sit top-left, followed by the live NYC weather line. The fan tribute, “inspired by ARIatHOME”, now sits directly beneath the weather as a small magenta neon street-tag signature.
-
-Track titles lead the lower-left metadata stack, followed by track/time/section and tempo-coloured genre/key/BPM metadata. The right-side live status uses a compact outlined battery meter without a percentage label.
-
-### Current interface polish
-
-- The top-left identity block keeps weather and the ARIatHOME tribute in the same IBM Plex Mono system. The tribute uses a restrained neon-yellow accent, with a darker high-contrast yellow in light mode.
-- The rig battery no longer occupies fixed screen space. A vertical battery gauge is embedded into the side face of A.R.I.'s backpack and changes colour as charge falls.
-- The public track block is reduced to two equal-size lines: track title, then genre/key/BPM.
-- The track title is not interactive; the hidden operator inspector remains available through operator shortcuts.
 
 ## Running it
 
@@ -191,12 +185,12 @@ The service worker caches the application shell for PWA use. When deploying chan
 
 The current experience is layered rather than monolithic:
 
-- `index.html` — core scene, transport, synthesis and UI;
+- `index.html` — core scene, transport, synthesis and base UI;
 - `ari-v108.js` — Street Improv Engine and request/style resolver;
 - `ari-discoveries.js` — interactive rig and street memory;
 - `ari-creature-synth.js` — generated creature/character synthesis;
 - `ari-sound-worlds.js` — character casting, sound worlds and restrained effects;
-- `ari-beat-foundation.js` — procedural beat/bass foundation plus the final lightweight public-interface normalization;
+- `ari-beat-foundation.js` — procedural beat/bass foundation plus final public-interface normalization;
 - `sw.js` — PWA shell cache and update lifecycle.
 
 ## License
