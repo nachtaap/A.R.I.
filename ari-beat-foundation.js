@@ -155,9 +155,9 @@
     /* Live status + battery are one readable block. */
     footer{align-items:flex-start!important;gap:13px!important;font-size:12px!important}
     #ariLiveStack{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
-    #ariLiveRow{display:flex;align-items:center;gap:9px;white-space:nowrap;min-height:20px}
+    #ariLiveRow{display:flex;align-items:center;gap:9px;white-space:nowrap;height:20px}
     #ariLiveRow .ariLiveLabel{font-size:12px!important;line-height:1.2;letter-spacing:.20em;color:var(--support)}
-    #themebtn{align-self:flex-start!important;margin-top:0!important;transform:none!important}
+    #themebtn{align-self:flex-start!important;margin-top:0!important;transform:none!important;height:20px!important;width:20px!important}
     #ariRigBattery{display:flex;flex-direction:column;align-items:flex-start;gap:6px;white-space:nowrap;font-size:12px!important;line-height:1.2;letter-spacing:.11em;color:var(--support)}
     #ariBatteryTrack{display:block;width:160px;height:12px;border:1.5px solid var(--cyan-dim);border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--bg) 78%,var(--support) 22%);box-sizing:border-box}
     #ariBatteryFill{display:block;width:100%;height:100%;background:var(--cyan);transform-origin:left center;transition:width .45s ease,background-color .45s ease,opacity .25s ease}
@@ -168,8 +168,8 @@
       header > p:not(.tribute){font-size:12.5px!important;letter-spacing:.16em!important}
       header .tribute{font-size:11px!important}
       #wxText{font-size:10.5px!important}
-      #ariLiveRow{min-height:18px}
-      #ariLiveRow .ariLiveLabel{font-size:11px!important}
+      #ariLiveRow{height:18px}
+      #ariLiveRow .ariLiveLabel{font-size:11px!important}#themebtn{height:18px!important;width:18px!important}
       #ariRigBattery{font-size:11px!important;gap:5px}
       #ariBatteryTrack{width:132px;height:10px}
     }
