@@ -1,5 +1,5 @@
 /* A.R.I. service worker — app shell, cache-first, relative to its scope */
-const CACHE = 'ari-v119';
+const CACHE = 'ari-v121';
 const BASE = new URL('./', self.location.href).pathname;
 const SHELL = [
   BASE,
@@ -34,7 +34,8 @@ self.addEventListener('activate', e => {
 
 const PREPAINT = `<style id="ari-prepaint">
 #stage{cursor:default!important}
-#gAri,#trackname,header h1 a[href*="github.com"]{cursor:pointer!important}
+#gAri,header h1 a[href*="github.com"]{cursor:pointer!important}
+#trackname{cursor:default!important}
 body:not(.ari-v108-ready) #devPanel{visibility:hidden!important;opacity:0!important;transition:none!important}
 </style>`;
 

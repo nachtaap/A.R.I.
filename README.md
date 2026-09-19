@@ -125,7 +125,7 @@ The visible interface is intentionally sparse.
 
 ### Top right
 
-The live-status block shows **live from the grid** and, directly below it, a clearly readable **rig battery** label with a larger visual battery bar rather than a percentage.
+The live-status block shows **live from the grid** and, directly below it, a clearly readable **rig battery** label with a substantial visual battery bar rather than a percentage (160×12 px on desktop; 132×10 px on narrow mobile layouts). The light/dark theme control is vertically centered against the **live from the grid** row rather than sitting low beside it.
 
 ### Track information
 
@@ -135,7 +135,7 @@ The metadata colour follows tempo: slower tracks stay cooler/cyan, while higher 
 
 ### Hidden operator view
 
-The technical inspector is not part of the public interface. It remains available for development/operator use through **Shift+D** or `?dev=1`. The track name is display-only: it has no click, tap or long-press action.
+The technical inspector is not part of the public interface. It remains available for development/operator use through **Shift+D** or `?dev=1`. The track name is strictly display-only: pointer/click events are intercepted before legacy handlers can run, so it has no click, tap or long-press action.
 
 ## Street memory
 

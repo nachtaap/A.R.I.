@@ -104,78 +104,98 @@
   if (typeof track !== 'undefined' && track) prepare();
 })();
 
-/* Final visible-interface normalization — one place for the small public UI refinements. */
+/* Final visible-interface normalization — one authoritative public-UI layer. */
 (() => {
   'use strict';
 
-  /* Track name is display-only. Replacing the node removes legacy pointer/long-press
-     listeners that were attached earlier by the core page, while preserving the text. */
-  const oldTrackName = document.getElementById('trackname');
-  if (oldTrackName) {
-    const trackName = oldTrackName.cloneNode(true);
-    oldTrackName.replaceWith(trackName);
-    trackName.removeAttribute('tabindex');
-    trackName.removeAttribute('role');
-    trackName.removeAttribute('aria-label');
-    trackName.removeAttribute('aria-expanded');
-    trackName.style.pointerEvents = 'none';
-    trackName.style.cursor = 'default';
+  const $ = (id) => document.getElementById(id);
+
+  /* Track name is display-only. The core page attached a legacy long-press handler
+     earlier in startup. Replacing the node removes those listeners. A capture-phase
+     guard then guarantees that a future/reintroduced handler still cannot fire or
+     leak the click through to the stage/play-pause control. */
+  function makeTrackNamePassive() {
+    const old = $('trackname');
+    if (!old) return null;
+    const fresh = old.cloneNode(true);
+    old.replaceWith(fresh);
+    for (const attr of ['tabindex', 'role', 'aria-label', 'aria-expanded']) fresh.removeAttribute(attr);
+    fresh.style.cursor = 'default';
+    fresh.style.pointerEvents = 'auto';
+    fresh.style.touchAction = 'manipulation';
+    return fresh;
   }
+  makeTrackNamePassive();
+
+  const blockTrackNameEvent = (event) => {
+    const target = event.target instanceof Element ? event.target.closest('#trackname') : null;
+    if (!target) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  };
+  ['pointerdown', 'pointerup', 'pointercancel', 'click', 'dblclick', 'contextmenu'].forEach(type =>
+    document.addEventListener(type, blockTrackNameEvent, true)
+  );
 
   const style = document.createElement('style');
+  style.id = 'ari-public-ui-normalization';
   style.textContent = `
-    /* Identity: keep the tribute, lose only the version noise. */
-    header > p:not(.tribute){font-size:14px!important;letter-spacing:.22em!important;line-height:1.4!important;margin-top:5px!important}
-    header .tribute{display:block!important;margin-top:6px!important;font-size:12px!important;letter-spacing:.09em!important;line-height:1.45!important;color:var(--support)!important}
-    #wxText{margin-top:8px!important}
+    /* Top-left hierarchy: identity, tribute, then weather. */
+    header > p:not(.tribute){font-size:14px!important;letter-spacing:.22em!important;line-height:1.35!important;margin-top:5px!important}
+    header .tribute{display:block!important;margin-top:7px!important;font-size:12px!important;letter-spacing:.08em!important;line-height:1.4!important;color:var(--support)!important}
+    #wxText{margin-top:9px!important;font-size:11.5px!important;line-height:1.5!important;letter-spacing:.11em!important}
     #wxBattery,#wxText br{display:none!important}
 
-    /* Weather remains animated by condition, but never looks like a hyperlink. */
+    /* Weather condition remains coloured, never underlined/link-like. */
     .wxCond::before,.wxCond::after{display:none!important}
 
     /* Track title is informational, not an action. */
-    #trackname{pointer-events:none!important;cursor:default!important;touch-action:auto!important}
+    #trackname{cursor:default!important;pointer-events:auto!important;touch-action:manipulation!important}
 
-    /* Live status and battery: readable, deliberate, and aligned as one block. */
-    footer{align-items:flex-start!important;gap:12px!important}
-    #ariLiveStack{display:flex;flex-direction:column;align-items:flex-start;gap:9px}
-    #ariLiveRow{display:flex;align-items:center;gap:8px;white-space:nowrap}
-    #ariLiveRow .ariLiveLabel{font-size:11px;line-height:1.2;letter-spacing:.22em;color:var(--support)}
-    #ariRigBattery{display:flex;flex-direction:column;align-items:flex-start;gap:5px;white-space:nowrap;font-size:10.5px;line-height:1.2;letter-spacing:.13em;color:var(--support)}
-    #ariBatteryTrack{display:block;width:130px;height:8px;border:1px solid var(--cyan-dim);border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--bg) 80%,var(--support) 20%);box-sizing:border-box}
+    /* Live status + battery are one readable block. */
+    footer{align-items:flex-start!important;gap:13px!important;font-size:12px!important}
+    #ariLiveStack{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+    #ariLiveRow{display:flex;align-items:center;gap:9px;white-space:nowrap;min-height:20px}
+    #ariLiveRow .ariLiveLabel{font-size:12px!important;line-height:1.2;letter-spacing:.20em;color:var(--support)}
+    #themebtn{align-self:flex-start!important;margin-top:0!important;transform:none!important}
+    #ariRigBattery{display:flex;flex-direction:column;align-items:flex-start;gap:6px;white-space:nowrap;font-size:12px!important;line-height:1.2;letter-spacing:.11em;color:var(--support)}
+    #ariBatteryTrack{display:block;width:160px;height:12px;border:1.5px solid var(--cyan-dim);border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--bg) 78%,var(--support) 22%);box-sizing:border-box}
     #ariBatteryFill{display:block;width:100%;height:100%;background:var(--cyan);transform-origin:left center;transition:width .45s ease,background-color .45s ease,opacity .25s ease}
-    #ariRigBattery.swapping #ariBatteryFill{width:34%!important;animation:ariBatterySwap .8s ease-in-out infinite alternate}
-    @keyframes ariBatterySwap{from{transform:translateX(0);opacity:.45}to{transform:translateX(190%);opacity:1}}
+    #ariRigBattery.swapping #ariBatteryFill{width:30%!important;animation:ariBatterySwap .8s ease-in-out infinite alternate}
+    @keyframes ariBatterySwap{from{transform:translateX(0);opacity:.45}to{transform:translateX(230%);opacity:1}}
 
     @media(max-width:640px){
-      header > p:not(.tribute){font-size:12.5px!important;letter-spacing:.17em!important}
+      header > p:not(.tribute){font-size:12.5px!important;letter-spacing:.16em!important}
       header .tribute{font-size:11px!important}
-      #ariLiveRow .ariLiveLabel{font-size:10.5px}
-      #ariRigBattery{font-size:10px;gap:4px}
-      #ariBatteryTrack{width:108px;height:7px}
+      #wxText{font-size:10.5px!important}
+      #ariLiveRow{min-height:18px}
+      #ariLiveRow .ariLiveLabel{font-size:11px!important}
+      #ariRigBattery{font-size:11px!important;gap:5px}
+      #ariBatteryTrack{width:132px;height:10px}
     }
   `;
   document.head.appendChild(style);
 
+  /* Keep the fan-tribute line, remove only the version suffix written by older modules. */
   const tribute = document.querySelector('header .tribute');
   if (tribute) tribute.textContent = 'inspired by ARIatHOME';
 
-  /* Track metadata: compact on narrow screens and increasingly warm/red as BPM rises. */
+  /* Track metadata: compact on narrow screens and progressively warmer/redder as BPM rises. */
   if (typeof updateMeta === 'function') {
     const originalUpdateMeta = updateMeta;
     const mobile = window.matchMedia('(max-width: 640px)');
     const stops = [
-      [70,  [82, 200, 192]],   // cyan
-      [100, [94, 156, 234]],   // blue
-      [125, [167, 123, 255]],  // purple
-      [145, [255, 95, 210]],   // magenta
-      [165, [255, 113, 94]],   // hot coral
-      [185, [255, 61, 77]],    // red
+      [70,  [82, 200, 192]],
+      [100, [94, 156, 234]],
+      [125, [167, 123, 255]],
+      [145, [255, 95, 210]],
+      [165, [255, 108, 88]],
+      [185, [255, 55, 68]],
     ];
     const rgbForBpm = (bpm) => {
       const value = Number(bpm) || 100;
       if (value <= stops[0][0]) return stops[0][1];
-      if (value >= stops[stops.length - 1][0]) return stops[stops.length - 1][1];
+      if (value >= stops.at(-1)[0]) return stops.at(-1)[1];
       for (let i = 1; i < stops.length; i++) {
         if (value <= stops[i][0]) {
           const [aBpm, a] = stops[i - 1], [bBpm, b] = stops[i];
@@ -187,7 +207,7 @@
     };
     const applyMeta = () => {
       if (typeof track === 'undefined' || !track) return;
-      const el = document.getElementById('trackmeta');
+      const el = $('trackmeta');
       if (!el) return;
       if (mobile.matches) {
         const genre = typeof displayGenre === 'function' ? displayGenre(track.genre) : track.genre;
@@ -197,8 +217,7 @@
       if (document.body.classList.contains('light')) {
         r = Math.round(r * .72); g = Math.round(g * .72); b = Math.round(b * .72);
       }
-      const color = `rgb(${r} ${g} ${b})`;
-      el.style.color = color;
+      el.style.color = `rgb(${r} ${g} ${b})`;
       el.style.textShadow = `0 0 10px rgb(${r} ${g} ${b} / .18)`;
     };
     updateMeta = function(sec) {
@@ -208,15 +227,13 @@
     applyMeta();
   }
 
-  /* The rig fader slots run along rig-Y. Correct the legacy screen-space Y sign
-     so the caps follow the same isometric axis as their slots. */
-  const faders = [...Array(8)].map((_, i) => document.getElementById('fader' + i));
+  /* Rig fader caps follow the same projected Y-axis as their slots. */
+  const faders = [...Array(8)].map((_, i) => $('fader' + i));
   const translate = /translate\(\s*(-?\d+(?:\.\d+)?)px\s*,\s*(-?\d+(?:\.\d+)?)px\s*\)/;
   function correctFaderAxes() {
     for (const el of faders) {
       if (!el) continue;
-      const raw = el.style.transform || '';
-      const match = raw.match(translate);
+      const match = (el.style.transform || '').match(translate);
       if (!match) continue;
       const x = Number(match[1]), y = Number(match[2]);
       if (x < 0 && y < 0) el.style.transform = `translate(${match[1]}px,${Math.abs(y).toFixed(1)}px)`;
@@ -225,12 +242,14 @@
   }
   requestAnimationFrame(correctFaderAxes);
 
-  /* Move rig battery out of the weather block and into the live-status block. */
+  /* Move rig battery out of the weather readout and under 'live from the grid'. */
   const footer = document.querySelector('footer');
-  if (footer && !document.getElementById('ariLiveStack')) {
+  if (footer) {
+    /* Normalize even if a previous hot-reload left an old stack in the DOM. */
+    document.getElementById('ariLiveStack')?.remove();
     const dot = footer.querySelector('.liveDot');
     const label = [...footer.children].find(el => el.tagName === 'SPAN' && !el.classList.contains('liveDot'));
-    const theme = document.getElementById('themebtn');
+    const theme = $('themebtn');
     if (dot && label) {
       const stack = document.createElement('div');
       stack.id = 'ariLiveStack';
@@ -256,8 +275,8 @@
         return 100;
       }
       function updateRigBatteryBar() {
-        const fill = document.getElementById('ariBatteryFill');
-        const meter = document.getElementById('ariBatteryTrack');
+        const fill = $('ariBatteryFill');
+        const meter = $('ariBatteryTrack');
         if (!fill || !meter) return;
         const pct = currentBatteryPct();
         if (pct == null) {
