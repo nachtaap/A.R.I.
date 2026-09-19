@@ -156,13 +156,6 @@
     #themebtn{margin:0!important;transform:none!important;align-self:center!important}
     #ariLiveStack,#ariRigBattery{display:none!important}
 
-    /* In-world backpack battery. */
-    #ariPackBattery{pointer-events:none}
-    #ariPackBattery .ariPackBattShell{fill:rgba(3,4,9,.38);stroke:rgba(255,255,255,.78);stroke-width:1.15;vector-effect:non-scaling-stroke}
-    #ariPackBattery .ariPackBattFill{fill:var(--cyan);stroke:none;filter:drop-shadow(0 0 2px var(--cyan));transition:opacity .25s ease}
-    body.light #ariPackBattery .ariPackBattShell{fill:rgba(255,255,255,.45);stroke:rgba(22,32,42,.62)}
-    body.light #ariPackBattery .ariPackBattFill{filter:none}
-
     @media(max-width:640px){
       header > p:not(.tribute){font-size:12.5px!important;letter-spacing:.16em!important}
       #wxText,header .tribute{font-size:10.5px!important;letter-spacing:.09em!important}
@@ -257,71 +250,5 @@
   }
   requestAnimationFrame(correctFaderAxes);
 
-  /* Vertical battery gauge on the visible side face of A.R.I.'s backpack. */
-  const pack = document.querySelector('#gAri .gPack');
-  let batteryGroup = $('ariPackBattery');
-  if (pack && !batteryGroup && typeof iso === 'function') {
-    batteryGroup = document.createElementNS(SVG_NS, 'g');
-    batteryGroup.id = 'ariPackBattery';
-    batteryGroup.setAttribute('aria-hidden', 'true');
 
-    // Narrow parallelogram on the pack's x=max side. The fill rises from bottom to top.
-    const X = 8.315, Y0 = -3.20, Y1 = -2.92, Z0 = 4.05, Z1 = 6.22;
-    const points = (zBottom, zTop) => [
-      iso(X, Y0, zBottom),
-      iso(X, Y1, zBottom),
-      iso(X, Y1, zTop),
-      iso(X, Y0, zTop),
-    ].map(([x,y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-
-    const shell = document.createElementNS(SVG_NS, 'polygon');
-    shell.setAttribute('class', 'ariPackBattShell');
-    shell.setAttribute('points', points(Z0, Z1));
-
-    const fill = document.createElementNS(SVG_NS, 'polygon');
-    fill.setAttribute('class', 'ariPackBattFill');
-    fill.id = 'ariPackBatteryFill';
-    fill.dataset.x = String(X); fill.dataset.y0 = String(Y0); fill.dataset.y1 = String(Y1);
-    fill.dataset.z0 = String(Z0); fill.dataset.z1 = String(Z1);
-    fill.setAttribute('points', points(Z0, Z1));
-
-    batteryGroup.append(shell, fill);
-    pack.appendChild(batteryGroup);
-  }
-
-  function currentBatteryPct() {
-    try {
-      if (typeof batteryIntermission !== 'undefined' && batteryIntermission) return null;
-      if (typeof track !== 'undefined' && track && typeof tracksUntilBattery !== 'undefined' && typeof batteryTotal !== 'undefined' && typeof bar !== 'undefined') {
-        const remaining = tracksUntilBattery - bar / Math.max(1, track.bars);
-        return Math.max(1, Math.min(100, Math.round((remaining / batteryTotal) * 100)));
-      }
-    } catch (_) {}
-    return 100;
-  }
-
-  function updatePackBattery() {
-    const fill = $('ariPackBatteryFill');
-    if (!fill || typeof iso !== 'function') return;
-    const pct = currentBatteryPct();
-    const X = Number(fill.dataset.x), Y0 = Number(fill.dataset.y0), Y1 = Number(fill.dataset.y1);
-    const Z0 = Number(fill.dataset.z0), Z1 = Number(fill.dataset.z1);
-    const p = pct == null ? .28 : pct / 100;
-    const zTop = Z0 + (Z1 - Z0) * p;
-    const pts = [
-      iso(X, Y0, Z0), iso(X, Y1, Z0), iso(X, Y1, zTop), iso(X, Y0, zTop)
-    ].map(([x,y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-    fill.setAttribute('points', pts);
-    fill.style.opacity = pct == null ? String(.45 + Math.abs(Math.sin(performance.now()/260)) * .55) : '1';
-    const colorPct = pct == null ? 35 : pct;
-    try {
-      fill.style.fill = typeof battColor === 'function'
-        ? battColor(colorPct)
-        : (colorPct < 25 ? '#ff4d5d' : colorPct < 55 ? '#ffad66' : 'var(--cyan)');
-    } catch (_) {
-      fill.style.fill = colorPct < 25 ? '#ff4d5d' : colorPct < 55 ? '#ffad66' : 'var(--cyan)';
-    }
-  }
-  updatePackBattery();
-  setInterval(updatePackBattery, 1000);
 })();
