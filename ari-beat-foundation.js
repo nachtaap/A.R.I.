@@ -104,36 +104,21 @@
   if (typeof track !== 'undefined' && track) prepare();
 })();
 
-/* Final visible-interface normalization — one authoritative public-UI layer. */
+/* Public UI normalization — compact status, in-world battery, no technical clutter. */
 (() => {
   'use strict';
 
   const $ = (id) => document.getElementById(id);
+  const SVG_NS = 'http://www.w3.org/2000/svg';
 
-  /* Track name is display-only. The core page attached a legacy long-press handler
-     earlier in startup. Replacing the node removes those listeners. A capture-phase
-     guard then guarantees that a future/reintroduced handler still cannot fire or
-     leak the click through to the stage/play-pause control. */
-  function makeTrackNamePassive() {
-    const old = $('trackname');
-    if (!old) return null;
-    const fresh = old.cloneNode(true);
-    old.replaceWith(fresh);
+  /* Track name is display-only. Replacing the node removes the legacy long-press
+     listener that index.html attached earlier in startup. */
+  const oldTrackName = $('trackname');
+  if (oldTrackName) {
+    const fresh = oldTrackName.cloneNode(true);
+    oldTrackName.replaceWith(fresh);
     for (const attr of ['tabindex', 'role', 'aria-label', 'aria-expanded']) fresh.removeAttribute(attr);
     fresh.style.cursor = 'default';
-    fresh.style.pointerEvents = 'auto';
-    fresh.style.touchAction = 'manipulation';
-    return fresh;
-  }
-  makeTrackNamePassive();
-
-  /* Visual hierarchy: title first, technical timing/status second, meta third. */
-  const tiText = $('tiText');
-  const trackName = $('trackname');
-  const trackNumTime = $('trackNumTime');
-  const trackMeta = $('trackmeta');
-  if (tiText && trackName && trackNumTime && trackMeta) {
-    tiText.append(trackName, trackNumTime, trackMeta);
   }
 
   const blockTrackNameEvent = (event) => {
@@ -149,55 +134,71 @@
   const style = document.createElement('style');
   style.id = 'ari-public-ui-normalization';
   style.textContent = `
-    /* Top-left hierarchy: identity, weather, then neon street-tag tribute. */
+    /* Identity + weather + tribute: same system font and scale. */
     header > p:not(.tribute){font-size:14px!important;letter-spacing:.22em!important;line-height:1.35!important;margin-top:5px!important}
     #wxText{margin-top:8px!important;font-size:11.5px!important;line-height:1.5!important;letter-spacing:.11em!important}
-    header .tribute{display:inline-block!important;margin-top:8px!important;font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive!important;font-size:13px!important;font-weight:600!important;letter-spacing:.015em!important;line-height:1.15!important;color:#ff5fd2!important;text-transform:none!important;transform:rotate(-2deg);transform-origin:left center;text-shadow:0 0 4px rgba(255,95,210,.65),0 0 10px rgba(255,95,210,.36),0 0 18px rgba(255,95,210,.16);opacity:.96}
     #wxBattery,#wxText br{display:none!important}
+    header .tribute{display:block!important;margin-top:7px!important;font-family:"IBM Plex Mono",monospace!important;font-size:11.5px!important;font-weight:400!important;letter-spacing:.11em!important;line-height:1.5!important;text-transform:none!important;color:#ffe66d!important;text-shadow:0 0 5px rgba(255,230,109,.52),0 0 12px rgba(255,230,109,.22)!important;opacity:.95!important;transform:none!important}
+    body.light header .tribute{color:#8a6a00!important;text-shadow:0 0 5px rgba(255,196,0,.13)!important}
 
-    /* Weather condition remains coloured, never underlined/link-like. */
     .wxCond::before,.wxCond::after{display:none!important}
 
-    /* Track title is informational, not an action. */
-    #trackname{cursor:default!important;pointer-events:auto!important;touch-action:manipulation!important}
+    /* Track block: title + musical identity only. No track no., time or section. */
+    #trackNumTime{display:none!important}
+    #trackname,#trackmeta{font-size:12px!important;line-height:1.65!important;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #trackname{font-weight:600!important;letter-spacing:.18em!important;cursor:default!important;pointer-events:auto!important;color:var(--text)!important}
+    #trackmeta{font-weight:400!important;letter-spacing:.14em!important}
 
-    /* Live status + battery are one readable block. */
-    footer{align-items:flex-start!important;gap:13px!important;font-size:12px!important}
-    #ariLiveStack{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
-    #ariLiveRow{display:flex;align-items:center;gap:9px;white-space:nowrap;height:20px}
-    #ariLiveRow .ariLiveLabel{font-size:12px!important;line-height:1.2;letter-spacing:.20em;color:var(--support)}
-    #themebtn{align-self:flex-start!important;margin-top:0!important;transform:none!important;height:20px!important;width:20px!important}
-    #ariRigBattery{display:flex;align-items:flex-start}
-    #ariBatteryTrack{display:block;width:160px;height:12px;border:1px solid rgba(255,255,255,.72);border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);box-sizing:border-box;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),0 0 0 .5px rgba(0,0,0,.22)}
-    #ariBatteryFill{display:block;width:100%;height:100%;background:var(--cyan);transform-origin:left center;transition:width .45s ease,background-color .45s ease,opacity .25s ease}
-    body.light #ariBatteryTrack{border-color:rgba(22,32,42,.5);background:rgba(22,32,42,.08);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.45)}
-    #ariRigBattery.swapping #ariBatteryFill{width:30%!important;animation:ariBatterySwap .8s ease-in-out infinite alternate}
-    @keyframes ariBatterySwap{from{transform:translateX(0);opacity:.45}to{transform:translateX(230%);opacity:1}}
+    /* Top-right returns to a single clean status row; battery now lives on A.R.I. */
+    footer{align-items:center!important;gap:10px!important;font-size:11px!important}
+    footer .liveDot{flex:0 0 auto}
+    footer > span:not(.liveDot){font-size:11px!important;line-height:18px!important;letter-spacing:.20em!important}
+    #themebtn{margin:0!important;transform:none!important;align-self:center!important}
+    #ariLiveStack,#ariRigBattery{display:none!important}
+
+    /* In-world backpack battery. */
+    #ariPackBattery{pointer-events:none}
+    #ariPackBattery .ariPackBattShell{fill:rgba(3,4,9,.38);stroke:rgba(255,255,255,.78);stroke-width:1.15;vector-effect:non-scaling-stroke}
+    #ariPackBattery .ariPackBattFill{fill:var(--cyan);stroke:none;filter:drop-shadow(0 0 2px var(--cyan));transition:opacity .25s ease}
+    body.light #ariPackBattery .ariPackBattShell{fill:rgba(255,255,255,.45);stroke:rgba(22,32,42,.62)}
+    body.light #ariPackBattery .ariPackBattFill{filter:none}
 
     @media(max-width:640px){
       header > p:not(.tribute){font-size:12.5px!important;letter-spacing:.16em!important}
-      #wxText{font-size:10.5px!important}
-      header .tribute{font-size:12px!important}
-      #ariLiveRow{height:18px}
-      #ariLiveRow .ariLiveLabel{font-size:11px!important}#themebtn{height:18px!important;width:18px!important}
-      #ariBatteryTrack{width:132px;height:10px}
+      #wxText,header .tribute{font-size:10.5px!important;letter-spacing:.09em!important}
+      #trackname,#trackmeta{font-size:11px!important;line-height:1.55!important}
+      footer > span:not(.liveDot){font-size:10.5px!important}
     }
   `;
   document.head.appendChild(style);
 
-  /* Keep the fan-tribute line, remove only the version suffix written by older modules.
-     Weather sits above it; the tribute becomes the small neon street signature. */
+  /* Weather above tribute. Keep tribute wording, remove only legacy version suffix. */
   const tribute = document.querySelector('header .tribute');
-  const weather = document.getElementById('wxText');
+  const weather = $('wxText');
   if (tribute) tribute.textContent = 'inspired by ARIatHOME';
   if (tribute && weather && tribute.parentElement === weather.parentElement) {
     tribute.parentElement.insertBefore(weather, tribute);
   }
 
-  /* Track metadata: compact on narrow screens and progressively warmer/redder as BPM rises. */
+  /* Undo older hot-reload/footer battery DOM if present. */
+  const footer = document.querySelector('footer');
+  const oldStack = $('ariLiveStack');
+  if (footer && oldStack) {
+    const liveRow = oldStack.querySelector('#ariLiveRow');
+    const dot = liveRow?.querySelector('.liveDot');
+    const label = liveRow?.querySelector('.ariLiveLabel');
+    const theme = $('themebtn');
+    if (dot) footer.insertBefore(dot, theme || null);
+    if (label) {
+      label.classList.remove('ariLiveLabel');
+      footer.insertBefore(label, theme || null);
+    }
+    oldStack.remove();
+  }
+
+  /* Track metadata: preserve genre/key/BPM, colour it from cool -> warm as tempo rises. */
   if (typeof updateMeta === 'function') {
     const originalUpdateMeta = updateMeta;
-    const mobile = window.matchMedia('(max-width: 640px)');
     const stops = [
       [70,  [82, 200, 192]],
       [100, [94, 156, 234]],
@@ -223,16 +224,16 @@
       if (typeof track === 'undefined' || !track) return;
       const el = $('trackmeta');
       if (!el) return;
-      if (mobile.matches) {
-        const genre = typeof displayGenre === 'function' ? displayGenre(track.genre) : track.genre;
-        el.textContent = `${genre || 'live'} · ${track.keyName || '—'} · ${track.bpm || '—'} bpm`;
-      }
+      const genre = typeof displayGenre === 'function' ? displayGenre(track.genre) : track.genre;
+      el.textContent = `${genre || 'live'} · ${track.keyName || '—'} · ${track.bpm || '—'} bpm`;
       let [r, g, b] = rgbForBpm(track.bpm);
       if (document.body.classList.contains('light')) {
-        r = Math.round(r * .72); g = Math.round(g * .72); b = Math.round(b * .72);
+        r = Math.round(r * .68); g = Math.round(g * .68); b = Math.round(b * .68);
       }
       el.style.color = `rgb(${r} ${g} ${b})`;
-      el.style.textShadow = `0 0 10px rgb(${r} ${g} ${b} / .18)`;
+      el.style.textShadow = document.body.classList.contains('light')
+        ? 'none'
+        : `0 0 10px rgb(${r} ${g} ${b} / .18)`;
     };
     updateMeta = function(sec) {
       originalUpdateMeta(sec);
@@ -256,64 +257,71 @@
   }
   requestAnimationFrame(correctFaderAxes);
 
-  /* Move rig battery out of the weather readout and under 'live from the grid'. */
-  const footer = document.querySelector('footer');
-  if (footer) {
-    /* Normalize even if a previous hot-reload left an old stack in the DOM. */
-    document.getElementById('ariLiveStack')?.remove();
-    const dot = footer.querySelector('.liveDot');
-    const label = [...footer.children].find(el => el.tagName === 'SPAN' && !el.classList.contains('liveDot'));
-    const theme = $('themebtn');
-    if (dot && label) {
-      const stack = document.createElement('div');
-      stack.id = 'ariLiveStack';
-      const liveRow = document.createElement('div');
-      liveRow.id = 'ariLiveRow';
-      label.classList.add('ariLiveLabel');
-      liveRow.append(dot, label);
+  /* Vertical battery gauge on the visible side face of A.R.I.'s backpack. */
+  const pack = document.querySelector('#gAri .gPack');
+  let batteryGroup = $('ariPackBattery');
+  if (pack && !batteryGroup && typeof iso === 'function') {
+    batteryGroup = document.createElementNS(SVG_NS, 'g');
+    batteryGroup.id = 'ariPackBattery';
+    batteryGroup.setAttribute('aria-hidden', 'true');
 
-      const battery = document.createElement('div');
-      battery.id = 'ariRigBattery';
-      battery.innerHTML = '<span id="ariBatteryTrack" role="meter" aria-label="rig battery" aria-valuemin="0" aria-valuemax="100"><i id="ariBatteryFill"></i></span>';
-      stack.append(liveRow, battery);
-      footer.insertBefore(stack, theme || null);
+    // Narrow parallelogram on the pack's x=max side. The fill rises from bottom to top.
+    const X = 8.315, Y0 = -3.20, Y1 = -2.92, Z0 = 4.05, Z1 = 6.22;
+    const points = (zBottom, zTop) => [
+      iso(X, Y0, zBottom),
+      iso(X, Y1, zBottom),
+      iso(X, Y1, zTop),
+      iso(X, Y0, zTop),
+    ].map(([x,y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
 
-      function currentBatteryPct() {
-        try {
-          if (typeof batteryIntermission !== 'undefined' && batteryIntermission) return null;
-          if (typeof track !== 'undefined' && track && typeof tracksUntilBattery !== 'undefined' && typeof batteryTotal !== 'undefined' && typeof bar !== 'undefined') {
-            const remaining = tracksUntilBattery - bar / Math.max(1, track.bars);
-            return Math.max(1, Math.min(100, Math.round((remaining / batteryTotal) * 100)));
-          }
-        } catch (_) {}
-        return 100;
+    const shell = document.createElementNS(SVG_NS, 'polygon');
+    shell.setAttribute('class', 'ariPackBattShell');
+    shell.setAttribute('points', points(Z0, Z1));
+
+    const fill = document.createElementNS(SVG_NS, 'polygon');
+    fill.setAttribute('class', 'ariPackBattFill');
+    fill.id = 'ariPackBatteryFill';
+    fill.dataset.x = String(X); fill.dataset.y0 = String(Y0); fill.dataset.y1 = String(Y1);
+    fill.dataset.z0 = String(Z0); fill.dataset.z1 = String(Z1);
+    fill.setAttribute('points', points(Z0, Z1));
+
+    batteryGroup.append(shell, fill);
+    pack.appendChild(batteryGroup);
+  }
+
+  function currentBatteryPct() {
+    try {
+      if (typeof batteryIntermission !== 'undefined' && batteryIntermission) return null;
+      if (typeof track !== 'undefined' && track && typeof tracksUntilBattery !== 'undefined' && typeof batteryTotal !== 'undefined' && typeof bar !== 'undefined') {
+        const remaining = tracksUntilBattery - bar / Math.max(1, track.bars);
+        return Math.max(1, Math.min(100, Math.round((remaining / batteryTotal) * 100)));
       }
-      function updateRigBatteryBar() {
-        const fill = $('ariBatteryFill');
-        const meter = $('ariBatteryTrack');
-        if (!fill || !meter) return;
-        const pct = currentBatteryPct();
-        if (pct == null) {
-          battery.classList.add('swapping');
-          fill.style.backgroundColor = 'var(--magenta)';
-          meter.removeAttribute('aria-valuenow');
-          meter.setAttribute('aria-valuetext', 'swapping now');
-          return;
-        }
-        battery.classList.remove('swapping');
-        meter.setAttribute('aria-valuenow', String(pct));
-        meter.removeAttribute('aria-valuetext');
-        fill.style.width = `${pct}%`;
-        try {
-          fill.style.backgroundColor = typeof battColor === 'function'
-            ? battColor(pct)
-            : (pct < 25 ? '#ff4d5d' : pct < 55 ? '#ffad66' : 'var(--cyan)');
-        } catch (_) {
-          fill.style.backgroundColor = pct < 25 ? '#ff4d5d' : pct < 55 ? '#ffad66' : 'var(--cyan)';
-        }
-      }
-      updateRigBatteryBar();
-      setInterval(updateRigBatteryBar, 1000);
+    } catch (_) {}
+    return 100;
+  }
+
+  function updatePackBattery() {
+    const fill = $('ariPackBatteryFill');
+    if (!fill || typeof iso !== 'function') return;
+    const pct = currentBatteryPct();
+    const X = Number(fill.dataset.x), Y0 = Number(fill.dataset.y0), Y1 = Number(fill.dataset.y1);
+    const Z0 = Number(fill.dataset.z0), Z1 = Number(fill.dataset.z1);
+    const p = pct == null ? .28 : pct / 100;
+    const zTop = Z0 + (Z1 - Z0) * p;
+    const pts = [
+      iso(X, Y0, Z0), iso(X, Y1, Z0), iso(X, Y1, zTop), iso(X, Y0, zTop)
+    ].map(([x,y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+    fill.setAttribute('points', pts);
+    fill.style.opacity = pct == null ? String(.45 + Math.abs(Math.sin(performance.now()/260)) * .55) : '1';
+    const colorPct = pct == null ? 35 : pct;
+    try {
+      fill.style.fill = typeof battColor === 'function'
+        ? battColor(colorPct)
+        : (colorPct < 25 ? '#ff4d5d' : colorPct < 55 ? '#ffad66' : 'var(--cyan)');
+    } catch (_) {
+      fill.style.fill = colorPct < 25 ? '#ff4d5d' : colorPct < 55 ? '#ffad66' : 'var(--cyan)';
     }
   }
+  updatePackBattery();
+  setInterval(updatePackBattery, 1000);
 })();

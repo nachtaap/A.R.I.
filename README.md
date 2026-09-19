@@ -166,6 +166,13 @@ The visible interface keeps the hierarchy deliberately sparse: A.R.I. and the ex
 
 Track titles lead the lower-left metadata stack, followed by track/time/section and tempo-coloured genre/key/BPM metadata. The right-side live status uses a compact outlined battery meter without a percentage label.
 
+### Current interface polish
+
+- The top-left identity block keeps weather and the ARIatHOME tribute in the same IBM Plex Mono system. The tribute uses a restrained neon-yellow accent, with a darker high-contrast yellow in light mode.
+- The rig battery no longer occupies fixed screen space. A vertical battery gauge is embedded into the side face of A.R.I.'s backpack and changes colour as charge falls.
+- The public track block is reduced to two equal-size lines: track title, then genre/key/BPM.
+- The track title is not interactive; the hidden operator inspector remains available through operator shortcuts.
+
 ## Running it
 
 There is no build step.
