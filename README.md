@@ -135,13 +135,15 @@ The metadata colour follows tempo: slower tracks stay cooler/cyan, while higher 
 
 ### Hidden operator view
 
-The technical operator view is not part of the public interface. **Shift+D** toggles the original wide **A.R.I. / live signal** overlay: a centered neon landscape panel with the signal grid, street radar, track character and a compact event-test row. The `×` button or Escape closes it.
+The technical operator view is not part of the public interface. **Shift+D** toggles the original wide **A.R.I. / live signal** overlay: a centered neon landscape panel with the signal grid, street radar, track character and a compact event-test row.
+
+The console also opens before playback. In that idle state it explicitly reports **no active track**, shows the available session/runtime state, and disables track-dependent event tests until A.R.I. has been started. The `×` button or Escape closes it.
 
 The older tall scrollable developer inspector is suppressed. `?dev=1` opens the same Live Signal overlay.
 
 The event-test controls call A.R.I.'s existing runtime events directly: new track, new location, A.R.I. mic, reverse camera and battery swap.
 
-Live Signal uses a more generous readable scale than the public status text: regular operator text is 13 px, secondary labels are 12 px, and headings/titles scale upward.
+Live Signal uses a deliberately large desktop-console scale: regular text is 15 px, secondary labels are 13 px, event controls are 14 px, and headings/titles scale upward.
 
 ## Street memory
 

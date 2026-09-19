@@ -262,17 +262,33 @@
   const css=document.createElement('style');
   css.textContent=`
   #ariSignalOverlay{position:fixed;inset:0;z-index:80;display:none;place-items:center;padding:24px;background:rgba(5,8,15,.74);backdrop-filter:blur(10px);font-family:"IBM Plex Mono",monospace;color:#dffcff}
-  #ariSignalOverlay.open{display:grid} .ariSigPanel{width:min(900px,94vw);max-height:none;overflow:hidden;background:linear-gradient(180deg,rgba(10,16,28,.97),rgba(5,9,18,.97));border:1px solid rgba(82,200,192,.42);box-shadow:0 0 0 1px rgba(255,95,210,.08),0 0 42px rgba(82,200,192,.14);padding:18px}
-  .ariSigTop{display:flex;align-items:flex-start;gap:18px}.ariSigTitle{flex:1}.ariSigKicker{font-size:12px;letter-spacing:.28em;color:#52c8c0;text-transform:uppercase}.ariSigName{font-family:"Space Grotesk",sans-serif;font-size:clamp(22px,4vw,36px);letter-spacing:.03em;margin-top:4px}.ariSigMeta{font-size:13px;letter-spacing:.12em;color:#8995a8;text-transform:uppercase;margin-top:5px}
+  #ariSignalOverlay.open{display:grid} .ariSigPanel{width:min(980px,94vw);max-height:none;overflow:hidden;background:linear-gradient(180deg,rgba(10,16,28,.97),rgba(5,9,18,.97));border:1px solid rgba(82,200,192,.42);box-shadow:0 0 0 1px rgba(255,95,210,.08),0 0 42px rgba(82,200,192,.14);padding:22px}
+  .ariSigTop{display:flex;align-items:flex-start;gap:18px}.ariSigTitle{flex:1}.ariSigKicker{font-size:13px;letter-spacing:.28em;color:#52c8c0;text-transform:uppercase}.ariSigName{font-family:"Space Grotesk",sans-serif;font-size:clamp(22px,4vw,36px);letter-spacing:.03em;margin-top:4px}.ariSigMeta{font-size:15px;letter-spacing:.12em;color:#8995a8;text-transform:uppercase;margin-top:5px}
   .ariSigClose{appearance:none;border:1px solid rgba(255,95,210,.45);background:transparent;color:#ff5fd2;width:34px;height:34px;cursor:pointer;font:18px/1 monospace}.ariSigClose:hover{box-shadow:0 0 14px rgba(255,95,210,.28)}
-  .ariSigBlock{margin-top:14px;border-top:1px solid rgba(82,200,192,.18);padding-top:13px}.ariSigHead{display:flex;justify-content:space-between;gap:12px;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#a795e0;margin-bottom:10px}.ariSigDim{color:#687589;letter-spacing:.08em}
-  .ariBars{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}.ariBar{min-height:76px;border:1px solid rgba(82,200,192,.14);padding:7px 5px;position:relative;background:rgba(82,200,192,.018)}.ariBar.now{border-color:rgba(255,95,210,.62);box-shadow:inset 0 0 18px rgba(255,95,210,.07)}.ariBarN{font-size:12px;color:#667385;margin-bottom:7px}.ariLayer{height:3px;margin:4px 0;background:#1d2734}.ariLayer.on.c{background:#52c8c0;box-shadow:0 0 6px rgba(82,200,192,.55)}.ariLayer.on.p{background:#a795e0;box-shadow:0 0 6px rgba(167,149,224,.45)}.ariLayer.on.m{background:#ff5fd2;box-shadow:0 0 6px rgba(255,95,210,.5)}.ariLayer.on.o{background:#ffad66;box-shadow:0 0 6px rgba(255,173,102,.42)}
+  .ariSigBlock{margin-top:16px;border-top:1px solid rgba(82,200,192,.18);padding-top:15px}.ariSigHead{display:flex;justify-content:space-between;gap:12px;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#a795e0;margin-bottom:10px}.ariSigDim{color:#687589;letter-spacing:.08em}
+  .ariBars{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}.ariBar{min-height:76px;border:1px solid rgba(82,200,192,.14);padding:7px 5px;position:relative;background:rgba(82,200,192,.018)}.ariBar.now{border-color:rgba(255,95,210,.62);box-shadow:inset 0 0 18px rgba(255,95,210,.07)}.ariBarN{font-size:13px;color:#667385;margin-bottom:7px}.ariLayer{height:3px;margin:4px 0;background:#1d2734}.ariLayer.on.c{background:#52c8c0;box-shadow:0 0 6px rgba(82,200,192,.55)}.ariLayer.on.p{background:#a795e0;box-shadow:0 0 6px rgba(167,149,224,.45)}.ariLayer.on.m{background:#ff5fd2;box-shadow:0 0 6px rgba(255,95,210,.5)}.ariLayer.on.o{background:#ffad66;box-shadow:0 0 6px rgba(255,173,102,.42)}
   .ariRadarWrap{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center}.ariRadar{width:142px;height:142px;border:1px solid rgba(82,200,192,.34);border-radius:50%;position:relative;background:radial-gradient(circle,transparent 0 24%,rgba(82,200,192,.07) 25% 26%,transparent 27% 49%,rgba(82,200,192,.06) 50% 51%,transparent 52%),linear-gradient(90deg,transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%),linear-gradient(transparent 49.5%,rgba(82,200,192,.12) 50%,transparent 50.5%)}.ariRadar:after{content:"";position:absolute;inset:9%;border-radius:50%;background:conic-gradient(from 18deg,rgba(82,200,192,.18),transparent 22%,transparent);animation:ariSweep 7s linear infinite}@keyframes ariSweep{to{transform:rotate(360deg)}}
-  .ariDot{position:absolute;width:5px;height:5px;border-radius:50%;background:#ff5fd2;box-shadow:0 0 8px #ff5fd2;z-index:2}.ariListeners{display:grid;grid-template-columns:1fr 1fr;gap:7px 13px;font-size:13px;color:#9aa6b8}.ariListeners b{color:#dffcff;font-weight:500}.ariPulse{color:#52c8c0}
-  .ariDna{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ariCard{border:1px solid rgba(167,149,224,.16);padding:9px;min-height:72px}.ariCard span{display:block;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#6f7b8d}.ariCard b{display:block;margin-top:7px;font-size:13px;font-weight:500;color:#e7f8fb;line-height:1.45}.ariCard em{display:block;margin-top:4px;font-size:12px;font-style:normal;color:#8995a8;line-height:1.45}
+  .ariDot{position:absolute;width:5px;height:5px;border-radius:50%;background:#ff5fd2;box-shadow:0 0 8px #ff5fd2;z-index:2}.ariListeners{display:grid;grid-template-columns:1fr 1fr;gap:7px 13px;font-size:15px;color:#9aa6b8}.ariListeners b{color:#dffcff;font-weight:500}.ariPulse{color:#52c8c0}
+  .ariDna{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ariCard{border:1px solid rgba(167,149,224,.16);padding:9px;min-height:72px}.ariCard span{display:block;font-size:13px;letter-spacing:.15em;text-transform:uppercase;color:#6f7b8d}.ariCard b{display:block;margin-top:7px;font-size:15px;font-weight:500;color:#e7f8fb;line-height:1.45}.ariCard em{display:block;margin-top:4px;font-size:13px;font-style:normal;color:#8995a8;line-height:1.45}
   #trackname{cursor:default;pointer-events:auto}@media(max-width:620px){.ariSigPanel{padding:14px}.ariBars{grid-template-columns:repeat(4,1fr)}.ariRadarWrap{grid-template-columns:1fr}.ariRadar{margin:auto}.ariDna{grid-template-columns:1fr}.ariListeners{grid-template-columns:1fr 1fr}}@media(prefers-reduced-motion:reduce){.ariRadar:after{animation:none}}
 
-  .ariEventRow{display:flex;flex-wrap:wrap;gap:7px}.ariEventBtn{appearance:none;border:1px solid rgba(82,200,192,.28);background:rgba(82,200,192,.025);color:#9fded9;padding:7px 10px;font:500 12px/1.3 "IBM Plex Mono",monospace;letter-spacing:.10em;text-transform:uppercase;cursor:pointer}
+  .ariInfoGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .ariInfoCell{border:1px solid rgba(82,200,192,.14);padding:9px 10px;min-width:0}
+  .ariInfoCell span{display:block;color:#6f8290;font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+  .ariInfoCell b{display:block;color:#d9eeee;font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ariIdle{border:1px solid rgba(255,95,210,.22);padding:18px 20px;background:rgba(255,95,210,.025)}
+  .ariIdle strong{display:block;color:#ff5fd2;font-size:17px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px}
+  .ariIdle p{margin:0;color:#9fb0b8;font-size:15px;line-height:1.6}
+  .ariEventBtn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none!important}
+  .ariEventNote{font-size:13px;color:#6f8290;align-self:center}
+  body.light .ariInfoCell{border-color:rgba(10,122,114,.15)}
+  body.light .ariInfoCell span,body.light .ariEventNote{color:#697780}
+  body.light .ariInfoCell b{color:#16202a}
+  body.light .ariIdle{border-color:rgba(161,38,125,.18);background:rgba(161,38,125,.025)}
+  body.light .ariIdle strong{color:#a1267d}
+  body.light .ariIdle p{color:#5f6b75}
+  @media(max-width:760px){.ariInfoGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .ariEventRow{display:flex;flex-wrap:wrap;gap:7px}.ariEventBtn{appearance:none;border:1px solid rgba(82,200,192,.28);background:rgba(82,200,192,.025);color:#9fded9;padding:7px 10px;font:500 14px/1.35 "IBM Plex Mono",monospace;letter-spacing:.10em;text-transform:uppercase;cursor:pointer}
   .ariEventBtn:hover{border-color:rgba(255,95,210,.5);color:#ff5fd2;box-shadow:0 0 12px rgba(255,95,210,.10)}
   body.light .ariEventBtn{color:#0a7a72;border-color:rgba(10,122,114,.25);background:rgba(10,122,114,.025)}body.light .ariEventBtn:hover{color:#a1267d;border-color:rgba(161,38,125,.35)}
   body.light #ariSignalOverlay{background:rgba(235,241,245,.72);color:#16202a}body.light .ariSigPanel{background:rgba(247,250,252,.98);border-color:rgba(11,156,147,.34);box-shadow:0 8px 40px rgba(25,40,55,.16)}body.light .ariSigName,body.light .ariListeners b,body.light .ariCard b{color:#16202a}
@@ -292,15 +308,56 @@
     const seed=String(t?.seed||t?.trackId||t?.genre||'ari'); const names=['nightbus_04','mara.exe','lowbattery','gridwalker','tapeghost','sublevel9','windowseat','oxidekid'];
     return names.slice(0,6).map((name,i)=>{const n=hash(seed+':listener:'+i);return{name,react:['locked in','rewound it','headphones on','still listening','caught the switch','saved the moment'][n%6],x:10+(n%80),y:10+((n>>>8)%80)};});
   }
+  function runtimeInfo(t){
+    const audioState=(typeof ctx!=='undefined'&&ctx)?ctx.state:'not started';
+    const section=(t&&typeof sectionAt==='function'&&typeof bar==='number')?sectionAt(bar):'—';
+    const loc=(typeof curLoc!=='undefined'&&curLoc)?curLoc:'NYC street grid';
+    const state=t?(typeof playing!=='undefined'&&playing?'live':'paused'):'idle';
+    const engine=window.ARIBeatFoundation?.version||window.ARIMusicEvolution?.version||'runtime';
+    return {audioState,section,loc,state,engine};
+  }
   function render(){
-    const t=curTrack();if(!t)return;
+    const t=curTrack();
+    const info=runtimeInfo(t);
+
+    if(!t){
+      $('ariSigBody').innerHTML=`<div class="ariSigTop"><div class="ariSigTitle"><div class="ariSigKicker">A.R.I. / live signal</div><div class="ariSigName">waiting for signal</div><div class="ariSigMeta">operator console · idle</div></div><button class="ariSigClose" aria-label="close">×</button></div>
+      <div class="ariIdle"><strong>no active track</strong><p>Start A.R.I. on the main screen to populate the live music diagnostics. Shift+D is working; there is simply no generated track to inspect yet.</p></div>
+      <div class="ariSigBlock"><div class="ariSigHead"><span>session / runtime</span><span class="ariSigDim">available before playback</span></div><div class="ariInfoGrid">
+        <div class="ariInfoCell"><span>state</span><b>${esc(info.state)}</b></div>
+        <div class="ariInfoCell"><span>audio</span><b>${esc(info.audioState)}</b></div>
+        <div class="ariInfoCell"><span>location</span><b>${esc(info.loc)}</b></div>
+        <div class="ariInfoCell"><span>engine</span><b>${esc(info.engine)}</b></div>
+      </div></div>
+      <div class="ariSigBlock"><div class="ariSigHead"><span>event test</span><span class="ariSigDim">requires an active session</span></div><div class="ariEventRow">
+        <button class="ariEventBtn" disabled>new track</button><button class="ariEventBtn" disabled>new location</button><button class="ariEventBtn" disabled>A.R.I. mic</button><button class="ariEventBtn" disabled>reverse camera</button><button class="ariEventBtn" disabled>battery swap</button>
+        <span class="ariEventNote">start A.R.I. first</span>
+      </div></div>`;
+      $('ariSigBody').querySelector('.ariSigClose')?.addEventListener('click',close);
+      return;
+    }
+
     const p=window.ARICreatures?.status, sig=window.ARIMusicEvolution?.signature; const listeners=listenerData(t);
     const effects=p?.effects; const current=((typeof bar==='number'?bar:0)%8+8)%8;
     let bars='';for(let i=0;i<8;i++){const sec=sectionFor(i-current);const intro=sec==='intro',br=sec==='break',out=sec==='outro';const effect=effects?.bars?.some(b=>((b%8)+8)%8===i);
       bars+=`<div class="ariBar ${i===current?'now':''}"><div class="ariBarN">${String(i+1).padStart(2,'0')}</div><div class="ariLayer c ${!out?'on':''}" title="drums"></div><div class="ariLayer p ${(!intro&&!out)?'on':''}" title="bass"></div><div class="ariLayer m ${(!intro&&!out&&[2,6].includes(i))?'on':''}" title="lead"></div><div class="ariLayer o ${effect?'on':''}" title="accent"></div></div>`;}
     const listenerHtml=listeners.map(x=>`<div><b>${esc(x.name)}</b><br><span class="ariPulse">●</span> ${esc(x.react)}</div>`).join('');
     const dots=listeners.map(x=>`<i class="ariDot" style="left:${x.x}%;top:${x.y}%"></i>`).join('');
-    $('ariSigBody').innerHTML=`<div class="ariSigTop"><div class="ariSigTitle"><div class="ariSigKicker">A.R.I. / live signal</div><div class="ariSigName">${esc(t.name||t.title||$('trackname')?.textContent||'untitled')}</div><div class="ariSigMeta">${esc(t.genre)} · ${esc(t.bpm)} bpm · ${esc(t.scaleName||'live scale')}</div></div><button class="ariSigClose" aria-label="close">×</button></div>
+    const keyText=t.scaleName||t.keyName||((typeof KEYS!=='undefined'&&typeof t.root==='number')?KEYS[t.root]:'live scale');
+    const seedText=String(t.seed||t.trackId||'—');
+    const barText=(typeof bar==='number')?`${bar+1}`:'—';
+
+    $('ariSigBody').innerHTML=`<div class="ariSigTop"><div class="ariSigTitle"><div class="ariSigKicker">A.R.I. / live signal</div><div class="ariSigName">${esc(t.name||t.title||$('trackname')?.textContent||'untitled')}</div><div class="ariSigMeta">${esc(t.genre)} · ${esc(t.bpm)} bpm · ${esc(keyText)}</div></div><button class="ariSigClose" aria-label="close">×</button></div>
+    <div class="ariSigBlock"><div class="ariSigHead"><span>session / runtime</span><span class="ariSigDim">live context</span></div><div class="ariInfoGrid">
+      <div class="ariInfoCell"><span>state</span><b>${esc(info.state)} · bar ${esc(barText)}</b></div>
+      <div class="ariInfoCell"><span>section</span><b>${esc(info.section)}</b></div>
+      <div class="ariInfoCell"><span>location</span><b>${esc(info.loc)}</b></div>
+      <div class="ariInfoCell"><span>audio</span><b>${esc(info.audioState)}</b></div>
+      <div class="ariInfoCell"><span>seed / id</span><b>${esc(seedText)}</b></div>
+      <div class="ariInfoCell"><span>engine</span><b>${esc(info.engine)}</b></div>
+      <div class="ariInfoCell"><span>effects</span><b>${effects?.enabled?`${effects.used||0}/${effects.max||0} accents`:'sleeping'}</b></div>
+      <div class="ariInfoCell"><span>street motif</span><b>${Array.isArray(t.streetMotif)?`${t.streetMotif.length} notes`:'listening'}</b></div>
+    </div></div>
     <div class="ariSigBlock"><div class="ariSigHead"><span>signal grid / next eight bars</span><span class="ariSigDim">drums · bass · lead · accent</span></div><div class="ariBars">${bars}</div></div>
     <div class="ariSigBlock"><div class="ariSigHead"><span>street radar</span><span class="ariSigDim">fictional live listeners</span></div><div class="ariRadarWrap"><div class="ariRadar">${dots}</div><div class="ariListeners">${listenerHtml}</div></div></div>
     <div class="ariSigBlock"><div class="ariSigHead"><span>track character</span><span class="ariSigDim">what is shaping this take</span></div><div class="ariDna"><div class="ariCard"><span>character</span><b>${esc(p?.character?.type||'clean signal')}</b><em>${effects?.enabled?`${effects.used||0}/${effects.max||0} accents used`:'effect stem sleeping'}</em></div><div class="ariCard"><span>instruments</span><b>${esc(instrumentText(t))}</b><em>bass voice: ${esc(t.foundationBassVoice||window.ARIBeatFoundation?.voice||'round')}</em></div><div class="ariCard"><span>interaction</span><b>${esc(sig?.contour||t.signatureMotif?.contour||'evolving')} motif</b><em>${Array.isArray(t.streetMotif)&&t.streetMotif.length?`${t.streetMotif.length} street notes remembered`:'listening for a street phrase'}</em></div></div></div>
@@ -317,10 +374,11 @@
         }
         else if(action==='reverse'&&typeof doReverse==='function')doReverse();
         else if(action==='battery'&&typeof runBatterySwap==='function')runBatterySwap();
+        setTimeout(()=>{if(open)render();},80);
       }catch(err){console.warn('[A.R.I. live signal test]',action,err);}
     }));
   }
-  function show(){if(!curTrack())return;render();open=true;root.classList.add('open');root.setAttribute('aria-hidden','false');root.querySelector('.ariSigClose')?.focus();}
+  function show(){render();open=true;root.classList.add('open');root.setAttribute('aria-hidden','false');root.querySelector('.ariSigClose')?.focus();}
   function close(){open=false;root.classList.remove('open');root.setAttribute('aria-hidden','true');$('trackname')?.focus?.();}
   // Operator-only access. The legacy index.html inspector is suppressed.
   const legacy=document.getElementById('devPanel');
