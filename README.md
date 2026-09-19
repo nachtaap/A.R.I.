@@ -141,6 +141,8 @@ The older tall scrollable developer inspector is suppressed. `?dev=1` opens the 
 
 The event-test controls call A.R.I.'s existing runtime events directly: new track, new location, A.R.I. mic, reverse camera and battery swap.
 
+All regular Live Signal text uses at least the same 11 px IBM Plex Mono base size as **live from the grid**; only headings/titles scale upward.
+
 ## Street memory
 
 The `ari-discoveries.js` extension adds interactive rig behaviour and short-term musical memory. Keys make scale-compatible notes, pads add live percussion and the record produces a synthesized scratch. These gestures do not pause the performance. A short phrase can be answered by A.R.I. at a later bar boundary, leaving room for guests and endings.
