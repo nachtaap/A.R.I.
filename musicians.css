@@ -464,3 +464,8 @@ footer span{text-align:right}
   .save-row,.export-row,footer{align-items:stretch;flex-direction:column}
   footer span{text-align:left}
 }
+
+
+/* v205 — dev-only workbench: no marketing intro/footer */
+main{padding-top:26px}
+.workspace{margin-top:0}
