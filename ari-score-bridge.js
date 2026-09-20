@@ -89,6 +89,7 @@
   }
 
   function attachScore(t){
+    if(t?.scoreMode==='musicians' && t.score) return true;
     if(!t || !root.ARIComposer || !root.ARIMusicians || !root.ARIScoreSynth) return false;
     const artist=artistFor(t);
     if(!artist) return false;
