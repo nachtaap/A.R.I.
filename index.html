@@ -554,14 +554,24 @@
         color: var(--magenta);
       }
       header .tribute {
-        margin-top: 10px;
-        font-size: 13px;
-        letter-spacing: 0.12em;
-        color: var(--support);
-        text-transform: none;
-        max-width: min(40vw, 560px);
-        line-height: 1.6;
-      }
+  display: block;
+  margin-top: 7px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: 0.11em;
+  line-height: 1.5;
+  color: #ffe66d;
+  text-shadow:
+    0 0 5px rgba(255, 230, 109, 0.52),
+    0 0 12px rgba(255, 230, 109, 0.22);
+  text-transform: none;
+  opacity: 0.95;
+}
+body.light header .tribute {
+  color: #8a6a00;
+  text-shadow: 0 0 5px rgba(255, 196, 0, 0.13);
+}
       #hint {
         position: fixed;
         left: 30px;
@@ -1268,12 +1278,11 @@
           >A.R.I.</a
         >
       </h1>
-      <p>AUDIOLOGICAL&nbsp;ROAMING&nbsp;INTELLIGENCE</p>
-      <p class="tribute">inspired by ARIatHOME · version 99</p>
-      <div id="wxText" aria-hidden="true">
-        <span id="wxClock"></span><span id="wxWeather"></span><br />
-        <span id="wxBattery"></span>
-      </div>
+<p>AUDIOLOGICAL&nbsp;ROAMING&nbsp;INTELLIGENCE</p>
+<div id="wxText" aria-hidden="true">
+  <span id="wxClock"></span><span id="wxWeather"></span>
+</div>
+<p class="tribute">inspired by ARIatHOME</p>
     </header>
 
     <footer>
@@ -11103,26 +11112,11 @@
         scheduleWxSignal();
       }
       function renderWxLine() {
-        const el = document.getElementById("wxText");
-        const clockEl = document.getElementById("wxClock");
-        const batteryEl = document.getElementById("wxBattery");
-        let battHTML;
-        if (batteryIntermission) {
-          battHTML = "rig battery: swapping now";
-        } else if (track) {
-          const remaining = tracksUntilBattery - bar / Math.max(1, track.bars);
-          const pct = Math.max(
-            1,
-            Math.min(100, Math.round((remaining / batteryTotal) * 100)),
-          );
-          battHTML = `rig battery: <span style="color:${battColor(pct)}">${pct}%</span>`;
-        } else {
-          battHTML = `rig battery: <span style="color:${battColor(100)}">100%</span>`;
-        }
-        clockEl.textContent = `nyc ${nycTime()}`;
-        batteryEl.innerHTML = battHTML;
-        el.classList.add("show");
-      }
+  const el = document.getElementById("wxText");
+  const clockEl = document.getElementById("wxClock");
+  clockEl.textContent = `nyc ${nycTime()}`;
+  el.classList.add("show");
+}
       async function loadWeather() {
         try {
           const res = await fetch(
