@@ -21,16 +21,7 @@
     const stage = document.getElementById('stage');
     if (stage) stage.style.setProperty('cursor', 'default', 'important');
 
-    // Freeze the legacy inspector before its old CSS can animate into the new
-    // drawer position. The drawer code releases these inline guards only after
-    // its final CSS is installed.
-    const bootPanel = document.getElementById('devPanel');
-    if (bootPanel) {
-      bootPanel.style.setProperty('transition', 'none', 'important');
-      bootPanel.style.setProperty('visibility', 'hidden', 'important');
-      bootPanel.style.setProperty('opacity', '0', 'important');
-      bootPanel.style.setProperty('transform', 'translate3d(102%,0,0)', 'important');
-    }
+
 
     const style = document.createElement('style');
     style.id = 'ariPointerAffordance';
