@@ -85,8 +85,6 @@ The melody architecture remains available for later deliberate use, but it is no
 
 `musicians.html` is an internal development and feedback tool rather than part of the public-facing experience.
 
-It is opened from the hidden operator view through the **♪ button**.
-
 The Musician Lab contains one fictional musician per genre family. Each musician is a reproducible musical profile rather than a cosmetic character.
 
 Current families include:
@@ -301,7 +299,6 @@ The operator view can trigger existing runtime events directly:
 - battery swap;
 - **export → ableton**.
 
-Immediately to the right of the Ableton export is a compact **♪** button that opens the Musician Lab.
 
 The Musician Lab is a development surface; it is not intended as part of the public experience.
 
@@ -365,7 +362,7 @@ The current architecture is layered:
 - `musicians.html` — internal Musician Lab;
 - `musicians.css` — Musician Lab styling;
 - `musicians-workbench.js` — Musician Lab controls, A/B rendering and feedback export;
-- `ari-musicians-link.js` — ♪ shortcut from Live Signal to the Musician Lab;
+- `ari-musicians-link.js` — private operator access to the Musician Lab;
 - `ari-discoveries.js` — interactive rig and short-term musical memory;
 - `ari-creature-synth.js` — generated character/creature synthesis;
 - `ari-sound-worlds.js` — additional sound-world and character material;

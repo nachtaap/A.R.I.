@@ -16,9 +16,9 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="./index.html">A.R.I.<span> / STUDIO</span></a>
-  <span class="edition">MUSICIAN LAB · DEV</span>
-  <a href="./index.html">A.R.I. ↗</a>
+  <span class="brand">A.R.I.<span> / MUSICIAN LAB</span></span>
+  <span class="edition">DEV</span>
+  <button id="close-lab" class="lab-close" type="button" aria-label="Close Musician Lab" title="Close">×</button>
 </header>
 
 <main>
@@ -110,5 +110,24 @@
 <script src="./ari-score-synth.js"></script>
 <script src="./ari-musicians.js"></script>
 <script src="./musicians-workbench.js"></script>
+
+<script>
+(function(){
+  const close=document.getElementById('close-lab');
+  function leaveLab(){
+    if(history.length>1){
+      history.back();
+      setTimeout(()=>{ if(location.pathname.endsWith('musicians.html')) location.href='./index.html'; },250);
+    }else{
+      location.href='./index.html';
+    }
+  }
+  close?.addEventListener('click',leaveLab);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && !e.target.closest('input,textarea,select,[contenteditable="true"]')) leaveLab();
+  });
+})();
+</script>
+
 </body>
 </html>
