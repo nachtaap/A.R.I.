@@ -1127,9 +1127,6 @@
     }
   });
 
-  const tribute=document.querySelector('header .tribute');
-  if(tribute)tribute.textContent='inspired by ARIatHOME · version 108';
-
   console.info(`[A.R.I.] Street Improv Engine v108 loaded · ${new Set(CANONICAL).size} canonical styles · ${REQUEST_CATALOG.length}+ request identities`);
 })();
 
