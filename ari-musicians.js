@@ -50,42 +50,15 @@ function save(artist,values){try{const all=stored();all[artist.id]=sanitize(arti
 function profile(artist,values){return {id:artist.id,name:artist.name,version:artist.version,engine:ENGINE,identity:{...artist.identity,swing:sanitize(artist,values).swing},settings:sanitize(artist,values)};}
 function compose(artist,values,seed){const p=profile(artist,values);return root.ARIComposer.compose({seed:String(seed),family:artist.family,genre:artist.label,bpm:p.settings.bpm,profile:p});}
 function requested(){try{return registry.find(a=>a.id===new URLSearchParams(location.search).get('musician'))||null;}catch(_){return null;}}
-if(typeof document!=='undefined'&&!location.pathname.endsWith('musicians.html'))document.addEventListener('DOMContentLoaded',()=>{
- const artist=requested();if(!artist)return;const link=document.createElement('a');link.href='./musicians.html'+(artist?'?musician='+artist.id:'');link.textContent=artist?artist.name+' · muzikant afstellen ↗':'Muzikantenwerkbank ↗';link.style.cssText='position:fixed;bottom:8px;left:10px;z-index:900;font:12px system-ui;color:#bbd6c8;background:#101614e8;padding:6px 10px;border:1px solid #34433b;border-radius:5px';document.body.append(link);
-});
 const api={ENGINE,fields,registry,sanitize,settings,save,profile,compose,requested};root.ARIMusicians=api;
 if(typeof module!=='undefined')module.exports=api;
 })(globalThis);
 
-/* Operator UI continuity.
-   Keeps desktop street chat as one compact block and lets Shift+M close Musician Lab. */
+/* Desktop street chat layout fix.
+   UI-only; no Musician Lab navigation or keyboard shortcut lives here. */
 (function(){
   'use strict';
   if(typeof document==='undefined')return;
-
-  if(location.pathname.endsWith('musicians.html')){
-    function leaveLab(){
-      if(history.length>1){
-        history.back();
-        setTimeout(()=>{
-          if(location.pathname.endsWith('musicians.html'))location.href='./index.html';
-        },250);
-      }else{
-        location.href='./index.html';
-      }
-    }
-    document.addEventListener('keydown',e=>{
-      if(e.repeat)return;
-      if(e.target.closest('input,textarea,select,button,[contenteditable="true"]'))return;
-      if(e.shiftKey&&e.key.toLowerCase()==='m'){
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        leaveLab();
-      }
-    },true);
-    return;
-  }
-
   document.addEventListener('DOMContentLoaded',()=>{
     if(document.getElementById('ari-street-chat-compact'))return;
     const style=document.createElement('style');
