@@ -1,5 +1,5 @@
 /* A.R.I. service worker — app shell, cache-first, relative to its scope */
-const CACHE = 'ari-v202';
+const CACHE = 'ari-v203';
 const BASE = new URL('./', self.location.href).pathname;
 const SHELL = [
   BASE,
@@ -12,6 +12,7 @@ const SHELL = [
   BASE + 'musicians-workbench.js',
   BASE + 'ari-score-synth.js',
   BASE + 'ari-score-bridge.js',
+  BASE + 'ari-musicians-link.js',
   BASE + 'ari-transport.js',
   BASE + 'ari-discoveries.js',
   BASE + 'ari-creature-synth.js',

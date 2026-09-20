@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101614">
+  <title>A.R.I. · Musicians Workbench</title>
+  <link rel="icon" href="./favicon-32.png">
+  <link rel="stylesheet" href="./musicians.css">
+  <style id="ari-prepaint">
+    #stage{cursor:default!important}
+    #gAri,header h1 a[href*="github.com"]{cursor:pointer!important}
+    #trackname{cursor:default!important}
+    body:not(.ari-v108-ready) #devPanel{visibility:hidden!important;opacity:0!important;transition:none!important}
+  </style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./index.html">A.R.I.<span> / STUDIO</span></a>
+  <span class="edition">MUSICIANS · WORKBENCH 01</span>
+  <a href="./index.html">Back to A.R.I. ↗</a>
+</header>
+
+<main>
+  <section class="intro">
+    <div>
+      <p class="eyebrow">ONE IDENTITY. A SOUND OF ITS OWN.</p>
+      <h1>Who is A.R.I. today?</h1>
+      <p>Choose a musician. Listen, tune the profile and tell us what is still missing.</p>
+    </div>
+    <div class="count"><strong>20</strong><span>genres<br>20 musicians</span></div>
+  </section>
+
+  <div class="workspace">
+    <aside aria-label="Musicians by genre">
+      <div class="rail-title"><h2>The collective</h2><span>01 / genre</span></div>
+      <label class="search">Search genre or musician
+        <input id="search" type="search" placeholder="Techno, jazz, RIFT…">
+      </label>
+      <nav id="roster" aria-label="Select a musician"></nav>
+      <p id="empty" hidden>No musician found.</p>
+    </aside>
+
+    <div class="desk">
+      <section class="artist-head">
+        <div class="identity-mark" id="monogram" aria-hidden="true"></div>
+        <div>
+          <p class="eyebrow" id="artist-genre"></p>
+          <h2 id="artist-name"></h2>
+          <p id="artist-description"></p>
+          <div class="tags" id="artist-tags"></div>
+        </div>
+      </section>
+
+      <section class="listening panel">
+        <div class="section-heading"><h3><span>01</span> Listen</h3><span class="subtle">8 bars · native synthesis</span></div>
+        <div class="take-controls">
+          <label>Take / seed<input id="seed" value="take-001" maxlength="80" autocomplete="off"></label>
+          <button id="new-seed" class="secondary">New take ↻</button>
+          <button id="render" class="primary">Render listening version ▶</button>
+        </div>
+        <div class="wave-wrap">
+          <canvas id="wave" width="900" height="70" aria-label="Waveform of the listening version" role="img"></canvas>
+          <span id="wave-empty">Your first take starts here</span>
+        </div>
+        <audio id="player" controls preload="metadata" aria-label="Listening version"></audio>
+        <div class="ab">
+          <button id="listen-a" disabled>A · baseline</button>
+          <button id="listen-b" disabled>B · adjustment</button>
+          <button id="pin" class="text-button" disabled>Use as baseline</button>
+        </div>
+        <p id="listen-status" role="status">Render a listening version to hear this musician.</p>
+        <p class="hint">A/B uses the same seed. A new take starts a new comparison. This is the accompaniment; guests and events are heard in A.R.I.</p>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading"><h3><span>02</span> Tune</h3><button id="reset" class="text-button">Reset profile</button></div>
+        <div id="controls" class="sliders"></div>
+        <div class="save-row">
+          <span id="save-status" role="status">Settings are saved on this device.</span>
+          <button id="open-ari" class="secondary">Let A.R.I. take this form ↗</button>
+        </div>
+      </section>
+
+      <section class="panel feedback">
+        <div class="section-heading"><h3><span>03</span> Feedback</h3><span class="subtle" id="feedback-target">Feedback for the latest listening version</span></div>
+        <div class="ratings">
+          <label>Genre recognizable?
+            <select id="recognition">
+              <option value="">Not rated yet</option><option value="1">1 · not at all</option><option value="2">2 · barely</option><option value="3">3 · partly</option><option value="4">4 · clearly</option><option value="5">5 · convincingly</option>
+            </select>
+          </label>
+          <label>Energy feels right?
+            <select id="energy">
+              <option value="">Not rated yet</option><option value="1">1 · not at all</option><option value="2">2 · barely</option><option value="3">3 · partly</option><option value="4">4 · mostly</option><option value="5">5 · exactly right</option>
+            </select>
+          </label>
+          <label>Would you keep listening?
+            <select id="interest">
+              <option value="">Not rated yet</option><option value="1">1 · no</option><option value="2">2 · hardly</option><option value="3">3 · maybe</option><option value="4">4 · yes</option><option value="5">5 · absolutely</option>
+            </select>
+          </label>
+        </div>
+        <label>What do you hear? What should change?
+          <textarea id="notes" rows="4" maxlength="6000" placeholder="For example: the kick has more pressure now, but the bass does not push. From bar 5 onward it gets too busy…"></textarea>
+        </label>
+        <div class="export-row">
+          <button id="export" class="primary" disabled>Download feedback + profile ↓</button>
+          <label class="import-button">Import feedback<input type="file" id="import" accept="application/json,.json"></label>
+        </div>
+        <p class="hint">Attach the JSON file in our chat. It contains the musician, seed, settings, version and your notes. Nothing is sent automatically.</p>
+        <p id="file-status" role="status"></p>
+      </section>
+    </div>
+  </div>
+  <footer>Fictional musicians. Real adjustable profiles.<span>One per genre first — later multiple faces for every mood.</span></footer>
+</main>
+
+<script src="./ari-composer.js"></script>
+<script src="./ari-score-synth.js"></script>
+<script src="./ari-musicians.js"></script>
+<script src="./musicians-workbench.js"></script>
+</body>
+</html>
