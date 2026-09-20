@@ -14,7 +14,6 @@ const fields={
  leadDensity:{label:'Melody · density',min:0,max:1,step:.05,unit:'%'}
 };
 const rows=[
-// family, name, display, expertise, tempo, grammar, bass role/voice, harmony role/voice, lead, kit, mode, swing, weight, attack, drive, bass, chords, melody
 ['techno','FERRO','Techno','Relentless four-on-the-floor. Low pressure, short motifs, minimal harmony.',140,'four','anchor','reese','comp','soft-poly','reed','electro','phryg',0,.9,.85,.65,1.15,.18,0],
 ['jazz','Mira Vale','Jazz','A relaxed trio. Walking bass, open voicings and space between phrases.',88,'broken','walk','wood-bass','comp','electric-piano','reed','dust','dorian',.42,.15,.15,0,.8,.85,0],
 ['breaks','RIFT','Breakbeat','Cut-up rhythms, sharp snares and a biting bass. The drums lead the conversation.',138,'breakbeat','riff','pulse-bass','comp','plucked-keys','reed','crisp','minor',.06,.65,.9,.6,1.1,.25,0],
@@ -44,7 +43,6 @@ const registry=rows.map(([family,name,label,description,bpm,grammar,bassRole,bas
 function sanitize(artist,values){const result={...artist.defaults};for(const [k,f] of Object.entries(fields)){const n=values?.[k];if(typeof n==='number'&&Number.isFinite(n))result[k]=Math.max(f.min,Math.min(f.max,n));}return result;}
 function stored(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(_){return {};}}
 function settings(artist){
- // A stage link carries the selected settings even when browser storage is unavailable.
  try{if(/(?:^|\/)index\.html$|\/$/.test(location.pathname)&&requested()?.id===artist.id){const p=new URLSearchParams(location.search).get('profile');if(p)return sanitize(artist,JSON.parse(p));}}catch(_){}
  return sanitize(artist,stored()[artist.id]);
 }
@@ -58,3 +56,54 @@ if(typeof document!=='undefined'&&!location.pathname.endsWith('musicians.html'))
 const api={ENGINE,fields,registry,sanitize,settings,save,profile,compose,requested};root.ARIMusicians=api;
 if(typeof module!=='undefined')module.exports=api;
 })(globalThis);
+
+/* Operator UI continuity.
+   Keeps desktop street chat as one compact block and lets Shift+M close Musician Lab. */
+(function(){
+  'use strict';
+  if(typeof document==='undefined')return;
+
+  if(location.pathname.endsWith('musicians.html')){
+    function leaveLab(){
+      if(history.length>1){
+        history.back();
+        setTimeout(()=>{
+          if(location.pathname.endsWith('musicians.html'))location.href='./index.html';
+        },250);
+      }else{
+        location.href='./index.html';
+      }
+    }
+    document.addEventListener('keydown',e=>{
+      if(e.repeat)return;
+      if(e.target.closest('input,textarea,select,button,[contenteditable="true"]'))return;
+      if(e.shiftKey&&e.key.toLowerCase()==='m'){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        leaveLab();
+      }
+    },true);
+    return;
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    if(document.getElementById('ari-street-chat-compact'))return;
+    const style=document.createElement('style');
+    style.id='ari-street-chat-compact';
+    style.textContent=`
+      #chat{
+        justify-content:flex-end!important;
+      }
+      #chatHead{
+        flex:0 0 auto!important;
+        margin:0!important;
+      }
+      #chatLog{
+        flex:0 1 auto!important;
+        min-height:0!important;
+        max-height:calc(100vh - 270px)!important;
+      }
+    `;
+    document.head.appendChild(style);
+  });
+})();

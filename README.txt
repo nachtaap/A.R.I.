@@ -1,16 +1,13 @@
-A.R.I. radar final
+A.R.I. UI fix v213
 
-Upload/overwrite exactly these 2 files in GitHub:
-- ari-radar-v209.js
+Upload/overwrite:
+- ari-musicians.js
 - sw.js
-
-Do NOT change index.html. It already loads ari-radar-v209.js.
 
 Then Ctrl+Shift+R once.
 
-What this fixes:
-- the old 4.2s radar RAF is cancelled before it can run
-- one persistent 6.5s sweep controls both arm and blips
-- the 900ms Live Signal re-render no longer resets the sweep
-- the duplicate legacy pink dot style is overridden
-- sw.js uses cache ari-v212 so the old radar file is not served from ari-v207 cache
+Changes:
+- street chat is again one compact block: label directly above visible messages
+- Shift+M closes Musician Lab when already inside it
+- Shift+M on the main A.R.I. page continues to open Musician Lab through ari-musicians-link.js
+- no music/composition settings changed
