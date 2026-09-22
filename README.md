@@ -218,7 +218,30 @@ This separation is deliberate:
 
 **the score establishes the groove; the street runtime reacts to it.**
 
+## Mini-Freestyler (rap + jazz vocals)
+
+`ari-mini-freestyler.js` + `ari-mini-freestyler-data.js` provide POCKETFLOW-style guest/A.R.I. vocals on top of the score.
+
+- **Rap** (hip-hop / trap families): event prosody v0.2 — microtiming, energy emphasis, strong/tail chord resolution.
+- **Jazz**: continuous phrases from warm-clean v1.4 — major-first cells, swing, stable resolve; transposed to the score’s parent major.
+- Planning is deterministic from the score seed + baked performance data (no remote inference, no source audio).
+- Rendering runs in a Web Worker; the main thread only schedules buffers on the transport grid.
+- When active, `track.miniFreestylerOwnsVocals` is set so legacy vocal brains should not double-sing.
+
+Vocals react to the score; they do not replace ARIComposer / ARIScoreSynth.
+
+### Script order (vocals)
+
+```html
+<script src="./ari-mini-freestyler-data.js"></script>
+<script src="./ari-mini-freestyler.js"></script>
+<script src="./ari-score-bridge.js"></script>
+```
+
+Load data before the engine, and both before the score bridge.
+
 ## Audience simulation
+
 
 A.R.I. includes a simulated audience model used by the hidden Live Signal operator view.
 
@@ -385,6 +408,9 @@ The relevant end-of-page loading order is:
 <script src="./ari-creature-synth.js"></script>
 <script src="./ari-sound-worlds.js"></script>
 <script src="./ari-beat-foundation.js"></script>
+
+<script src="./ari-mini-freestyler-data.js"></script>
+<script src="./ari-mini-freestyler.js"></script>
 
 <script src="./ari-score-bridge.js"></script>
 <script src="./ari-musicians-link.js"></script>

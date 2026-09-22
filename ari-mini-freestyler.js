@@ -1,6 +1,7 @@
-/* POCKETFLOW mini-Freestyler: rap prosody v0.2 + jazz warm-clean v1.4.
+/* POCKETFLOW mini-Freestyler mini-1.2: rap prosody v0.2 + jazz warm-clean v1.4.
    Pure planning/DSP is also the worker entry. Browser lifecycle is below it.
-   No recordings, remote inference, or extra accompaniment. */
+   No recordings, remote inference, or extra accompaniment.
+   1.2: balanced vocal level, broader jazz parent-scale match, clearer status. */
 (function(root){
   'use strict';
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -42,10 +43,19 @@
   // Preserve v1.4's MAJOR intervals even when the jazz backing is Dorian.
   // D Dorian uses C major as its parent, A minor uses C, G Mixolydian uses C.
   function jazzTranspose(score){
-    const pcs=new Set(score.scale.map(n=>mod(n+score.root,12)));
+    // Phrases are authored in C major. Shift so C major aligns with the score's
+    // parent major (Ionian). Dorian / natural minor share a parent major.
+    const pcs=new Set((score.scale||[]).map(n=>mod(n+(score.root||0),12)));
     const major=[0,2,4,5,7,9,11];
     for(let pc=0;pc<12;pc++)if(major.every(n=>pcs.has(mod(n+pc,12))))return mod(pc+6,12)-6;
-    return null; // Do not silently bend the approved melody into another mode.
+    // Soft match: at least 6 of 7 major degrees present (tolerant modes).
+    let best=null,bestHit=-1;
+    for(let pc=0;pc<12;pc++){
+      const hit=major.reduce((a,n)=>a+(pcs.has(mod(n+pc,12))?1:0),0);
+      if(hit>bestHit){bestHit=hit;best=pc;}
+    }
+    if(bestHit>=6)return mod(best+6,12)-6;
+    return null; // Do not bend approved major melody into an incompatible scale.
   }
   function plan(score,data){
     const kind=kindFor(score);if(!kind)return [];
@@ -64,7 +74,7 @@
             // Keep entire legato phrases; omit one that would cross a section boundary.
             if(beat+p.beats>end)continue;
             events.push({kind,beat,duration,midi:p.midi.map(m=>m+trans),amp:p.amp,vowel:p.vowel,detune:p.detune,
-              degrees:p.degrees,source:flow.source,phrase:start,seed:flow.source,level:3.2});
+              degrees:p.degrees,source:flow.source,phrase:start,seed:flow.source,level:2.0});
           }
         }else{
           const src=flow.events;
@@ -87,7 +97,7 @@
             if(e.energy>=.72)midi=nearest(midi,chord);
             if(tail)midi=nearest(rapHome,chord);
             events.push({kind,beat,duration,midi,energy:clamp(.22+.78*e.energy,0,1),brightness:.72+.50*e.energy,protected:tail||e.energy>=.72||i===0||e.beat-src[i-1].beat>=.75,
-              source:flow.source,phrase,seed:flow.source+':'+i,level:3.2});
+              source:flow.source,phrase,seed:flow.source+':'+i,level:2.0});
           }
         }
       }
@@ -154,7 +164,7 @@
     return out;
   }
   const render=(e,sr=44100)=>e.kind==='jazz'?renderJazz(e,sr):renderRap(e,sr);
-  const api={version:'mini-1.1',kindFor,jazzTranspose,plan,render,characterFor,voiceEvent};
+  const api={version:'mini-1.2',kindFor,jazzTranspose,plan,render,characterFor,voiceEvent};
   if(typeof module!=='undefined'&&module.exports){module.exports=api;return;}
   if(typeof document==='undefined'){
     root.onmessage=({data})=>{
@@ -213,9 +223,11 @@
     if(!supported(t))return;
     events=plan(t.score,root.ARIMiniFreestylerData);
     t.miniFreestyler={version:api.version,kind:kindFor(t.score),events:events.length,status:'preparing'};
-    if(!events.length){t.miniFreestyler.status='unsupported-scale';return;}
+    if(!events.length){t.miniFreestyler.status=kindFor(t.score)==='jazz'?'unsupported-scale':'no-events';return;}
     // A.R.I. supplies a voice when the street has no mic guest.
+    // Flag for score-bridge / legacy vocal brains: do not double-sing.
     t.ariSings=true;
+    t.miniFreestylerOwnsVocals=true;
     for(const e of events){const s=Math.floor(e.beat*4+1e-7);if(!stepMap.has(s))stepMap.set(s,[]);stepMap.get(s).push(e);}
     const token=generation;
     try{
