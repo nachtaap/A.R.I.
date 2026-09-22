@@ -469,13 +469,13 @@
       }
       .note {
         font-family: "IBM Plex Mono", monospace;
-        font-size: 22px;
+        font-size: 44px;
         fill: var(--magenta);
         opacity: 0;
       }
       .note.sp {
         fill: var(--lav);
-        font-size: 20px;
+        font-size: 40px;
       }
       .note.sleepz {
         fill: var(--trackcyan);
@@ -1218,10 +1218,10 @@ body.light header .tribute {
           max-width: 88vw;
         }
         .note {
-          font-size: 30px;
+          font-size: 60px;
         }
         .note.sp {
-          font-size: 26px;
+          font-size: 52px;
         }
         #liveRecording {
           top: 31%;
@@ -7607,6 +7607,13 @@ body.light header .tribute {
               VOCAL_VOWELS.length,
             vowel = VOCAL_VOWELS[vowelIndex];
           out.gain.value *= 0.84 + stress * 0.16;
+          if (performerTag === 'guest1' || performerTag === 'guest2') {
+            const micGain = ctx.createGain();
+            g.disconnect(out);
+            g.connect(micGain);
+            micGain.connect(out);
+            scheduleGuestMicLevel(micGain.gain, t, voiceDur + .25, performerTag);
+          }
           send.gain.value =
             profile.delaySend *
             (mode === "rap" ? 0.42 : mode === "sung hook" ? 1 : 0.7) *
@@ -8038,6 +8045,24 @@ body.light header .tribute {
         return p < 0.92
           ? Math.pow(p / 0.92, 1.7)
           : Math.max(0, 1 - (p - 0.92) / 0.055);
+      }
+      function guestMicLevel(t, performerTag) {
+        const guest = performerTag === 'guest1' ? vis1 : performerTag === 'guest2' ? vis2 : null;
+        if (!guest || guest.instr !== 'on the mic' || reduceMotion) return 1;
+        const phase = Number.isFinite(guest.micPh) ? Number(guest.micPh.toFixed(3)) : -1;
+        const droop = micDroop(t, phase);
+        // Match the visible grip: horizontal = full voice, vertical = 8%.
+        return 0.08 + 0.92 * (1 - droop) ** 1.6;
+      }
+      function scheduleGuestMicLevel(param, start, duration, performerTag) {
+        if (performerTag !== 'guest1' && performerTag !== 'guest2') return;
+        const steps = Math.max(1, Math.ceil(duration * 60));
+        param.setValueAtTime(guestMicLevel(start, performerTag), start);
+        // Audio-clock automation follows even a sustained jazz phrase.
+        for (let i = 1; i <= steps; i++) {
+          const at = start + duration * i / steps;
+          param.linearRampToValueAtTime(guestMicLevel(at, performerTag), at);
+        }
       }
 
       /* ---------- A.R.I. on his own mic ---------- */
@@ -10855,10 +10880,15 @@ body.light header .tribute {
         nick: fakeHandle().replace(/^@/, ""), ci: RI(0,5),
         kind: AUDIENCE_ARCHETYPES[i%AUDIENCE_ARCHETYPES.length].kind,
         regular: i<10,
+        chatStyle: ['quiet','hype','emotes','typer','casual'][i % 5],
       }));
       const REGULAR_LINES = [
         "been here since track 001", "ARI always finds the pocket", "that bass again 😂",
         "night shift checking in", "grid regulars know", "this guest came back stronger",
+        "lurkers still here", "was gonna leave 3 tracks ago", "same corner tomorrow?",
+        "back with headphones this time", "chat we live here now", "night shift gang 🤝",
+        "one more then sleep. allegedly", "missed the last one what happened",
+        "still got this on while cooking", "ok who else is nodding at their screen",
       ];
       const EVENT_LINES = {
         newtrack:["new one!","ok {genre}","“{name}” already sounds dangerous","{bpm} bpm, lock in","the {genre} arc continues"],
@@ -10881,12 +10911,80 @@ body.light header .tribute {
         keychange:["KEY CHANGE","it LIFTED","modulation?? from a robot??","goosebumps fr","final stretch energy"],
         cut:["THE SILENCE","he cut EVERYTHING","that dropout 💀","my heart stopped","dead air into THAT"],
       };
+      const STREET_CHAT_EXTRA = {
+        newtrack:["oh we're doing {genre} now","new track who dis","wait this tempo 👀","ok ok im here","headphones on","chat settle in","{bpm}?? aight","another one already?"],
+        intro:["shhh","im listening","taking the scenic route","ok where we headed","👀","little head nod already","hold on let it start","someone turn my brain off for this"],
+        hook:["THAT PART","nah run that back","stuck in my head now","oooo there it is","😭🙌","chat heard it too right","ok thats the bit","not me humming along","Pog","yeah yeah YEAH"],
+        drop:["AYOOOO","💀💀💀","my cup moved","nahhhhh","stank face activated","RIP downstairs neighbours","🔥🔥","BASS","desk is dancing","i was NOT ready"],
+        fill:["wait that little drum thing","🥁👀","sneaky","drummer woke up","oh that was nice","tiny flex lol","the snare said excuse me","caught that"],
+        guest:["who brought a friend","new challenger 👀","oh hello","dont be shy","chat make room","mic check??","lets hear em","guest arc begins","they got this 🙏"],
+        performance:["ok guest!!","talk to em","🎤🔥","they vibing","guest putting in work","we see you","alright then 👀","this duo tho","go onnn","🤝"],
+        response:["he said say less","your turn my turn","back n forth 🤝","oh they heard each other","that answer tho","ARI nodded like yep","conversation with no words","nice catch"],
+        break:["floaty","🫠","room to breathe","dont rush it","head empty just this","still nodding somehow","... 👀","let that hang","the pause hits too"],
+        ending:["gg","👏👏","alright that was a ride","one more pls","dont go yet","ok goodnight. maybe","landed it","chat we staying?","🫡","encoreee"],
+        weakClutter:["everyone at once 😭","bit busy rn","give each other a sec","mix needs some air","too many cooks chat"],
+        weakHats:["hat guy stuck?","same tss tss again lol","hats doing overtime","give that hi hat a break"],
+        weakMelody:["where did that note go","hmm idk about that bit","lead taking a detour","lost me for a sec"],
+        weakGuest:["mic closer pls","guest where'd u go","cant hear em 😭","volume??","bring the mic back up"],
+        weakIntro:["are we there yet","still loading the groove lol","ok come on now","intro doing a whole shift"],
+        battery:["🔋💀","battery said goodnight","bro forgot to charge","intermission snacks anyone","F","robot needs a juice box","not the batteries again 😭"],
+        switch:["HUH","wait wait WAIT","🔄🔥","new lane","he can just do that??","chat did u hear that","ok plot twist"],
+        keychange:["oh we're going UP","lift off 🚀","that got bright","hold uppp","new altitude","ARI found another floor"],
+        cut:["...","WHO UNPLUGGED IT","😶","i checked my headphones","dont scare me like that","and we're BACK","LMAO my face"],
+        micdroop:["mic to mouth bestie 😭","thats not an ice cream","bro the MIC","🎤⬇️ 💀","we losing you","hold it up a little","not the sleepy wrist","mic said bye"],
+        ambient:["🕺","💃","head nod check","lurking but listening","this corner got wifi?","snack break brb","who else has this on in the background","ok my foot wont stop","late night crew where u at","volume up a lil","this is my commute now","just got here hey chat","forgetting what i was doing","🤖🎶","sending this to my friend","cant type im vibing","the tiny robot 😭","no thoughts just groove","chat moving slow im comfy","anyone got headphones on","yep still here","one earbud gang","need a chair on this sidewalk","KEKW","this > scrolling","☕🎧"]
+      };
+      for (const [type, lines] of Object.entries(STREET_CHAT_EXTRA)) {
+        EVENT_LINES[type] = [...(EVENT_LINES[type] || []), ...lines];
+      }
+      const recentChatLines = [], recentChatMessages = [];
+      const chatReactionTimes = new Map();
+      function pickChatLine(type, bank = EVENT_LINES[type] || EVENT_LINES.ambient) {
+        const fresh = bank.filter(line => !recentChatLines.includes(line));
+        const line = pick(fresh.length ? fresh : bank.filter(line => line !== recentChatLines.at(-1)));
+        recentChatLines.push(line);
+        while (recentChatLines.length > 28) recentChatLines.shift();
+        return line;
+      }
+      function styleChatLine(text, user, signal) {
+        const style = user.chatStyle || 'casual';
+        const emotes = signal.startsWith('weak') || signal === 'micdroop' ? ['😭','💀','🫠','😅']
+          : ['drop','hook','switch','keychange'].includes(signal) ? ['🔥','🙌','😭🔥','🤯','Pog']
+          : ['battery','cut'].includes(signal) ? ['💀','😭','KEKW','🫠']
+          : ['🎶','🕺','🤝','👀','🫶','🎧'];
+        let line = text;
+        if (style === 'emotes' && Math.random() < .24) return pick(emotes);
+        if (style !== 'hype' && Math.random() < .6) line = line.toLowerCase();
+        if (style === 'hype' && Math.random() < .3) line = line.toUpperCase();
+        // One believable typo at most, with each chatter's own tendency.
+        if (Math.random() < (style === 'typer' ? .65 : style === 'quiet' ? .06 : .20)) {
+          const typos = {the:'teh',that:'taht',this:'ths',what:'waht',just:'jsut',really:'realy',with:'wiht',hear:'hera',sounds:'soudns',back:'bak',please:'pls',your:'ur',you:'u',going:'goin',little:'lil',something:'somethign'};
+          const matches = [...line.matchAll(/\b[a-z]+\b/gi)].filter(m => typos[m[0].toLowerCase()]);
+          if (matches.length) {
+            const m = pick(matches), replacement = typos[m[0].toLowerCase()];
+            line = line.slice(0,m.index) + (m[0] === m[0].toUpperCase() ? replacement.toUpperCase() : replacement) + line.slice(m.index+m[0].length);
+          } else {
+            const words = [...line.matchAll(/\b[a-z]{5,}\b/gi)];
+            if (words.length) {
+              const m = pick(words), i = RI(1,m[0].length-3), word = m[0];
+              line = line.slice(0,m.index) + word.slice(0,i) + word[i+1] + word[i] + word.slice(i+2) + line.slice(m.index+word.length);
+            }
+          }
+        }
+        if (!/\p{Extended_Pictographic}/u.test(line) && Math.random() < (style === 'emotes' ? .65 : style === 'hype' ? .35 : .12)) line += ' ' + pick(emotes);
+        return line;
+      }
       function fillLine(line){
         return line.replaceAll('{genre}',track?displayGenre(track.genre):'beat').replaceAll('{name}',track?.name||'this').replaceAll('{bpm}',track?.bpm||'');
       }
       function audiencePush(txt, user, signal){
         if(!txt)return;
-        const u=user||pick(CHAT_USERS), msg={nick:u.nick,ci:u.ci,txt,kind:u.kind,signal:signal||'chat',time:Date.now()};
+        const u=user||pick(CHAT_USERS);
+        txt=styleChatLine(txt,u,signal||'chat');
+        const normalized=txt.toLowerCase().replace(/\s+/g,' ').trim();
+        if(recentChatMessages.includes(normalized))return;
+        recentChatMessages.push(normalized);while(recentChatMessages.length>16)recentChatMessages.shift();
+        const msg={nick:u.nick,ci:u.ci,txt,kind:u.kind,signal:signal||'chat',time:Date.now()};
         audienceBuffer.push(msg); while(audienceBuffer.length>60)audienceBuffer.shift();
         const a=audienceState(); if(a){a.reactions.push(msg);while(a.reactions.length>80)a.reactions.shift();a.chatRate=Math.min(1,a.chatRate*.82+.18);}
         if(chatOn()) appendChatNode(chatLogEl,msg,'chatMsg',16);
@@ -10900,14 +10998,17 @@ body.light header .tribute {
       }
       function audienceReact(type, strength=.6){
         const a=audienceState(); if(!a||!track)return;
+        const now=ctx?.currentTime||0,previous=chatReactionTimes.get(type);
+        if(previous?.trackNo===trackNo && now-previous.time<(['hook','response','drop'].includes(type)?10:3))return;
+        chatReactionTimes.set(type,{trackNo,time:now});
         const reactionTrackNo=trackNo;
         const bank=EVENT_LINES[type]||EVENT_LINES.newtrack;
         let count=1+(strength>.72?1:0)+(strength>.9?1:0);
         for(let i=0;i<count;i++){
           const regular=Math.random()<.18?CHAT_USERS[RI(0,9)]:null;
-          const line=regular&&Math.random()<.35?pick(REGULAR_LINES):pick(bank);
+          const line=regular&&Math.random()<.2&&!type.startsWith('weak')&&type!=='micdroop'?pickChatLine('regular',REGULAR_LINES):pickChatLine(type,bank);
           setTimeout(()=>{
-            if(trackNo!==reactionTrackNo)return; // never let delayed opinions leak into the next track
+            if(trackNo!==reactionTrackNo||!playing)return; // no stale reactions after a track change or pause
             audiencePush(fillLine(line),regular,type);
           },i*RI(180,520));
         }
@@ -10945,6 +11046,7 @@ body.light header .tribute {
         clearTimeout(focusTimer);focusTimer=setTimeout(()=>{focusEl.classList.remove('on');focusEl.setAttribute('aria-hidden','true');document.body.classList.remove('audience-focus');},RI(4200,5600));
       }
       let audiencePrev={trackNo:0,bar:-1,phase:'',batt:false,v2:false,section:'',sameHatBars:0,lastHatSig:'',guestBars:0};
+      let lastMicChat=-Infinity;
       setInterval(()=>{
         if(!playing||!started||!track)return;const a=audienceState();if(!a)return;a.chatRate*=.9;
         a.viewers=Math.max(700,a.viewers+RI(-18,26));
@@ -10955,6 +11057,10 @@ body.light header .tribute {
         }
         if(batteryIntermission!==audiencePrev.batt){audiencePrev.batt=batteryIntermission;if(batteryIntermission)audienceReact('battery',.7);return;}
         if(visitorPhase!==audiencePrev.phase){audiencePrev.phase=visitorPhase;if(visitorPhase==='requesting')audienceReact('guest',.72);if(visitorPhase==='performing')audienceReact('performance',.85);}
+        if(visitorPhase==='performing' && ctx.currentTime-lastMicChat>18 &&
+          ((visitor&&guestMicLevel(ctx.currentTime,'guest1')<.3)||(visitor2&&guestMicLevel(ctx.currentTime,'guest2')<.3))){
+          lastMicChat=ctx.currentTime;audienceReact('micdroop',.6);
+        }
         if(bar!==audiencePrev.bar){
           audiencePrev.bar=bar;const c=composerStateAt(track,bar),d=drumStateAt(bar),sect=sectionAt(bar);
           const barsHeard=Math.max(0,bar+1);
@@ -10992,7 +11098,7 @@ body.light header .tribute {
           if(innerWidth<900 && bar>5 && bar<track.bars-4 && bar%4===0 && Math.random()<.18)showAudienceFocus();
         }
         // Casual chat also waits until listeners have heard at least a full bar.
-        if(bar>=1&&Math.random()<.065)audiencePush(fillLine(pick(["vibes","clean mix","nyc energy fr","robot got taste","this groove is criminal","whoever tuned that snare, thank u","lowkey a banger","let it breathe"])),null,'ambient');
+        if(bar>=1&&Math.random()<.065)audiencePush(fillLine(pickChatLine('ambient')),null,'ambient');
       },650);
       /* desktop chat remains occasional; compact screens use the brief focus overlay */
       let chatLocCount=0,chatHideTimer=null;
@@ -11177,4 +11283,3 @@ body.light header .tribute {
 <script src="./ari-musicians-link.js"></script>
 </body>
 </html>
-

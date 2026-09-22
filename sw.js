@@ -1,5 +1,5 @@
 /* A.R.I. service worker — app shell, cache-first, relative to its scope */
-const CACHE = 'ari-v219';
+const CACHE = 'ari-v221';
 const BASE = new URL('./', self.location.href).pathname;
 const SHELL = [
   BASE,
@@ -96,4 +96,3 @@ self.addEventListener('fetch', e => {
     cachedOrNetwork(e.request).catch(async () => (await caches.open(CACHE)).match(e.request))
   );
 });
-
