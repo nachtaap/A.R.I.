@@ -1,33 +1,126 @@
 /* Independent voice renderer for the score composer. No legacy bass substitution.
-   Every scheduled voice owns its nodes and releases them on end/cancellation. */
+   Every scheduled voice owns its nodes and releases them on end/cancellation.
+   Drums v2: pitch-enveloped kick, dual-shell snare, band-limited hats (procedural). */
 (function(root){
   'use strict';
   class ScoreSynth {
     constructor(context,destination){this.ctx=context;this.destination=destination;this.voices=new Set();this.buffers=new Map();this.seed=null;}
     setTrack(score){const signature=score.seed+JSON.stringify(score.production);if(this.signature!==signature){this.signature=signature;this.seed=score.seed;this.production=score.production;this.buffers.clear();}}
+    /* Drum one-shots: procedural, no samples. Pitch-enveloped kick body +
+       filtered click; dual-shell snare; band-limited hats. Own synthesis
+       (not a third-party engine). production.kickWeight / punch / drive still apply. */
     noise(kind,kit){
       const key=kind+':'+kit;if(this.buffers.has(key))return this.buffers.get(key);
-      const sr=this.ctx.sampleRate,duration=kind==='kick'?.65:kind==='hat'?.45:.35;
-      const buffer=this.ctx.createBuffer(1,Math.ceil(sr*duration),sr),data=buffer.getChannelData(0);
-      const r=ARIComposer.rng(`${this.seed}:${key}`),tune={dry:.92,round:.78,crisp:1.17,dust:.87,electro:1.08}[kit]||1;
-      let phase=0,low=0;const p=this.production;
-      for(let i=0;i<data.length;i++){
-        const t=i/sr,n=r()*2-1;low+=.12*(n-low);
-        if(kind==='kick'){
-          phase+=Math.PI*2*(42*tune+140*Math.exp(-t*(kit==='round'?24:45)))/sr;
-          const decay=p?22-p.kickWeight*17:(kit==='round'?8:kit==='dry'?17:12);
-          data[i]=Math.sin(phase)*Math.exp(-t*decay)*.8+n*Math.exp(-t*180)*(p?.punch??.25)*.4;
-        }else if(kind==='snare'){
-          const snap=(n-low)*Math.exp(-t*(kit==='dust'?24:14)),body=Math.sin(t*2*Math.PI*185*tune)*Math.exp(-t*28);
-          data[i]=snap*.55+body*.28;
-        }else if(kind==='perc'){
-          data[i]=(Math.sin(2*Math.PI*t*440*tune)+.35*Math.sin(2*Math.PI*t*691*tune))*Math.exp(-t*35)*.25;
-        }else{
-          const metal=(Math.sin(t*2*Math.PI*6230*tune)+Math.sin(t*2*Math.PI*8910*tune))*.12;
-          data[i]=((n-low)*.38+metal)*Math.exp(-t*10);
+      const sr=this.ctx.sampleRate;
+      const duration=kind==='kick'?.55:kind==='hat'?.5:kind==='snare'?.38:.32;
+      const nSamp=Math.ceil(sr*duration);
+      const buffer=this.ctx.createBuffer(1,nSamp,sr),data=buffer.getChannelData(0);
+      const r=ARIComposer.rng(`${this.seed}:${key}`);
+      const tune={dry:.94,round:.8,crisp:1.14,dust:.88,electro:1.1}[kit]||1;
+      const p=this.production;
+      const soft=(x,d)=>{const g=1+(d||0)*4;const y=Math.tanh(x*g);return y/Math.sqrt(Math.max(1,g*.55+1));};
+      // one-pole helpers (no AudioWorklet)
+      let lp=0,hp=0,bp=0;
+      const lowpass=(x,a)=>{lp+=a*(x-lp);return lp;};
+      const highpass=(x,a)=>{lp+=a*(x-lp);return x-lp;};
+      const bandpass=(x,a)=>{const l=lowpass(x,a);return highpass(l,a*.9);};
+
+      if(kind==='kick'){
+        // startHz → endHz pitch fall; body sine + short noise click through band
+        const endHz=38*tune+(kit==='round'?8:0);
+        const startHz=endHz+(kit==='round'?95:kit==='electro'?155:130);
+        const pitchDec=kit==='round'?.055:kit==='dry'?.032:.04;
+        const ampDec=p?(.42+p.kickWeight*.35):(kit==='round'?.55:kit==='dry'?.28:.38);
+        const clickLvl=.22+(p?.punch??.25)*.45;
+        const clickDec=.012+(p?.punch??.25)*.01;
+        const drive=1+(p?.drive??.15)*3.2;
+        let phase=0,pitchEnv=1,amp=1,clickAmp=1;
+        const pk=Math.exp(-1/(pitchDec*sr));
+        const ak=Math.exp(-6.91/(ampDec*sr));
+        const ck=Math.exp(-6.91/(clickDec*sr));
+        lp=0;
+        for(let i=0;i<nSamp;i++){
+          const f=endHz+(startHz-endHz)*pitchEnv;
+          phase+=f/sr;if(phase>=1)phase-=1;
+          const body=Math.sin(phase*Math.PI*2)*amp;
+          const noise=r()*2-1;
+          // ~2.4 kHz click band
+          const click=bandpass(noise,.18)*clickAmp*clickLvl;
+          let v=soft(body*.9+click,drive);
+          // mild DC lean removal
+          v=highpass(v,.002);
+          data[i]=v;
+          pitchEnv*=pk;amp*=ak;clickAmp*=ck;
         }
-        if(p?.drive){const d=1+p.drive*5;data[i]=Math.tanh(data[i]*d)/Math.sqrt(d);}
-        data[i]*=Math.min(1,i/Math.max(1,sr*.001),(data.length-i)/(sr*.01));
+      }else if(kind==='snare'){
+        const toneHz=175*tune;
+        const toneDec=kit==='dust'?.09:.12;
+        const noiseDec=kit==='dust'?.14:kit==='crisp'?.1:.16;
+        const noiseLvl=.72;
+        const toneLvl=.38;
+        const drive=1+(p?.drive??.12)*2.5;
+        let ph1=0,ph2=0,tAmp=1,nAmp=1;
+        const f1=toneHz/sr,f2=(toneHz*1.48)/sr;
+        const tk=Math.exp(-6.91/(toneDec*sr));
+        const nk=Math.exp(-6.91/(noiseDec*sr));
+        lp=0;let lp2=0;
+        for(let i=0;i<nSamp;i++){
+          ph1+=f1;if(ph1>=1)ph1-=1;
+          ph2+=f2;if(ph2>=1)ph2-=1;
+          const tone=(Math.sin(ph1*Math.PI*2)*.65+Math.sin(ph2*Math.PI*2)*.35)*tAmp*toneLvl;
+          const white=r()*2-1;
+          // noise band ~400–6k
+          lp+=.08*(white-lp);
+          const hip=white-lp;
+          lp2+=.35*(hip-lp2);
+          const noise=lp2*nAmp*noiseLvl;
+          data[i]=soft(tone+noise,drive);
+          tAmp*=tk;nAmp*=nk;
+        }
+      }else if(kind==='perc'){
+        // rim / clave-ish
+        let ph=0,amp=1;
+        const f0=620*tune/sr,f1=940*tune/sr;
+        const ak=Math.exp(-6.91/(.07*sr));
+        lp=0;
+        for(let i=0;i<nSamp;i++){
+          ph+=f0;if(ph>=1)ph-=1;
+          const white=r()*2-1;
+          lp+=.25*(white-lp);
+          const v=Math.sin(ph*Math.PI*2)*.55+Math.sin((ph*f1/f0)*Math.PI*2)*.2+(white-lp)*.15;
+          data[i]=v*amp*.45;
+          amp*=ak;
+        }
+      }else{
+        // hat: filtered noise + a touch of metallic partials
+        const open=false; // length still chosen in play(); buffer is closed-ish body
+        const dec=kit==='dust'?.09:kit==='crisp'?.055:.07;
+        const ak=Math.exp(-6.91/(dec*sr));
+        let amp=1;lp=0;let bpState=0;
+        for(let i=0;i<nSamp;i++){
+          const t=i/sr;
+          const white=r()*2-1;
+          lp+=.55*(white-lp);
+          const hip=white-lp;
+          bpState+=.4*(hip-bpState);
+          const metal=(Math.sin(t*2*Math.PI*6200*tune)+Math.sin(t*2*Math.PI*8800*tune)*.7)*.08;
+          data[i]=(bpState*.85+metal)*amp*(kit==='electro'?1.05:1);
+          amp*=ak;
+        }
+      }
+
+      // peak normalise so kit gains stay comparable
+      let peak=1e-9;
+      for(let i=0;i<nSamp;i++){const a=Math.abs(data[i]);if(a>peak)peak=a;}
+      const g=1/peak;
+      const fade=Math.max(2,Math.floor(sr*.003));
+      for(let i=0;i<nSamp;i++){
+        let v=data[i]*g;
+        // micro attack
+        if(i<sr*.001)v*=i/Math.max(1,sr*.001);
+        // fade tail to avoid click on stop
+        if(i>nSamp-fade)v*=(nSamp-1-i)/fade;
+        data[i]=v;
       }
       this.buffers.set(key,buffer);return buffer;
     }
