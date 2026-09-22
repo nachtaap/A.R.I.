@@ -4,7 +4,7 @@
 (function(root){
   'use strict';
 
-  const VERSION = 1;
+  const VERSION = 2;
   const ACCOMPANIMENT_PLAYERS = [
     'playKick','play808Kick','play808Cowbell','playClap','playSnare','playHat',
     'play808','playDeepSub','playSilkSub','playPulseBass','playRound','playReese',
@@ -136,6 +136,8 @@
       synth.setTrack(score);
     }
 
+    root.ARIMiniFreestyler?.attach(t);
+
     console.info('[A.R.I.] musicians score active',{
       musician:artist.name,
       family:artist.family,
@@ -213,7 +215,9 @@
     scheduleStep=function(sIdx,t){
       if(typeof track!=='undefined' && track?.scoreMode==='musicians'){
         scoreStep(sIdx,t);
-        return withLegacyAccompanimentMuted(()=>originalScheduleStep.call(this,sIdx,t));
+        const result=withLegacyAccompanimentMuted(()=>originalScheduleStep.call(this,sIdx,t));
+        root.ARIMiniFreestyler?.step(sIdx,t);
+        return result;
       }
       return originalScheduleStep.call(this,sIdx,t);
     };

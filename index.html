@@ -6349,6 +6349,7 @@ body.light header .tribute {
         return {version:4,performerTag,dna,voiceProfile,plan,hookCells,model:'stable performer voice → four-bar flow → shared two-bar hook → cadence'};
       }
       function vocalEventAt(t,b,s,performer='ari'){
+        if (globalThis.ARIMiniFreestyler?.supported(t)) return null;
         const brain=t?.vocalBrains?.[performer]||t?.vocalBrain;
         return brain?.plan?.[b]?.find(e=>e.step===s)||null;
       }
@@ -7451,6 +7452,7 @@ body.light header .tribute {
         return PULSE_WAVE;
       }
       function playLead(t, midi, dur, instr, vmul, articulation = null) {
+        if (instr === "on the mic" && globalThis.ARIMiniFreestyler?.supported(track)) return;
         const g = ctx.createGain();
         const out = ctx.createGain();
         out.gain.value = vmul || 1;
@@ -8432,6 +8434,7 @@ body.light header .tribute {
           vis1OwnsTurn = !micCypher || cypherTurn === 0,
           vis2OwnsTurn = !micCypher || cypherTurn === 1,
           duet =
+          !globalThis.ARIMiniFreestyler?.supported(track) &&
           composerState.role === "response" &&
           visitor &&
           visitorPhase === "performing" &&
@@ -11168,6 +11171,8 @@ body.light header .tribute {
 <script src="./ari-sound-worlds.js"></script>
 <script src="./ari-beat-foundation.js"></script>
 
+<script src="./ari-mini-freestyler-data.js"></script>
+<script src="./ari-mini-freestyler.js"></script>
 <script src="./ari-score-bridge.js"></script>
 <script src="./ari-musicians-link.js"></script>
 </body>
