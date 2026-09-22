@@ -1,127 +1,112 @@
 /* Independent voice renderer for the score composer. No legacy bass substitution.
    Every scheduled voice owns its nodes and releases them on end/cancellation.
-   Drums v2.1: less metallic hats/perc; darker snare noise (no tin-lid partials). */
+   Drums v2.2: soft beater click (punch no longer tin-lid); warmer kits across electro/dry/round. */
 (function(root){
   'use strict';
   class ScoreSynth {
     constructor(context,destination){this.ctx=context;this.destination=destination;this.voices=new Set();this.buffers=new Map();this.seed=null;}
     setTrack(score){const signature=score.seed+JSON.stringify(score.production);if(this.signature!==signature){this.signature=signature;this.seed=score.seed;this.production=score.production;this.buffers.clear();}}
-    /* Drum one-shots: procedural, no samples. Pitch-enveloped kick body +
-       filtered click; dual-shell snare; band-limited hats. Own synthesis
-       (not a third-party engine). production.kickWeight / punch / drive still apply. */
+    /* Drums v2.2 — warmer kits, no tin-lid click.
+       Punch deepens the body; click stays short and soft (beater, not metal). */
     noise(kind,kit){
       const key=kind+':'+kit;if(this.buffers.has(key))return this.buffers.get(key);
       const sr=this.ctx.sampleRate;
-      const duration=kind==='kick'?.55:kind==='hat'?.5:kind==='snare'?.38:.32;
+      const duration=kind==='kick'?.5:kind==='hat'?.42:kind==='snare'?.32:.22;
       const nSamp=Math.ceil(sr*duration);
       const buffer=this.ctx.createBuffer(1,nSamp,sr),data=buffer.getChannelData(0);
       const r=ARIComposer.rng(`${this.seed}:${key}`);
-      const tune={dry:.94,round:.8,crisp:1.14,dust:.88,electro:1.1}[kit]||1;
+      const tune={dry:.96,round:.84,crisp:1.08,dust:.9,electro:1.04}[kit]||1;
       const p=this.production;
-      const soft=(x,d)=>{const g=1+(d||0)*4;const y=Math.tanh(x*g);return y/Math.sqrt(Math.max(1,g*.55+1));};
-      // one-pole helpers (no AudioWorklet)
-      let lp=0,hp=0,bp=0;
-      const lowpass=(x,a)=>{lp+=a*(x-lp);return lp;};
-      const highpass=(x,a)=>{lp+=a*(x-lp);return x-lp;};
-      const bandpass=(x,a)=>{const l=lowpass(x,a);return highpass(l,a*.9);};
+      const punch=Math.min(1,p?.punch??.35);
+      const driveAmt=Math.min(1,p?.drive??.12);
+      const soft=(x,amt)=>{const g=1+amt*2.2;return Math.tanh(x*g)/Math.sqrt(1+g*.4);};
 
       if(kind==='kick'){
-        // startHz → endHz pitch fall; body sine + short noise click through band
-        const endHz=38*tune+(kit==='round'?8:0);
-        const startHz=endHz+(kit==='round'?95:kit==='electro'?155:130);
-        const pitchDec=kit==='round'?.055:kit==='dry'?.032:.04;
-        const ampDec=p?(.42+p.kickWeight*.35):(kit==='round'?.55:kit==='dry'?.28:.38);
-        const clickLvl=.22+(p?.punch??.25)*.45;
-        const clickDec=.012+(p?.punch??.25)*.01;
-        const drive=1+(p?.drive??.15)*3.2;
+        // House/funk-friendly: low endHz, moderate sweep, soft beater click
+        const endHz=(kit==='round'?48:kit==='electro'?42:44)*tune;
+        const startHz=endHz+(kit==='round'?70:kit==='electro'?110:90);
+        const pitchDec=kit==='round'?.06:kit==='dry'?.038:.045;
+        const ampDec=.32+(p?.kickWeight??.5)*.4+(kit==='round'?.12:0);
+        // Cap click so punch never becomes a metal lid (was .22+punch*.45)
+        const clickLvl=.06+punch*.1;
+        const clickDec=.008+punch*.006;
+        const drive=1+driveAmt*1.8;
         let phase=0,pitchEnv=1,amp=1,clickAmp=1;
         const pk=Math.exp(-1/(pitchDec*sr));
         const ak=Math.exp(-6.91/(ampDec*sr));
         const ck=Math.exp(-6.91/(clickDec*sr));
-        lp=0;
+        let lpC=0,hpC=0;
         for(let i=0;i<nSamp;i++){
           const f=endHz+(startHz-endHz)*pitchEnv;
           phase+=f/sr;if(phase>=1)phase-=1;
           const body=Math.sin(phase*Math.PI*2)*amp;
-          const noise=r()*2-1;
-          // ~2.4 kHz click band
-          const click=bandpass(noise,.14)*clickAmp*clickLvl*.85;
-          let v=soft(body*.9+click,drive);
-          // mild DC lean removal
-          v=highpass(v,.002);
-          data[i]=v;
+          // soft beater: dark noise, low band (~800–1.5k), not 2.4k tin
+          const n=r()*2-1;
+          lpC+=.12*(n-lpC);
+          const hip=n-lpC;
+          hpC+=.25*(hip-hpC);
+          const click=hpC*clickAmp*clickLvl;
+          data[i]=soft(body*1.05+click,drive);
           pitchEnv*=pk;amp*=ak;clickAmp*=ck;
         }
       }else if(kind==='snare'){
-        const toneHz=175*tune;
-        const toneDec=kit==='dust'?.09:.12;
-        const noiseDec=kit==='dust'?.14:kit==='crisp'?.1:.16;
-        const noiseLvl=.72;
-        const toneLvl=.38;
-        const drive=1+(p?.drive??.12)*2.5;
-        let ph1=0,ph2=0,tAmp=1,nAmp=1;
-        const f1=toneHz/sr,f2=(toneHz*1.48)/sr;
+        const toneHz=(kit==='dust'?155:168)*tune;
+        const toneDec=.11;
+        const noiseDec=kit==='crisp'?.09:.14;
+        const drive=1+driveAmt*1.6;
+        let ph1=0,ph2=0,tAmp=1,nAmp=1,lp=0,lp2=0;
+        const f1=toneHz/sr,f2=(toneHz*1.42)/sr;
         const tk=Math.exp(-6.91/(toneDec*sr));
         const nk=Math.exp(-6.91/(noiseDec*sr));
-        lp=0;let lp2=0;
         for(let i=0;i<nSamp;i++){
           ph1+=f1;if(ph1>=1)ph1-=1;
           ph2+=f2;if(ph2>=1)ph2-=1;
-          // less dual-shell clash (was reading metallic on some kits)
-          const tone=(Math.sin(ph1*Math.PI*2)*.75+Math.sin(ph2*Math.PI*2)*.22)*tAmp*toneLvl;
+          const tone=(Math.sin(ph1*Math.PI*2)*.8+Math.sin(ph2*Math.PI*2)*.15)*tAmp*.36;
           const white=r()*2-1;
-          lp+=.1*(white-lp);
+          lp+=.12*(white-lp);
           const hip=white-lp;
-          lp2+=.28*(hip-lp2);           // darker noise shelf
-          const noise=lp2*nAmp*noiseLvl;
-          data[i]=soft(tone+noise,drive);
+          lp2+=.22*(hip-lp2);
+          data[i]=soft(tone+lp2*nAmp*.65,drive);
           tAmp*=tk;nAmp*=nk;
         }
       }else if(kind==='perc'){
-        // short wood/rim tick — noise-led, minimal pure tone (avoids tin lid)
-        let amp=1;
-        const ak=Math.exp(-6.91/(.045*sr));
-        lp=0;let mid=0;
+        let amp=1,lp=0,mid=0;
+        const ak=Math.exp(-6.91/(.04*sr));
         for(let i=0;i<nSamp;i++){
           const white=r()*2-1;
-          lp+=.2*(white-lp);
-          const hip=white-lp;
-          mid+=.3*(hip-mid);
-          data[i]=(mid*.7+lp*.15)*amp*.5;
+          lp+=.18*(white-lp);
+          mid+=.28*((white-lp)-mid);
+          data[i]=mid*amp*.4;
           amp*=ak;
         }
       }else{
-        // hat: band-limited noise only (no pure metal partials — those read as tin/lid)
-        const dec=kit==='dust'?.1:kit==='crisp'?.06:kit==='electro'?.05:.075;
+        // closed-hat body: airy noise, no ringing partials
+        const dec=kit==='electro'?.05:kit==='crisp'?.055:kit==='dust'?.09:.07;
         const ak=Math.exp(-6.91/(dec*sr));
-        let amp=1;lp=0;let mid=0;
+        let amp=1,lp=0,mid=0;
         for(let i=0;i<nSamp;i++){
           const white=r()*2-1;
-          lp+=.62*(white-lp);           // strip lows
-          const hip=white-lp;
-          mid+=.22*(hip-mid);           // gentle presence, not a ring
-          // very light non-harmonic grain instead of sine partials
-          const grain=(r()*2-1)*.04*amp;
-          data[i]=(mid*.9+grain)*amp*(kit==='dust'?.9:1);
+          lp+=.58*(white-lp);
+          mid+=.2*((white-lp)-mid);
+          data[i]=mid*amp*.95;
           amp*=ak;
         }
       }
 
-      // peak normalise so kit gains stay comparable
       let peak=1e-9;
-      for(let i=0;i<nSamp;i++){const a=Math.abs(data[i]);if(a>peak)peak=a;}
-      const g=1/peak;
-      const fade=Math.max(2,Math.floor(sr*.003));
+      for(let i=0;i<nSamp;i++){const a=data[i]<0?-data[i]:data[i];if(a>peak)peak=a;}
+      const g=.95/peak;
+      const fade=Math.max(2,Math.floor(sr*.004));
+      const atk=Math.max(1,Math.floor(sr*.0008));
       for(let i=0;i<nSamp;i++){
         let v=data[i]*g;
-        // micro attack
-        if(i<sr*.001)v*=i/Math.max(1,sr*.001);
-        // fade tail to avoid click on stop
+        if(i<atk)v*=i/atk;
         if(i>nSamp-fade)v*=(nSamp-1-i)/fade;
         data[i]=v;
       }
       this.buffers.set(key,buffer);return buffer;
     }
+
     play(e,time,bpm,level=1){
       const c=this.ctx;if(c.state==='closed'||!Number.isFinite(time))return;
       if(time<c.currentTime-.03)return;
