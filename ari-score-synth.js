@@ -1,6 +1,6 @@
 /* Independent voice renderer for the score composer. No legacy bass substitution.
    Every scheduled voice owns its nodes and releases them on end/cancellation.
-   Drums v2: pitch-enveloped kick, dual-shell snare, band-limited hats (procedural). */
+   Drums v2.1: less metallic hats/perc; darker snare noise (no tin-lid partials). */
 (function(root){
   'use strict';
   class ScoreSynth {
@@ -45,7 +45,7 @@
           const body=Math.sin(phase*Math.PI*2)*amp;
           const noise=r()*2-1;
           // ~2.4 kHz click band
-          const click=bandpass(noise,.18)*clickAmp*clickLvl;
+          const click=bandpass(noise,.14)*clickAmp*clickLvl*.85;
           let v=soft(body*.9+click,drive);
           // mild DC lean removal
           v=highpass(v,.002);
@@ -67,44 +67,42 @@
         for(let i=0;i<nSamp;i++){
           ph1+=f1;if(ph1>=1)ph1-=1;
           ph2+=f2;if(ph2>=1)ph2-=1;
-          const tone=(Math.sin(ph1*Math.PI*2)*.65+Math.sin(ph2*Math.PI*2)*.35)*tAmp*toneLvl;
+          // less dual-shell clash (was reading metallic on some kits)
+          const tone=(Math.sin(ph1*Math.PI*2)*.75+Math.sin(ph2*Math.PI*2)*.22)*tAmp*toneLvl;
           const white=r()*2-1;
-          // noise band ~400–6k
-          lp+=.08*(white-lp);
+          lp+=.1*(white-lp);
           const hip=white-lp;
-          lp2+=.35*(hip-lp2);
+          lp2+=.28*(hip-lp2);           // darker noise shelf
           const noise=lp2*nAmp*noiseLvl;
           data[i]=soft(tone+noise,drive);
           tAmp*=tk;nAmp*=nk;
         }
       }else if(kind==='perc'){
-        // rim / clave-ish
-        let ph=0,amp=1;
-        const f0=620*tune/sr,f1=940*tune/sr;
-        const ak=Math.exp(-6.91/(.07*sr));
-        lp=0;
+        // short wood/rim tick — noise-led, minimal pure tone (avoids tin lid)
+        let amp=1;
+        const ak=Math.exp(-6.91/(.045*sr));
+        lp=0;let mid=0;
         for(let i=0;i<nSamp;i++){
-          ph+=f0;if(ph>=1)ph-=1;
           const white=r()*2-1;
-          lp+=.25*(white-lp);
-          const v=Math.sin(ph*Math.PI*2)*.55+Math.sin((ph*f1/f0)*Math.PI*2)*.2+(white-lp)*.15;
-          data[i]=v*amp*.45;
+          lp+=.2*(white-lp);
+          const hip=white-lp;
+          mid+=.3*(hip-mid);
+          data[i]=(mid*.7+lp*.15)*amp*.5;
           amp*=ak;
         }
       }else{
-        // hat: filtered noise + a touch of metallic partials
-        const open=false; // length still chosen in play(); buffer is closed-ish body
-        const dec=kit==='dust'?.09:kit==='crisp'?.055:.07;
+        // hat: band-limited noise only (no pure metal partials — those read as tin/lid)
+        const dec=kit==='dust'?.1:kit==='crisp'?.06:kit==='electro'?.05:.075;
         const ak=Math.exp(-6.91/(dec*sr));
-        let amp=1;lp=0;let bpState=0;
+        let amp=1;lp=0;let mid=0;
         for(let i=0;i<nSamp;i++){
-          const t=i/sr;
           const white=r()*2-1;
-          lp+=.55*(white-lp);
+          lp+=.62*(white-lp);           // strip lows
           const hip=white-lp;
-          bpState+=.4*(hip-bpState);
-          const metal=(Math.sin(t*2*Math.PI*6200*tune)+Math.sin(t*2*Math.PI*8800*tune)*.7)*.08;
-          data[i]=(bpState*.85+metal)*amp*(kit==='electro'?1.05:1);
+          mid+=.22*(hip-mid);           // gentle presence, not a ring
+          // very light non-harmonic grain instead of sine partials
+          const grain=(r()*2-1)*.04*amp;
+          data[i]=(mid*.9+grain)*amp*(kit==='dust'?.9:1);
           amp*=ak;
         }
       }
