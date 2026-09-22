@@ -180,6 +180,7 @@
   const panel = $('devPanel');
   let wasOpen = false;
   function syncPanel() {
+    if (!panel) return;
     const open = panel.classList.contains('show');
     panel.inert = !open;
     panel.setAttribute('role', 'dialog');
@@ -189,18 +190,21 @@
     if (!open && wasOpen && panel.contains(document.activeElement)) $('trackname').focus();
     wasOpen = open;
   }
-  new MutationObserver(syncPanel).observe(panel, { attributes: true, attributeFilter: ['class'] });
-  syncPanel();
-  panel.addEventListener('keydown', e => {
-    if (e.key === 'Tab') { e.preventDefault(); panel.querySelector('#devClose')?.focus(); }
-  });
+  // The public app may omit the optional developer panel.
+  if (panel) {
+    new MutationObserver(syncPanel).observe(panel, { attributes: true, attributeFilter: ['class'] });
+    syncPanel();
+    panel.addEventListener('keydown', e => {
+      if (e.key === 'Tab') { e.preventDefault(); panel.querySelector('#devClose')?.focus(); }
+    });
+  }
   setInterval(() => {
     const active = !!playing && ctx?.state === 'running';
     $('gAri').setAttribute('aria-label', !started ? 'A.R.I. — start the street signal' : active ? 'A.R.I. — pause' : 'A.R.I. — resume');
     // No accumulated delayed responses when returning from a background tab.
     if (!active && pausedAt === null) pausedAt = performance.now();
     if (active && pausedAt !== null) { if (performance.now() - pausedAt > 30000) { pending = null; phrase = []; } pausedAt = null; }
-    if (!panel.classList.contains('show') || !track) return;
+    if (!panel || !panel.classList.contains('show') || !track) return;
     if (!analyser && ctx) { analyser = ctx.createAnalyser(); analyser.fftSize = 256; master.connect(analyser); }
     if (analyser) analyser.getByteTimeDomainData(samples);
     const audible = active && samples.some(n => Math.abs(n - 128) > 2);
@@ -214,3 +218,4 @@
   }, 500);
   document.querySelector('header .tribute').textContent = 'inspired by ARIatHOME · version 112';
 })();
+

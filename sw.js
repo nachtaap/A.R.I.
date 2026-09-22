@@ -1,5 +1,5 @@
 /* A.R.I. service worker — app shell, cache-first, relative to its scope */
-const CACHE = 'ari-v218';
+const CACHE = 'ari-v219';
 const BASE = new URL('./', self.location.href).pathname;
 const SHELL = [
   BASE,
@@ -49,7 +49,8 @@ const PREPAINT = `<style id="ari-prepaint">
 </style>`;
 
 async function cachedOrNetwork(request) {
-  const hit = await caches.match(request);
+  const currentCache = await caches.open(CACHE);
+  const hit = await currentCache.match(request);
   if (hit) return hit;
 
   const res = await fetch(request);
@@ -92,6 +93,7 @@ self.addEventListener('fetch', e => {
   }
 
   e.respondWith(
-    cachedOrNetwork(e.request).catch(() => caches.match(e.request))
+    cachedOrNetwork(e.request).catch(async () => (await caches.open(CACHE)).match(e.request))
   );
 });
+
