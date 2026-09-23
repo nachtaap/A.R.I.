@@ -469,13 +469,15 @@
       }
       .note {
         font-family: "IBM Plex Mono", monospace;
-        font-size: 44px;
+        font-size: 56px;
         fill: var(--magenta);
         opacity: 0;
+        pointer-events: none;
       }
       .note.sp {
+        /* speaker notes disabled in JS; keep style for safety */
         fill: var(--lav);
-        font-size: 40px;
+        font-size: 48px;
       }
       .note.sleepz {
         fill: var(--trackcyan);
@@ -503,21 +505,25 @@
       .note.sleepz.go {
         animation: sleepZRise 2.8s ease-in-out forwards;
       }
-            @keyframes noteRise {
+      @keyframes noteRise {
         0% {
           opacity: 0;
-          transform: translateY(4px);
+          transform: translateY(6px) scale(0.92);
         }
-        15% {
-          opacity: 0.95;
+        10% {
+          opacity: 0.9;
+          transform: translateY(0) scale(1);
+        }
+        62% {
+          opacity: 0.88;
         }
         100% {
           opacity: 0;
-          transform: translateY(-72px);
+          transform: translateY(-220px) scale(1.05);
         }
       }
       .note.go {
-        animation: noteRise 2.2s ease-out forwards;
+        animation: noteRise 4s ease-out forwards;
       }
 
       /* ---------- brief track feedback from A.R.I. ---------- */
@@ -1218,10 +1224,10 @@ body.light header .tribute {
           max-width: 88vw;
         }
         .note {
-          font-size: 60px;
+          font-size: 64px;
         }
         .note.sp {
-          font-size: 52px;
+          font-size: 56px;
         }
         #liveRecording {
           top: 31%;
@@ -10414,20 +10420,40 @@ body.light header .tribute {
           setTimeout(() => el.classList.remove("on"), 200 + RI(0, 120));
         });
       }
-      function spawnNote(pos, cls, color) {
+      // Music notes = "Ari / guest is leading or singing", not general audio sparkles.
+      // Speakers already pulse; skip speaker spawns. Cap density so fast tracks stay readable.
+      const noteActive = { ari: 0, guest: 0, guest2: 0 };
+      const noteLastAt = { ari: 0, guest: 0, guest2: 0 };
+      const NOTE_MAX = 3;
+      const NOTE_GAP_MS = 200;
+      const NOTE_LIFE_MS = 4100;
+      function spawnNote(pos, cls, color, who) {
         if (reduceMotion) return;
+        if (cls === "sp") return; // speakers have their own animation
+        const key = who === "guest2" ? "guest2" : who === "guest" ? "guest" : "ari";
+        const nowMs = performance.now();
+        if (noteActive[key] >= NOTE_MAX) return;
+        if (nowMs - noteLastAt[key] < NOTE_GAP_MS) return;
+        noteLastAt[key] = nowMs;
+        noteActive[key]++;
         const [x, y] = iso(...(pos || [6.9, -0.6, 9.9]));
+        // Wide horizontal spread so notes fan out above the character
+        const spread = key === "ari" ? R(-58, 28) : key === "guest2" ? R(-10, 62) : R(-22, 55);
         const t = document.createElementNS(
           "http://www.w3.org/2000/svg",
           "text",
         );
-        t.setAttribute("x", x + R(-8, 10));
-        t.setAttribute("y", y);
+        t.setAttribute("x", x + spread);
+        t.setAttribute("y", y - R(4, 18));
         t.setAttribute("class", "note " + (cls || "") + " go");
+        t.setAttribute("aria-hidden", "true");
         if (color) t.style.fill = color;
         t.textContent = pick(["♪", "♫", "♩"]);
         world.appendChild(t);
-        setTimeout(() => t.remove(), 2300);
+        setTimeout(() => {
+          t.remove();
+          noteActive[key] = Math.max(0, noteActive[key] - 1);
+        }, NOTE_LIFE_MS);
       }
       function flashPad() {
         const p = document.getElementById("pad" + RI(0, 11));
@@ -10447,7 +10473,6 @@ body.light header .tribute {
             kickE = 1;
             eqVal[0] = 1;
             eqVal[1] = 0.85;
-            if (Math.random() < 0.16) spawnNote(pick(SPK), "sp");
           }
           if (e.type === "snare") {
             snareE = 1;
@@ -10464,14 +10489,14 @@ body.light header .tribute {
           if (e.type === "chord") {
             eqVal.forEach((v, i) => (eqVal[i] = Math.max(v, 0.6)));
             flashChord();
-            if (Math.random() < 0.5) spawnNote(pick(SPK), "sp");
           }
           if (e.type === "stab") {
             flashChord();
           }
           if (e.type === "lead") {
             const vv = e.v === 2 ? vis2 : vis1;
-            spawnNote(vv.notePos, null, vv.color);
+            const who = e.v === 2 ? "guest2" : "guest";
+            if (vv?.notePos) spawnNote(vv.notePos, null, vv.color, who);
             eqVal[4] = 1;
           }
           if (e.type === "alead") {
@@ -10479,6 +10504,7 @@ body.light header .tribute {
               [6.9, -0.6, 9.9],
               null,
               getComputedStyle(document.body).getPropertyValue("--cyan").trim(),
+              "ari",
             );
             eqVal[4] = 1;
           }
