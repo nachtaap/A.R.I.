@@ -138,13 +138,41 @@
 
     root.ARIMiniFreestyler?.attach(t);
 
-    console.info('[A.R.I.] musicians score active',{
+    // Reproducible listening contract: seed + identity + production.
+    // Copy `seed` (or the whole object) to revisit a strong take later.
+    const id=score.identity||{};
+    const seedInfo={
+      seed:score.seed,
       musician:artist.name,
+      musicianId:artist.id,
       family:artist.family,
+      genre:artist.label||score.genre,
       bpm:score.bpm,
       bars:score.bars,
-      melody:settings.leadDensity
-    });
+      key:(typeof KEYS!=='undefined'?KEYS[score.root%12]:score.root)+' '+(score.scaleName||id.mode||''),
+      root:score.root,
+      mode:score.scaleName||id.mode,
+      kit:id.kit,
+      grammar:id.grammar,
+      bass:id.bassVoice,
+      keys:id.keysVoice,
+      lead:id.leadVoice,
+      harmony:id.harmonyRole,
+      melody:settings.leadDensity,
+      production:{
+        swing:settings.swing,
+        kickWeight:settings.kickWeight,
+        punch:settings.punch,
+        drive:settings.drive,
+        bassLevel:settings.bassLevel,
+        chordsLevel:settings.chordsLevel
+      },
+      engine:root.ARIMusicians.ENGINE,
+      bridge:VERSION
+    };
+    t.scoreSeedInfo=seedInfo;
+    console.info('[A.R.I.] musicians score active', seedInfo);
+    console.info('[A.R.I.] seed', score.seed);
     return true;
   }
 
