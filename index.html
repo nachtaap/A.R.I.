@@ -481,29 +481,6 @@
       }
       .note.sleepz {
         fill: var(--trackcyan);
-        font-size: 16px;
-        font-weight: 500;
-        text-transform: lowercase;
-        filter: drop-shadow(0 0 4px var(--glow1));
-      }
-      @keyframes sleepZRise {
-        0% {
-          opacity: 0;
-          transform: translateY(4px);
-        }
-        16% {
-          opacity: 0.9;
-        }
-        78% {
-          opacity: 0.9;
-        }
-        100% {
-          opacity: 0;
-          transform: translateY(-72px);
-        }
-      }
-      .note.sleepz.go {
-        animation: sleepZRise 2.8s ease-in-out forwards;
       }
       @keyframes noteRise {
         0% {
@@ -1254,9 +1231,6 @@ body.light header .tribute {
         }
         .note.go {
           animation-duration: 0.01s;
-        }
-        .note.sleepz.go {
-          animation-duration: 2.8s;
         }
       }
     </style>
@@ -9049,9 +9023,9 @@ body.light header .tribute {
         t.setAttribute("class", "note sleepz go");
         t.setAttribute("aria-hidden", "true");
         t.style.pointerEvents = "none";
-        t.textContent = "z";
+        t.textContent = "Z";
         world.appendChild(t);
-        setTimeout(() => t.remove(), 2900);
+        setTimeout(() => t.remove(), 4100);
       }
       function runSleepZBurst() {
         if (playing || !started) return;
