@@ -469,7 +469,7 @@
       }
       .note {
         font-family: "IBM Plex Mono", monospace;
-        font-size: 28px;
+        font-size: 50px;
         fill: var(--magenta);
         opacity: 0;
         pointer-events: none;
@@ -494,9 +494,12 @@
         62% {
           opacity: 0.88;
         }
+        80% {
+          opacity: 0.4;
+        }
         100% {
           opacity: 0;
-          transform: translateY(-220px) scale(1.05);
+          transform: translateY(var(--note-rise, -120px)) scale(1.05);
         }
       }
       .note.go {
@@ -1201,7 +1204,7 @@ body.light header .tribute {
           max-width: 88vw;
         }
         .note {
-          font-size: 32px;
+          font-size: 40px;
         }
         .note.sp {
           font-size: 56px;
@@ -8996,6 +8999,12 @@ body.light header .tribute {
       }
       let sleepZTimer = null;
       let sleepZBurstTimers = [];
+      function noteRiseOffset(y) {
+        const box = sceneEl.viewBox.baseVal;
+        // End at the same visible height, with room for the full glyph above its baseline.
+        const top = box.height ? box.y + 60 : y - 120;
+        return -Math.max(0, Math.round(y - top));
+      }
       function spawnSleepZ(target = "ari") {
         if (playing || !started) return;
 
@@ -9023,6 +9032,7 @@ body.light header .tribute {
         t.setAttribute("class", "note sleepz go");
         t.setAttribute("aria-hidden", "true");
         t.style.pointerEvents = "none";
+        t.style.setProperty("--note-rise", noteRiseOffset(y) + "px");
         t.textContent = "Z";
         world.appendChild(t);
         setTimeout(() => t.remove(), 4100);
@@ -10418,9 +10428,11 @@ body.light header .tribute {
           "text",
         );
         t.setAttribute("x", x + spread);
-        t.setAttribute("y", y - R(4, 18));
+        const noteY = y - R(4, 18);
+        t.setAttribute("y", noteY);
         t.setAttribute("class", "note " + (cls || "") + " go");
         t.setAttribute("aria-hidden", "true");
+        t.style.setProperty("--note-rise", noteRiseOffset(noteY) + "px");
         if (color) t.style.fill = color;
         t.textContent = pick(["♪", "♫", "♩"]);
         world.appendChild(t);
