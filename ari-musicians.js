@@ -54,8 +54,7 @@ const api={ENGINE,fields,registry,sanitize,settings,save,profile,compose,request
 if(typeof module!=='undefined')module.exports=api;
 })(globalThis);
 
-/* Desktop street chat layout fix.
-   UI-only; no Musician Lab navigation or keyboard shortcut lives here. */
+/* Desktop street chat layout fix. UI-only. */
 (function(){
   'use strict';
   if(typeof document==='undefined')return;
