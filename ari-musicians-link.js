@@ -1,2 +1,0 @@
-/* Musician Lab UI removed from the live A.R.I. site.
-   Intentionally no keyboard shortcut or navigation. */
