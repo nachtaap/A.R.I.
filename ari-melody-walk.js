@@ -21,7 +21,7 @@
 (function (root) {
   'use strict';
 
-  const VERSION = '2.2.1';
+  const VERSION = '2.2.2';
 
   function weighted(r, items) {
     let total = items.reduce((s, x) => s + x.w, 0);
@@ -174,7 +174,7 @@
     const r = ARIComposer.rng(score.seed + ':skeleton-motif-v2-221');
     const scale = score.scale;
     const bars = opts.bars || 8;
-    const slots = bars * 4; // eighth-note slots
+    const slots = bars * 8; // eight eighth-note slots per four-beat bar
     const step = 0.5;
     const register = opts.register != null ? opts.register : 12;
     const voice = opts.voice || 'soft-poly';
@@ -303,9 +303,12 @@
    */
   function apply(score, opts) {
     if (!score) return score;
-    const events = generate(score, opts);
+    const events = opts?.density === 0 ? [] : generate(score, opts);
+    for (const event of events) event.duration = Math.min(event.duration, score.bars * 4 - event.beat);
     score.events = (score.events || []).filter((e) => e.stem !== 'lead').concat(events);
     score.events.sort((a, b) => a.beat - b.beat);
+    score.byBar = Array.from({length:score.bars},()=>[]);
+    for (const event of score.events) score.byBar[Math.floor(event.beat / 4)]?.push(event);
     return score;
   }
 

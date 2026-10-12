@@ -4,14 +4,16 @@
 (function(root){
   'use strict';
 
-  const VERSION = 2;
-  const ACCOMPANIMENT_PLAYERS = [
-    'playKick','play808Kick','play808Cowbell','playClap','playSnare','playHat',
-    'play808','playDeepSub','playSilkSub','playPulseBass','playRound','playReese',
-    'playRubber','playGrowl','playPluckBass','playBass',
-    'playStab','playKeys','playAltPad','playPad','playRiser','playImpact'
-  ];
-  const ACCOMPANIMENT_VIS = new Set(['kick','snare','hat','chord','stab']);
+  const VERSION = 3;
+  let melodyDensity = 0;
+  function setMelodyDensity(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1)
+      throw new RangeError('Melody density must be a finite number between 0 and 1.');
+    melodyDensity = value;
+    return melodyDensity; // Applied at the next track boundary, never mid-phrase.
+  }
+  if (root.ARI_MELODY_DENSITY !== undefined) setMelodyDensity(root.ARI_MELODY_DENSITY);
+  else if (root.ARI_MELODY_WALK_FORCE === true) setMelodyDensity(0.42);
 
   let installed = false;
   let synth = null;
@@ -95,6 +97,7 @@
     if(!artist) return false;
 
     const settings={...root.ARIMusicians.settings(artist),leadDensity:0};
+    const density=melodyDensity;
     const profile=root.ARIMusicians.profile(artist,settings);
     const score=root.ARIComposer.compose({
       seed:String(t.seed||t.trackId||Date.now()),
@@ -103,6 +106,15 @@
       bpm:settings.bpm,
       profile
     });
+
+    // Compose the established accompaniment at zero density, then add optional
+    // melody before indexing. No API wrapping, startup races or stale step maps.
+    if(density > 0){
+      if(!root.ARIMelodyWalk) throw new Error('Melody generator must load before score bridge.');
+      root.ARIMelodyWalk.apply(score,{density,version:2,bars:score.bars,
+        register:12,voice:score.identity.leadVoice||'soft-poly'});
+    }
+    settings.leadDensity=density;
 
     // The musicians composer is now authoritative for musical form and timing.
     t.scoreMode='musicians';
@@ -159,6 +171,7 @@
       lead:id.leadVoice,
       harmony:id.harmonyRole,
       melody:settings.leadDensity,
+      melodyEngine:density>0?'ARIMelodyWalk@'+root.ARIMelodyWalk.version:null,
       production:{
         swing:settings.swing,
         kickWeight:settings.kickWeight,
@@ -193,36 +206,11 @@
         if(typeof visQ!=='undefined'){
           const type=e.stem==='kick'?'kick':e.stem==='snare'?'snare':e.stem==='hat'||e.stem==='perc'?'hat':e.stem==='chords'?'chord':null;
           if(type)visQ.push({t:when,type});
+          // Rig motion follows the actual score's harmony, not muted legacy chords.
+          if(e.stem==='chords' && typeof faderTarget!=='undefined')
+            for(let i=0;i<faderTarget.length;i++) faderTarget[i]=R(0,1);
         }
       }catch(_){}
-    }
-  }
-
-  function withLegacyAccompanimentMuted(fn){
-    const saved=[];
-    for(const name of ACCOMPANIMENT_PLAYERS){
-      const f=root[name];
-      if(typeof f==='function'){
-        saved.push([name,f]);
-        root[name]=function(){};
-      }
-    }
-
-    let oldPush=null;
-    try{
-      if(typeof visQ!=='undefined' && visQ && typeof visQ.push==='function'){
-        oldPush=visQ.push;
-        visQ.push=function(...items){
-          const keep=items.filter(x=>!ACCOMPANIMENT_VIS.has(x?.type));
-          return keep.length?oldPush.apply(this,keep):this.length;
-        };
-      }
-    }catch(_){}
-
-    try{return fn();}
-    finally{
-      for(const [name,f] of saved)root[name]=f;
-      try{if(oldPush)visQ.push=oldPush;}catch(_){}
     }
   }
 
@@ -243,7 +231,7 @@
     scheduleStep=function(sIdx,t){
       if(typeof track!=='undefined' && track?.scoreMode==='musicians'){
         scoreStep(sIdx,t);
-        const result=withLegacyAccompanimentMuted(()=>originalScheduleStep.call(this,sIdx,t));
+        const result=originalScheduleStep.call(this,sIdx,t);
         root.ARIMiniFreestyler?.step(sIdx,t);
         return result;
       }
@@ -257,6 +245,8 @@
     root.ARIScoreBridge=Object.freeze({
       version:VERSION,
       attach:attachScore,
+      setMelodyDensity,
+      get melodyDensity(){return melodyDensity;},
       get active(){try{return typeof track!=='undefined'&&track?.scoreMode==='musicians';}catch(_){return false;}},
       get musician(){try{return track?.musician||null;}catch(_){return null;}}
     });

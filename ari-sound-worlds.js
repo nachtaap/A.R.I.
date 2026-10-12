@@ -148,8 +148,6 @@
     if(hash01(String(track.seed)+':snare:'+bar)>.18) return previousSnare(t,vol);
     sound('snare',t,{duration:vol<.6?.07:.15,gain:.12*vol,rate:/bass|jungle/.test(cast(track).family)?1.18:.92,highpass:60});
   };
-  const previousClap=playClap;
-  playClap=function(t){ return previousClap(t); };
 
   const previousLead=playLead;
   playLead=function(t,midi,dur,instr,volume,art){ return previousLead(t,midi,dur,instr,(volume??1)*(front?.55:1),art); };

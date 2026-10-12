@@ -19,7 +19,7 @@ The accompaniment has one authoritative score path:
 - `ari-score-synth.js` renders those events with Web Audio synthesis.
 - `ari-score-bridge.js` installs the score into the street runtime and suppresses competing legacy accompaniment while retaining visitors, vocals, interactions and visual events.
 
-The live bridge sets **lead density to zero**. Rhythm, bass and harmony establish the groove; vocals perform around that foundation. A fixed profile and seed reproduce the score, but visitor behaviour and the surrounding street simulation are not wholly deterministic.
+The live bridge defaults to **lead density zero**. Rhythm, bass and harmony establish the groove; vocals perform around that foundation. A fixed profile and seed reproduce the score, but visitor behaviour and the surrounding street simulation are not wholly deterministic.
 
 ## Voices and phrasing
 
@@ -64,17 +64,32 @@ The public UI shows the current track and genre/key/BPM, plus NYC time and weath
 | `ari-discoveries.js` | Interactive rig and street memory |
 | `ari-creature-synth.js` | Procedural character-sound synthesis |
 | `ari-sound-worlds.js` | Sparse character accents and motif behaviour |
-| `ari-beat-foundation.js` | Legacy low-end and drum support, still loaded by the runtime |
+| `ari-beat-foundation.js` | Shared drum/bass synthesis used by interactive pads and fallback accompaniment |
+| `ari-public-ui.js` | Public interface normalization, metadata colours and rig fader layout |
+| `ari-legacy-accompaniment.js` | Isolated fallback accompaniment scheduler; never called in score mode |
 | `ari-melody-walk.js` | Optional weighted-walk lead generator |
-| `ari-score-bridge-melody-hook.js` | Experimental melody integration; see limitation below |
 | `sw.js` | Service worker and versioned application-shell cache |
 | `manifest.webmanifest` | PWA identity, scope and icons |
 
-### Remaining technical debt
+## Optional melody
 
-The optional melody hook expects `ARIScoreBridge.attachScore` and an exposed `indexScore`, while the current bridge exposes `attach` on a frozen API and keeps score indexing internal. Automatic hook installation is therefore not functional as written. The live baseline remains lead density zero; repairing and auditioning optional melody integration is a separate audio change.
+The bridge calls `ARIMelodyWalk` directly after composition and **before** building its step index. There is no separate hook or mutable bridge API. Both `score.events` and `score.byBar` include the generated lead, with durations bounded by the track end. The weighted-walk generator covers all bars.
 
-Legacy audio functions are interwoven with street behaviour and runtime wrappers. A function being suppressed in score mode is not sufficient evidence that its file can be deleted. Further removal needs dependency tracing and listening checks across genres, guest changes and transport transitions.
+To try a melody from the browser console after startup:
+
+```js
+ARIScoreBridge.setMelodyDensity(0.42); // 0–1; takes effect on the next track
+```
+
+Use `setMelodyDensity(0)` to return to the baseline on the next track. Changes never rewrite a currently playing phrase. For startup configuration, set `globalThis.ARI_MELODY_DENSITY` before loading the bridge. The earlier `ARI_MELODY_WALK_FORCE = true` flag is supported as a 0.42 default. Configuration is session-only.
+
+The composer still builds the underlying accompaniment at zero lead density, so enabling the optional lead does not alter its drum, bass or chord events. The chosen density and melody engine version are recorded in `track.scoreSeedInfo`.
+
+## Audio ownership
+
+The live scheduler explicitly chooses between score accompaniment and `scheduleLegacyAccompaniment`. It no longer temporarily replaces global sound functions or intercepts `visQ.push`. Shared vocal and street scheduling runs in both modes; score-driven rig faders follow score chords.
+
+Some older functions are active dependencies: interactive pads call drum players, non-Mini-Freestyler genres use the existing vocal path, and character accents have their own scheduler. These are retained deliberately. Public UI adjustments now live separately from drum/bass synthesis. See [audio-routing.md](docs/audio-routing.md) for the traced ownership and validation scope.
 
 ## Script order
 
@@ -85,20 +100,21 @@ The loaded scripts at the end of `index.html` are:
 <script src="./ari-musicians.js"></script>
 <script src="./ari-score-synth.js"></script>
 
+<script src="./ari-legacy-accompaniment.js"></script>
 <script src="./ari-v108.js"></script>
 <script src="./ari-discoveries.js"></script>
 <script src="./ari-creature-synth.js"></script>
 <script src="./ari-sound-worlds.js"></script>
 <script src="./ari-beat-foundation.js"></script>
+<script src="./ari-public-ui.js"></script>
 
 <script src="./ari-mini-freestyler-data.js"></script>
 <script src="./ari-mini-freestyler.js"></script>
-<script src="./ari-score-bridge.js"></script>
 <script src="./ari-melody-walk.js"></script>
-<script src="./ari-score-bridge-melody-hook.js"></script>
+<script src="./ari-score-bridge.js"></script>
 ```
 
-Load vocal data before the vocal engine. The score bridge loads after the runtime extensions and installs after their synchronous wrappers have run.
+Load vocal data before the vocal engine and the melody generator before the bridge. The score bridge loads after the runtime extensions and installs after their synchronous wrappers have run.
 
 ## Running locally
 
@@ -119,6 +135,16 @@ When application-shell files change:
 3. Verify the deployed app after the updated worker has activated, then check an offline reload.
 
 All currently loaded local scripts belong in the shell. Old versioned A.R.I. caches are removed when the new worker activates.
+
+## Regression tests
+
+With Node.js installed, run:
+
+```bash
+node --test tests/*.test.cjs
+```
+
+Tests cover all 20 profiles with multiple seeds, melody indexing and determinism, unchanged accompaniment events, explicit fallback routing, vocal DSP, guest ownership and departure, stale worker replies, late-event handling, and transport pause/resume. Lifecycle tests use simulated browser/audio objects; they do not replace listening or real-browser playback checks.
 
 ## Development priorities
 
