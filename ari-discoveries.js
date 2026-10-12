@@ -120,10 +120,19 @@
   function bind(el, name, action, keyboard = true) {
     el.setAttribute('role', 'button'); el.setAttribute('aria-label', name);
     el.setAttribute('tabindex', keyboard ? '0' : '-1');
-    el.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); action(el); });
+    el.addEventListener('click', e => {
+      // While stopped, let the robot's single click handler start/resume audio.
+      // Do not consume a gesture that cannot play an instrument yet.
+      if (!started || !playing) return;
+      e.preventDefault(); e.stopPropagation(); action(el);
+    });
     el.addEventListener('keydown', e => {
       if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
-        e.preventDefault(); e.stopPropagation(); action(el);
+        e.preventDefault(); e.stopPropagation();
+        if (document.body.classList.contains('real-ari-live')) return;
+        if (!started) start();
+        else if (!playing) resume();
+        else action(el);
       }
     });
   }

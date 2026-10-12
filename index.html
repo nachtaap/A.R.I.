@@ -1019,6 +1019,12 @@ body.light header .tribute {
       #gAri {
         cursor: pointer;
         outline: none;
+        touch-action: manipulation;
+      }
+      #ariTapTarget {
+        fill: transparent;
+        stroke: none;
+        pointer-events: all;
       }
       #gAri:focus,
       #gAri:focus-visible {
@@ -10435,6 +10441,18 @@ body.light header .tribute {
           navigator.mediaSession.playbackState = "playing";
       }
       const stageEl = document.getElementById("stage");
+      // SVG line art only receives clicks on its painted strokes. A stable,
+      // transparent surface behind the drawing also catches the spaces inside it.
+      // Keep rig controls above it so their own interactions still work.
+      const ariBounds = gAri.getBBox();
+      const ariTapTarget = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      ariTapTarget.id = "ariTapTarget";
+      ariTapTarget.setAttribute("x", ariBounds.x);
+      ariTapTarget.setAttribute("y", ariBounds.y);
+      ariTapTarget.setAttribute("width", ariBounds.width);
+      ariTapTarget.setAttribute("height", ariBounds.height);
+      ariTapTarget.setAttribute("aria-hidden", "true");
+      gAri.insertBefore(ariTapTarget, gAri.firstChild);
       gAri.removeAttribute("role");
       gAri.removeAttribute("tabindex");
       gAri.removeAttribute("aria-label");
