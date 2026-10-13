@@ -4,8 +4,8 @@
 (function(root){
   'use strict';
 
-  const VERSION = 3;
-  let melodyDensity = 0;
+  const VERSION = 4;
+  let melodyDensity = 0.42;
   function setMelodyDensity(value) {
     if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1)
       throw new RangeError('Melody density must be a finite number between 0 and 1.');
@@ -107,12 +107,14 @@
       profile
     });
 
-    // Compose the established accompaniment at zero density, then add optional
+    // Compose the established accompaniment at zero density, then add the motif
     // melody before indexing. No API wrapping, startup races or stale step maps.
     if(density > 0){
       if(!root.ARIMelodyWalk) throw new Error('Melody generator must load before score bridge.');
-      root.ARIMelodyWalk.apply(score,{density,version:2,bars:score.bars,
-        register:12,voice:score.identity.leadVoice||'soft-poly'});
+      const vocals=root.ARIMiniFreestyler && root.ARIMiniFreestylerData
+        ? root.ARIMiniFreestyler.plan(score,root.ARIMiniFreestylerData) : [];
+      const occupied=vocals.map(e=>({start:e.beat-.5,end:e.beat+e.duration*score.bpm/60+.5}));
+      root.ARIMelodyWalk.apply(score,{density,bars:score.bars,occupied});
     }
     settings.leadDensity=density;
 
@@ -168,7 +170,7 @@
       grammar:id.grammar,
       bass:id.bassVoice,
       keys:id.keysVoice,
-      lead:id.leadVoice,
+      lead:density>0?root.ARIMelodyWalk.voiceFor(score):id.leadVoice,
       harmony:id.harmonyRole,
       melody:settings.leadDensity,
       melodyEngine:density>0?'ARIMelodyWalk@'+root.ARIMelodyWalk.version:null,

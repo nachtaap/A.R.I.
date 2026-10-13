@@ -164,7 +164,7 @@
 
     // Independent melodic identity: two quiet statement/reprise bars per 8-bar phrase.
     // This uses the selected lead timbre instead of leaving leadWave as metadata only.
-    if(!guest && !['intro','outro'].includes(section) && [2,6].includes(bar%8)){
+    if(!(track.musicProfile?.leadDensity>0) && !guest && !['intro','outro'].includes(section) && [2,6].includes(bar%8)){
       const ev=p.signature.events.find(e=>e.step===step);
       if(ev){
         const beat=60/track.bpm, midi=note(track,ev.degree)+12;

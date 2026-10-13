@@ -107,6 +107,40 @@
       this.buffers.set(key,buffer);return buffer;
     }
 
+    // The four retained Atlas families, rendered as short reusable note buffers.
+    // Fixed sample rate and bounded cache keep work/memory independent of device rate.
+    melodyNote(voice,midi,seconds){
+      const sr=24000,life=seconds+.07,key=`${voice}:${midi}:${seconds.toFixed(4)}`;
+      if(this.buffers.has(key))return this.buffers.get(key);
+      const buffer=this.ctx.createBuffer(1,Math.ceil(life*sr),sr),data=buffer.getChannelData(0);
+      const r=ARIComposer.rng(this.seed+':'+voice+':'+midi),hz=440*2**((midi-69)/12),tau=Math.PI*2;
+      const sine=x=>Math.sin(tau*x),shade=.38,motion=.22;
+      const line=new Float32Array(Math.max(2,Math.round(sr/hz-.5)));
+      for(let i=0;i<line.length;i++)line[i]=(r()*2-1)*.5;
+      let j=0,low=0;
+      const alpha=1-Math.exp(-tau*(500+shade*7500)/sr);
+      for(let i=0;i<data.length;i++){
+        const t=i/sr,phase=hz*t;
+        let x=0;
+        if(voice==='atlas-pd'){
+          const f=phase-Math.floor(phase),decay=Math.exp(-t*(2+shade*3));
+          const k=.12+.34*(1-shade*decay),q=f<k?f*.5/k:.5+(f-k)*.5/(1-k);
+          x=Math.cos(tau*(q+motion*.04*sine(t*2)))*.68;
+        }else if(voice==='atlas-modal'){
+          [1,2.01,3.98,5.4].forEach((h,n)=>{if(h*hz<sr*.42)x+=sine(phase*h)*Math.exp(-t*(.9+n*(.5+shade)))/(n+1)*.72;});
+        }else if(voice==='atlas-pluck'){
+          const k=(j+1)%line.length;x=line[j]*2;
+          line[j]=(line[j]+line[k])*.5*(.989+shade*.009);j=k;
+        }else if(voice==='atlas-ring'){
+          x=(sine(phase)*sine(phase*.5+motion*sine(t*2))*(.5+shade*.5)+.28*sine(phase))*.8;
+        }
+        low+=alpha*(x-low);
+        data[i]=low*(.55+.45*Math.exp(-t*1.8));
+      }
+      if(this.buffers.size>=96)this.buffers.delete(this.buffers.keys().next().value);
+      this.buffers.set(key,buffer);return buffer;
+    }
+
     play(e,time,bpm,level=1){
       const c=this.ctx;if(c.state==='closed'||!Number.isFinite(time))return;
       if(time<c.currentTime-.03)return;
@@ -123,6 +157,9 @@
         const s=c.createBufferSource();s.buffer=this.noise(e.stem,e.voice);sources.push(s);nodes.push(s);s.connect(gain);
         duration=e.stem==='hat'?(e.midi===46?.28:.065):e.stem==='kick'?.48:.22;
         attack=.002;release=.015;peak=e.velocity*level*({kick:.75,snare:.52,hat:.31,perc:.42}[e.stem]);
+      }else if(e.stem==='lead'&&/^atlas-(pd|modal|pluck|ring)$/.test(e.voice)){
+        const source=c.createBufferSource();source.buffer=this.melodyNote(e.voice,e.midi,seconds);
+        sources.push(source);nodes.push(source);source.connect(gain);
       }else{
         const hz=440*Math.pow(2,(e.midi-69)/12),filter=c.createBiquadFilter();nodes.push(filter);filter.type='lowpass';filter.Q.value=.65;filter.connect(gain);
         const out=filter;
